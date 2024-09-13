@@ -6,7 +6,7 @@ from django.contrib import messages
 def index(request):
     return render(
         request=request,
-        template_name="company/login.html",
+        template_name="accounts/login.html",
         context={
             "title": "Login",
         }
@@ -34,7 +34,7 @@ def register(request):
 
     return render(
         request=request,
-        template_name="company/register.html",
+        template_name="accounts/register.html",
         context={
             "title": "Register",
             "form": form,

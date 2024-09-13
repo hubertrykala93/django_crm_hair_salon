@@ -37,8 +37,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "rest_framework",
-    "company",
+    "accounts",
 ]
 
 MIDDLEWARE = [
@@ -69,7 +68,7 @@ TEMPLATES = [
     },
 ]
 
-AUTH_USER_MODEL = "company.User"
+AUTH_USER_MODEL = "accounts.User"
 
 WSGI_APPLICATION = "crm.wsgi.application"
 
