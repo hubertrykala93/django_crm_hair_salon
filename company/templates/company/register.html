@@ -1,0 +1,53 @@
+{% extends 'company/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+    <div class="register-container">
+        <h2>Create an Account</h2>
+        <form method="post" class="register-form" novalidate>
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" placeholder="E-mail Address">
+                {% if form.email.errors %}
+                <ul class="errorlist">
+                {% for error in form.email.errors %}
+                <li class="error">{{ error }}</li>
+                {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" placeholder="Password">
+                {% if form.password.errors %}
+                <ul class="errorlist">
+                {% for error in form.password.errors %}
+                <li class="error">{{ error }}</li>
+                {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="repassword">Confirm Password:</label>
+                <input type="password" id="repassword" name="repassword" placeholder="Confirm Password">
+                {% if form.repassword.errors %}
+                <ul class="errorlist">
+                {% for error in form.repassword.errors %}
+                <li class="error">{{ error }}</li>
+                {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+            <button type="submit" class="btn-submit">Register</button>
+        </form>
+        <p class="login-redirect">Already have an account? <a href="/">Login here</a>.</p>
+    </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/company.js' %}"></script>
+{% endblock %}

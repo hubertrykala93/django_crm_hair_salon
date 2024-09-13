@@ -1,0 +1,68 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if title %}{% block title %}{% endblock %} | Elegance Hair Studio{% else %}Elegance Hair Studio{% endif %}</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    {% block extra_head %}
+    <!-- Additional head content if needed -->
+    {% endblock %}
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <a href="/">
+                    <img src="/media/home/logo.png" alt="Elegance Hair Studio Logo">
+                </a>
+            </div>
+            <nav>
+                <ul>
+                    {% if user.is_authenticated %}
+                        <li><a href="#">Profile</a></li>
+                        <li><a href="#">Logout</a></li>
+                    {% else %}
+                        <li><a href="/" class="{% if request.resolver_match.url_name == 'index' %}active{% endif %}">Login</a></li>
+                        <li><a href="{% url 'register' %}" class="{% if request.resolver_match.url_name == 'register' %}active{% endif %}">Register</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="message {{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block content %}
+        <!-- Main content will be inserted here -->
+        {% endblock %}
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Elegance Hair Studio. All rights reserved.</p>
+            <p>
+                <a href="https://www.facebook.com" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://www.twitter.com" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="https://www.instagram.com" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            </p>
+        </div>
+    </footer>
+
+    {% block extra_scripts %}
+    <!-- Additional scripts can be included here -->
+    {% endblock %}
+</body>
+</html>
