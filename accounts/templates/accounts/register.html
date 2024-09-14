@@ -11,7 +11,7 @@
 
             <div class="form-group">
                 <label for="email">Email:</label>
-                <input type="email" id="email" name="email" placeholder="E-mail Address">
+                <input type="email" id="email" name="email" placeholder="E-mail Address" {% if form.email.value %}value="{{ form.email.value }}"{% endif %}>
                 {% if form.email.errors %}
                 <ul class="errorlist">
                 {% for error in form.email.errors %}
@@ -22,7 +22,7 @@
             </div>
             <div class="form-group">
                 <label for="password">Password:</label>
-                <input type="password" id="password" name="password" placeholder="Password">
+                <input type="password" id="password" name="password" placeholder="Password" {% if form.password.value %}value="{{ form.password.value }}"{% endif %}>
                 {% if form.password.errors %}
                 <ul class="errorlist">
                 {% for error in form.password.errors %}
@@ -33,7 +33,7 @@
             </div>
             <div class="form-group">
                 <label for="repassword">Confirm Password:</label>
-                <input type="password" id="repassword" name="repassword" placeholder="Confirm Password">
+                <input type="password" id="repassword" name="repassword" placeholder="Confirm Password" {% if form.repassword.value %}value="{{ form.repassword.value }}"{% endif %}>
                 {% if form.repassword.errors %}
                 <ul class="errorlist">
                 {% for error in form.repassword.errors %}
@@ -46,8 +46,4 @@
         </form>
         <p class="login-redirect">Already have an account? <a href="/">Login here</a>.</p>
     </div>
-{% endblock %}
-
-{% block extra_scripts %}
-<script src="{% static 'js/company.js' %}"></script>
 {% endblock %}

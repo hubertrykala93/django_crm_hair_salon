@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.models import Group
 from .models import User, Profile, ProfileImage
 from .forms import AdminRegisterForm, AdminProfileForm, AdminProfileImageForm
+from django.contrib.sessions.models import Session
 
 admin.site.unregister(Group)
 
@@ -149,3 +150,17 @@ class AdminProfileImage(admin.ModelAdmin):
             return obj.updated_at.strftime("%Y-%m-%d %H:%M:%S")
 
     formatted_updated_at.short_description = "Updated At"
+
+
+@admin.register(Session)
+class AdminSession(admin.ModelAdmin):
+    list_display = [
+        "session_key",
+        "decoded_data",
+        "expire_date",
+    ]
+
+    def decoded_data(self, obj):
+        return obj.get_decoded()
+
+    decoded_data.short_description = "Session Data"

@@ -175,25 +175,83 @@ class RegisterForm(forms.ModelForm):
         return password
 
     def clean_repassword(self):
+        password = self.cleaned_data.get("password")
         repassword = self.cleaned_data.get("repassword")
 
-        if not repassword:
-            raise ValidationError("Confirm Password is required.")
+        if password is not None:
+            if not repassword:
+                raise ValidationError(
+                    message="Confirm Password is required."
+                )
 
-        if len(repassword) < 8:
-            raise ValidationError(
-                message="The password should consist of at least 8 characters."
-            )
-
-        if len(repassword) > 255:
-            raise ValidationError(
-                message="The password cannot be longer than 255 characters.",
-            )
-
-        if not re.match(pattern="^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$", string=repassword):
-            raise ValidationError(
-                message="The password should contain at least one uppercase letter, one lowercase letter, one number, "
-                        "and one special character."
-            )
+            if repassword != password:
+                raise ValidationError(
+                    message="Confirm Password does not match.",
+                )
 
         return repassword
+
+
+class LoginForm(forms.Form):
+    email = forms.CharField(
+        error_messages={
+            "required": "Email is required.",
+        },
+    )
+    password = forms.CharField(
+        error_messages={
+            "required": "Password is required.",
+        },
+        widget=forms.PasswordInput,
+    )
+    remember = forms.BooleanField(
+        required=False,
+    )
+
+    def clean(self):
+        email = self.cleaned_data.get("email")
+        password = self.cleaned_data.get("password")
+
+        if email and password:
+            user = User.objects.get(email=email)
+
+            if not user.is_verified:
+                self.add_error(
+                    field=None,
+                    error="Your account has not been activated yet. Please activate your account to log in.",
+                )
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+
+        if len(email) > 255:
+            raise ValidationError(
+                message="The e-mail address cannot be longer than 255 characters.",
+            )
+
+        if not re.match(pattern=r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)",
+                        string=email):
+            raise ValidationError(
+                message="The e-mail address format is invalid.",
+            )
+
+        if not User.objects.filter(email=email).exists():
+            raise ValidationError(
+                message=f"A user with the email address '{email}' does not exist.",
+            )
+
+        return email
+
+    def clean_password(self):
+        email = self.cleaned_data.get("email")
+        password = self.cleaned_data.get("password")
+
+        if User.objects.filter(email=email).exists():
+            user = User.objects.get(email=email)
+
+            if not user.check_password(raw_password=password):
+                raise ValidationError(
+                    message=f"Incorrect password for the account '{email}'."
+                )
+
+        return password

@@ -1,11 +1,9 @@
-/* Resetowanie podstawowych stylów */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-/* Stylizacja ciała dokumentu */
 body {
     font-family: 'Helvetica Neue', Arial, sans-serif;
     line-height: 1.6;
@@ -13,12 +11,11 @@ body {
     color: #333;
 }
 
-/* Stylizacja nagłówka */
 header {
-    background-color: #fff; /* Białe tło dla nagłówka */
-    color: #692f6f; /* Kolor tekstu nagłówka */
+    background-color: #fff;
+    color: #692f6f;
     padding: 1rem 2rem;
-    border-bottom: 3px solid #692f6f; /* Dolna granica w kolorze przewodnim */
+    border-bottom: 3px solid #692f6f;
 }
 
 header .container {
@@ -33,9 +30,8 @@ header .logo img {
     height: 60px;
 }
 
-/* Stylizacja nawigacji */
 nav {
-    background-color: #fff; /* Białe tło dla nawigacji */
+    background-color: #fff;
 }
 
 nav ul {
@@ -46,36 +42,34 @@ nav ul {
 }
 
 nav ul li {
-    margin: 0 10px; /* Dodano margines między linkami */
+    margin: 0 10px;
 }
 
 nav ul li a {
-    color: #692f6f; /* Kolor tekstu */
+    color: #692f6f;
     text-decoration: none;
-    padding: 10px 15px; /* Padding dla wygodnego kliknięcia */
+    padding: 10px 15px;
     display: block;
-    transition: color 0.3s, text-shadow 0.3s; /* Płynne przejścia dla koloru tekstu i cienia */
-    font-weight: bold; /* Pogrubiony tekst */
+    transition: color 0.3s, text-shadow 0.3s;
+    font-weight: bold;
 }
 
 nav ul li a:hover,
 nav ul li a.active {
-    color: #fff; /* Kolor tekstu na hover i aktywnym linku */
-    background-color: #692f6f; /* Tło dla aktywnego linku */
-    border-radius: 25px; /* Zaokrąglone narożniki dla efektu tła */
-    box-shadow: 0 0 10px rgba(105, 47, 111, 0.7); /* Efekt świecenia */
+    color: #fff;
+    background-color: #692f6f;
+    border-radius: 25px;
+    box-shadow: 0 0 10px rgba(105, 47, 111, 0.7);
 }
 
-/* Stylizacja głównej sekcji */
 main {
     padding: 2rem 1.5rem;
     max-width: 1200px;
     margin: 0 auto;
 }
 
-/* Stylizacja stopki */
 footer {
-    background-color: #692f6f; /* Kolor przewodni */
+    background-color: #692f6f;
     color: #fff;
     text-align: center;
     padding: 1rem 0;
@@ -95,10 +89,9 @@ footer a {
 }
 
 footer a:hover {
-    color: #ddd; /* Subtelne przejście koloru na hover */
+    color: #ddd;
 }
 
-/* Responsywność */
 @media (max-width: 768px) {
     header .container {
         flex-direction: column;
@@ -122,19 +115,18 @@ footer a:hover {
     }
 }
 
-/* Stylizacja kontenera rejestracji */
 .register-container {
     max-width: 600px;
     margin: 2rem auto;
     padding: 2rem;
-    background: #fff; /* Białe tło formularza */
-    border-radius: 8px; /* Zaokrąglone narożniki */
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1); /* Subtelne cienie */
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
 }
 
 .register-container h2 {
     margin-bottom: 1.5rem;
-    color: #692f6f; /* Kolor nagłówka */
+    color: #692f6f;
     font-size: 2rem;
     text-align: center;
 }
@@ -164,25 +156,25 @@ footer a:hover {
 }
 
 .form-group input:focus {
-    border-color: #692f6f; /* Kolor obramowania przy focusie */
+    border-color: #692f6f;
     outline: none;
-    box-shadow: 0 0 5px rgba(105, 47, 111, 0.3); /* Efekt świecenia przy focusie */
+    box-shadow: 0 0 5px rgba(105, 47, 111, 0.3);
 }
 
 .btn-submit {
-    background-color: #692f6f; /* Kolor przycisku */
+    background-color: #692f6f;
     color: #fff;
     border: none;
     padding: 0.75rem;
     border-radius: 4px;
     cursor: pointer;
     font-size: 1rem;
-    transition: background-color 0.3s, box-shadow 0.3s; /* Płynne przejścia */
+    transition: background-color 0.3s, box-shadow 0.3s;
 }
 
 .btn-submit:hover {
-    background-color: #5b2750; /* Ciemniejszy odcień na hover */
-    box-shadow: 0 0 10px rgba(105, 47, 111, 0.5); /* Efekt świecenia przy hoverze */
+    background-color: #5b2750;
+    box-shadow: 0 0 10px rgba(105, 47, 111, 0.5);
 }
 
 .form-message {
@@ -197,30 +189,28 @@ footer a:hover {
 }
 
 .login-redirect a {
-    color: #692f6f; /* Kolor linku */
+    color: #692f6f;
     text-decoration: none;
     font-weight: bold;
 }
 
 .login-redirect a:hover {
-    text-decoration: underline; /* Podkreślenie linku na hover */
+    text-decoration: underline;
 }
 
-/* Stylizacja błędów formularza - minimalistyczna */
 .errorlist {
     list-style: none;
     margin: 0;
     padding: 0;
-    font-size: 0.875rem; /* Mniejsza czcionka */
-    color: #e74c3c; /* Kolor tekstu błędów */
+    font-size: 0.875rem;
+    color: #e74c3c;
 }
 
 .errorlist .error {
     margin-top: 0.25rem;
-    color: #e74c3c; /* Kolor tekstu błędów */
+    color: #e74c3c;
 }
 
-/* Poprawki dla stylu błędów w polach formularza */
 .form-group {
     margin-bottom: 1rem;
 }
@@ -241,21 +231,19 @@ footer a:hover {
 }
 
 .form-group input:focus {
-    border-color: #692f6f; /* Kolor obramowania przy focusie */
+    border-color: #692f6f;
     outline: none;
-    box-shadow: 0 0 3px rgba(105, 47, 111, 0.2); /* Subtelne świecenie przy focusie */
+    box-shadow: 0 0 3px rgba(105, 47, 111, 0.2);
 }
 
 .form-group .errorlist {
     margin-top: 0.25rem;
 }
 
-/* Kontener wiadomości */
 .messages {
     margin: 20px 0;
 }
 
-/* Styl dla pojedynczej wiadomości */
 .message {
     padding: 15px;
     border-radius: 5px;
@@ -264,23 +252,62 @@ footer a:hover {
     line-height: 1.5;
 }
 
-/* Wiadomość typu sukces */
 .message.success {
     background-color: #d4edda;
     color: #155724;
     border: 1px solid #c3e6cb;
 }
 
-/* Wiadomość typu błąd */
 .message.error {
     background-color: #f8d7da;
     color: #721c24;
     border: 1px solid #f5c6cb;
 }
 
-/* Wiadomość typu informacja */
 .message.info {
     background-color: #d1ecf1;
     color: #0c5460;
     border: 1px solid #bee5eb;
+}
+
+.form-group input[type="checkbox"] {
+    width: auto;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+}
+
+.form-group label[for="remember_me"] {
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0;
+}
+
+.form-errors {
+    margin-bottom: 0.5rem;
+}
+
+.form-errors ul {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    font-size: 0.875rem;
+    color: #e74c3c;
+}
+
+.form-errors li {
+    margin-top: 0.5rem;
+}
+
+.form-group input[type="checkbox"] {
+    margin-right: 0.5rem;
+}
+
+.form-group label[for="remember_me"] {
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0;
+}
+
+.btn-submit {
+    margin-top: 0.3rem;
 }
