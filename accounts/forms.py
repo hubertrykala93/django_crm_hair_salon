@@ -158,7 +158,7 @@ class RegisterForm(forms.ModelForm):
 
         if len(password) < 8:
             raise ValidationError(
-                message="The password should consist of at least 8 characters."
+                message="The password should consist of at least 8 characters.",
             )
 
         if len(password) > 255:
@@ -169,7 +169,7 @@ class RegisterForm(forms.ModelForm):
         if not re.match(pattern="^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$", string=password):
             raise ValidationError(
                 message="The password should contain at least one uppercase letter, one lowercase letter, one number, "
-                        "and one special character."
+                        "and one special character.",
             )
 
         return password
@@ -181,7 +181,7 @@ class RegisterForm(forms.ModelForm):
         if password is not None:
             if not repassword:
                 raise ValidationError(
-                    message="Confirm Password is required."
+                    message="Confirm Password is required.",
                 )
 
             if repassword != password:
@@ -251,7 +251,47 @@ class LoginForm(forms.Form):
 
             if not user.check_password(raw_password=password):
                 raise ValidationError(
-                    message=f"Incorrect password for the account '{email}'."
+                    message=f"Incorrect password for the account '{email}'.",
                 )
 
         return password
+
+
+class PasswordResetForm(forms.Form):
+    email = forms.CharField(
+        error_messages={
+            "required": "Email is required.",
+        }
+    )
+    password = forms.CharField(
+        error_messages={
+            "required": "Password is required.",
+        },
+        widget=forms.PasswordInput,
+        required=False,
+    )
+    repassword = forms.CharField(
+        widget=forms.PasswordInput,
+        required=False,
+    )
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+
+        if len(email) > 255:
+            raise ValidationError(
+                message="The e-mail address cannot be longer than 255 characters.",
+            )
+
+        if not re.match(pattern=r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)",
+                        string=email):
+            raise ValidationError(
+                message="The e-mail address format is invalid.",
+            )
+
+        if not User.objects.filter(email=email).exists():
+            raise ValidationError(
+                message=f"A user with the email address '{email}' does not exist.",
+            )
+
+        return email
