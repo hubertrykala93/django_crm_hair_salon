@@ -6,6 +6,7 @@ import os
 from PIL import Image
 from django.dispatch import receiver
 from django.db.models.signals import pre_delete
+import random as rnd
 
 
 class CustomUserManager(UserManager):
@@ -76,6 +77,25 @@ class User(AbstractBaseUser, PermissionsMixin):
                 profile.profile_image = profile_image
 
                 profile.save()
+
+
+class OneTimePassword(models.Model):
+    created_at = models.DateTimeField(default=now)
+    user = models.OneToOneField(to=User, on_delete=models.CASCADE)
+    password = models.CharField(max_length=6, unique=True)
+
+    class Meta:
+        verbose_name = "One Time Password"
+        verbose_name_plural = "One Time Passwords"
+
+    def __str__(self):
+        return self.user.username
+
+    def save(self, *args, **kwargs):
+        if not self.password:
+            self.password = ''.join([str(rnd.randint(a=0, b=9)) for _ in range(6)])
+
+        super(OneTimePassword, self).save(*args, **kwargs)
 
 
 class ProfileImage(models.Model):

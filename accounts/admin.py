@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.models import Group
-from .models import User, Profile, ProfileImage
-from .forms import AdminRegisterForm, AdminProfileForm, AdminProfileImageForm
+from .models import User, Profile, ProfileImage, OneTimePassword
+from .forms import AdminRegisterForm, AdminProfileForm, AdminProfileImageForm, AdminOneTimePasswordForm
 from django.contrib.sessions.models import Session
 
 admin.site.unregister(Group)
@@ -54,6 +54,32 @@ class AdminUser(admin.ModelAdmin):
             return obj.last_login.strftime("%Y-%m-%d %H:%M:%S")
 
     formatted_last_login.short_description = "Last Login"
+
+
+@admin.register(OneTimePassword)
+class AdminOneTimePassword(admin.ModelAdmin):
+    list_display = [
+        "id",
+        "formatted_created_at",
+        "user",
+        "password",
+    ]
+    form = AdminOneTimePasswordForm
+    fieldsets = (
+        (
+            "Related User", {
+                "fields": [
+                    "user",
+                ],
+            },
+        ),
+    )
+
+    def formatted_created_at(self, obj):
+        if obj.created_at:
+            return obj.created_at.strftime("%Y-%m-%d %H:%M:%S")
+
+    formatted_created_at.short_description = "Created At"
 
 
 @admin.register(Profile)

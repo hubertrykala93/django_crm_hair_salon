@@ -1,7 +1,7 @@
-from django.shortcuts import render, redirect
-from .forms import RegisterForm, LoginForm, PasswordResetForm
+from django.shortcuts import render, redirect, reverse
+from .forms import RegisterForm, LoginForm, PasswordResetForm, OneTimePasswordForm, ChangePasswordForm
 from django.contrib import messages
-from .models import User
+from .models import User, OneTimePassword
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import user_passes_test
@@ -12,7 +12,7 @@ from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from .tokens import token_generator
-import os
+from googlevoice import Voice
 
 
 @user_passes_test(test_func=lambda user: not user.is_authenticated, login_url="dashboard")
@@ -120,7 +120,7 @@ def register(request):
         context={
             "title": "Register",
             "form": form,
-        }
+        },
     )
 
 
@@ -168,17 +168,86 @@ def activate(request, uidb64, token):
     return redirect(to="home")
 
 
+def password_reset_method(request):
+    if request.method == "POST":
+        if "method" in request.POST:
+            print(request.POST)
+            if request.POST["method"] == "email":
+                return redirect(to=reverse(viewname="forgot-password") + f"?method={request.POST['method']}")
+
+            elif request.POST["method"] == "sms":
+                return redirect(to=reverse(viewname="forgot-password") + f"?method={request.POST['method']}")
+
+            elif request.POST["method"] == "voice":
+                return redirect(to=reverse(viewname="forgot-password") + f"?method={request.POST['method']}")
+
+    return render(
+        request=request,
+        template_name="accounts/password-reset-method.html",
+        context={
+            "title": "Choose Method",
+        }
+    )
+
+
 def forgot_password(request):
     if request.method == "POST":
         form = PasswordResetForm(data=request.POST)
 
         if form.is_valid():
-            print("Form is valid.")
+            user = User.objects.get(email=request.POST["email"])
+
+            if not OneTimePassword.objects.filter(user=user).exists():
+                otp = OneTimePassword(user=user)
+                otp.save()
+
+            otp = OneTimePassword.objects.get(user=user)
+
+            if request.GET["method"] == "email":
+                try:
+                    html_message = render_to_string(
+                        template_name="accounts/password-reset-email.html",
+                        context={
+                            "user": user,
+                            "otp": otp.password,
+                        },
+                        request=request,
+                    )
+                    plain_message = strip_tags(html_message)
+
+                    message = EmailMultiAlternatives(
+                        subject="Password Reset Request",
+                        body=plain_message,
+                        to=[user.email],
+                    )
+                    message.attach_alternative(content=html_message, mimetype="text/html")
+                    message.send()
+
+                    messages.success(
+                        request=request,
+                        message=f"We have sent the password to the provided email address '{request.POST['email']}'. Please check your inbox.",
+                    )
+
+                    return redirect(f"{reverse('confirm-password')}?method={request.GET['method']}&email={user.email}")
 
 
-        else:
-            print(form.errors)
-            print("Form is not valid.")
+                except Exception as e:
+                    messages.error(
+                        request=request,
+                        message="Failed to send the email, please try again.",
+                    )
+
+                    return redirect(to=reverse(viewname="forgot-password") + f"?method={request.GET['method']}")
+
+            else:
+                if request.GET["method"] == "sms":
+                    pass
+
+                else:
+                    pass
+                
+                return redirect(to=reverse(
+                    viewname="confirm-password") + f"?method={request.GET['method']}&mobile={request.POST['mobile']}")
 
     else:
         form = PasswordResetForm()
@@ -194,21 +263,79 @@ def forgot_password(request):
 
 
 def confirm_one_time_password(request):
+    if request.method == "POST":
+        form = OneTimePasswordForm(data=request.POST)
+
+        if form.is_valid():
+            user = User.objects.get(email=request.GET["email"])
+
+            return redirect(f"{reverse('change-password')}?email={user.email}")
+
+        else:
+            print("Not Valid")
+
+    else:
+        form = OneTimePasswordForm()
+
     return render(
         request=request,
-        template_name="accounts/confirm-one-time-password.html",
+        template_name="accounts/confirm-password.html",
         context={
-            "Confirm Password",
+            "title": "Confirm Password",
+            "form": form,
         }
     )
 
 
 def change_password(request):
+    if request.method == "POST":
+        form = ChangePasswordForm(
+            data=request.POST,
+        )
+
+        if form.is_valid():
+            try:
+                user = User.objects.get(email=request.GET["email"])
+                otp = OneTimePassword.objects.get(user=user)
+
+                user.set_password(raw_password=request.POST["password"])
+                user.save()
+
+                otp.delete()
+
+                messages.success(
+                    request=request,
+                    message=f"The password for the account '{user.email}' has been successfully changed. "
+                            f"You can now log in.",
+                )
+
+                return redirect(to="home")
+
+            except User.DoesNotExist:
+                messages.info(
+                    request=request,
+                    message=f"A user with the email address '{request.GET['email']}' does not exist."
+                )
+
+                return redirect(to="register")
+
+            except OneTimePassword.DoesNotExist:
+                messages.info(
+                    request=request,
+                    message=f"The One Time Password for the user '{request.GET['email']}' does not exist.",
+                )
+
+                return redirect(to="forgot-password")
+
+    else:
+        form = ChangePasswordForm()
+
     return render(
         request=request,
         template_name="accounts/change-password.html",
         context={
             "title": "Change Password",
+            "form": form,
         }
     )
 

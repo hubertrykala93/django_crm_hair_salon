@@ -1,5 +1,5 @@
 from django import forms
-from .models import User, Profile, ProfileImage
+from .models import User, Profile, ProfileImage, OneTimePassword
 from django.core.exceptions import ValidationError
 import re
 from django.contrib.auth.hashers import make_password
@@ -50,6 +50,19 @@ class AdminRegisterForm(forms.ModelForm):
             user.save()
 
         return user
+
+
+class AdminOneTimePasswordForm(forms.ModelForm):
+    class Meta:
+        model = OneTimePassword
+        fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super(AdminOneTimePasswordForm, self).__init__(*args, **kwargs)
+
+        self.fields["user"].help_text = "Select the user."
+        self.fields["user"].label = "User"
+        self.fields["user"].required = True
 
 
 class AdminProfileForm(forms.ModelForm):
@@ -258,6 +271,9 @@ class LoginForm(forms.Form):
 
 
 class PasswordResetForm(forms.Form):
+    mobile = forms.CharField(
+        required=False,
+    )
     email = forms.CharField(
         error_messages={
             "required": "Email is required.",
@@ -275,23 +291,150 @@ class PasswordResetForm(forms.Form):
         required=False,
     )
 
-    def clean_email(self):
+    def clean_mobile(self):
+        mobile = self.cleaned_data.get("mobile")
+
+        if "email" and "mobile" in self.data:
+            if not mobile:
+                raise ValidationError(
+                    message="Phone Number is required.",
+                )
+
+            if not re.compile(r"^\d{8,15}$").match(mobile):
+                raise ValidationError(
+                    message="Invalid phone number format. Please enter a valid number with the country code (e.g., 11234567890 for the USA).",
+                )
+
+        return mobile
+
+
+def clean_email(self):
+    email = self.cleaned_data.get("email")
+
+    if not email:
+        raise ValidationError(
+            message="Email is required.",
+        )
+
+    if len(email) > 255:
+        raise ValidationError(
+            message="The e-mail address cannot be longer than 255 characters.",
+        )
+
+    if not re.match(pattern=r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)",
+                    string=email):
+        raise ValidationError(
+            message="The e-mail address format is invalid.",
+        )
+
+    if not User.objects.filter(email=email).exists():
+        raise ValidationError(
+            message=f"A user with the email address '{email}' does not exist.",
+        )
+
+    if User.objects.filter(email=email).exists() and not User.objects.get(email=email).is_verified:
+        raise ValidationError(
+            message=f"Your account has not been verified yet. To reset the password, you must first verify your account.",
+        )
+
+    return email
+
+
+class OneTimePasswordForm(forms.Form):
+    email = forms.CharField(
+        required=False,
+    )
+    password = forms.CharField(
+        error_messages={
+            "required": "One Time Password is required.",
+        },
+        required=True,
+    )
+
+    def clean_password(self):
         email = self.cleaned_data.get("email")
+        password = self.cleaned_data.get("password")
 
-        if len(email) > 255:
-            raise ValidationError(
-                message="The e-mail address cannot be longer than 255 characters.",
-            )
+        try:
+            user = User.objects.get(email=email)
+            otp = OneTimePassword.objects.get(user=user)
 
-        if not re.match(pattern=r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)",
-                        string=email):
-            raise ValidationError(
-                message="The e-mail address format is invalid.",
-            )
-
-        if not User.objects.filter(email=email).exists():
+        except User.DoesNotExist:
             raise ValidationError(
                 message=f"A user with the email address '{email}' does not exist.",
             )
 
-        return email
+        except OneTimePassword.DoesNotExist:
+            raise ValidationError(
+                message=f"The One Time Password for the user '{email}' does not exist."
+            )
+
+        otp = OneTimePassword.objects.get(user=user).password
+
+        if otp != password:
+            raise ValidationError(
+                message=f"Incorrect One Time Password for the user '{email}'. Please try again.",
+            )
+
+        return password
+
+
+class ChangePasswordForm(forms.ModelForm):
+    password = forms.CharField(
+        error_messages={
+            "required": "Password is required.",
+        },
+        required=True,
+        widget=forms.PasswordInput
+    )
+    repassword = forms.CharField(
+        error_messages={
+            "required": "Confirm Password is required.",
+        },
+        widget=forms.PasswordInput,
+        required=False,
+    )
+
+    class Meta:
+        model = User
+        fields = [
+            "password",
+        ]
+
+    def clean_password(self):
+        password = self.cleaned_data.get("password")
+
+        if len(password) < 8:
+            raise ValidationError(
+                message="The password should consist of at least 8 characters.",
+            )
+
+        if len(password) > 255:
+            raise ValidationError(
+                message="The password cannot be longer than 255 characters.",
+            )
+
+        if not re.match(pattern="^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$", string=password):
+            raise ValidationError(
+                message="The password should contain at least one uppercase letter, one lowercase letter, one number, "
+                        "and one special character.",
+            )
+
+        return password
+
+    def clean_repassword(self):
+        password = self.cleaned_data.get("password")
+        repassword = self.cleaned_data.get("repassword")
+
+        if password is not None:
+            if not repassword:
+                raise ValidationError(
+                    message="Confirm Password is required.",
+                )
+
+            if repassword != password:
+                raise ValidationError(
+                    message="Confirm Password does not match.",
+                )
+
+        return repassword
