@@ -66,9 +66,19 @@ class AdminOneTimePasswordForm(forms.ModelForm):
 
 
 class AdminProfileForm(forms.ModelForm):
-    firstname = forms.CharField(help_text="Enter first name.", label="First Name", required=False)
-    lastname = forms.CharField(help_text="Enter last name.", label="Last Name", required=False)
+    firstname = forms.CharField(help_text="Enter first name.", label="First Name", required=True)
+    lastname = forms.CharField(help_text="Enter last name.", label="Last Name", required=True)
     dateofbirth = forms.DateField(help_text="Enter date of birth.", label="Date of Birth", required=False)
+    biography = forms.CharField(help_text="Enter biography.", label="Biography", required=False, widget=forms.Textarea)
+    phonenumber = forms.CharField(help_text="Enter phone number.", label="Phone Number", required=True)
+    country = forms.CharField(help_text="Enter country.", label="Country", required=True)
+    province = forms.CharField(help_text="Enter province.", label="Province", required=True)
+    city = forms.CharField(help_text="Enter city.", label="City", required=True)
+    street = forms.CharField(help_text="Enter street.", label="Street", required=True)
+    housenumber = forms.CharField(help_text="Enter house number.", label="House Number", required=True)
+    apartmentnumber = forms.CharField(help_text="Enter apartment number.", label="Apartment Number", required=False)
+    dateofemployment = forms.DateField(help_text="Enter date of employment (YYYY-MM-DD).", label="Date of Employment",
+                                       required=True)
 
     class Meta:
         model = Profile
@@ -78,13 +88,19 @@ class AdminProfileForm(forms.ModelForm):
         super(AdminProfileForm, self).__init__(*args, **kwargs)
 
         self.fields["user"].help_text = "Select the user."
-        self.fields["profile_image"].help_text = "Select the profile image."
+        self.fields["usertype"].help_text = "Select user type."
+        self.fields["employmentstatus"].help_text = "Select employment status."
+        self.fields["profileimage"].help_text = "Select the profile image."
 
         self.fields["user"].label = "User"
-        self.fields["profile_image"].label = "Profile Image"
+        self.fields["usertype"].label = "User Type"
+        self.fields["employmentstatus"].label = "Employment Status"
+        self.fields["profileimage"].label = "Profile Image"
 
         self.fields["user"].required = True
-        self.fields["profile_image"].required = False
+        self.fields["usertype"].required = True
+        self.fields["employmentstatus"].required = True
+        self.fields["profileimage"].required = False
 
 
 class AdminProfileImageForm(forms.ModelForm):

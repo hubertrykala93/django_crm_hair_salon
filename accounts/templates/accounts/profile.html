@@ -1,0 +1,123 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<main>
+    <div class="profile-container">
+        <div class="profile-header">
+            <div class="profile-image">
+                    <img src="" alt="">
+            </div>
+            <div class="profile-info">
+                <h1>First Name, Last Name</h1>
+                <p class="user-type">User Type</p>
+                <p class="status">
+                    Status: <span class="">Status</span>
+                </p>
+            </div>
+        </div>
+
+        <div class="account-settings">
+            <h2>Account Settings</h2>
+            <form method="post" class="settings-form" novalidate>
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">New Password:</label>
+                    <input type="password" id="password" name="password">
+                </div>
+
+                <div class="form-group">
+                    <label for="repassword">Confirm Password:</label>
+                    <input type="password" id="repassword" name="repassword">
+                </div>
+
+                <button type="submit" class="btn-submit">Update Account</button>
+            </form>
+        </div>
+
+        <div class="profile-details">
+            <h2>Profile Details</h2>
+            <form method="post" enctype="multipart/form-data" class="profile-form" novalidate>
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="firstname">First Name:</label>
+                    <input type="text" id="firstname" name="firstname">
+                </div>
+
+                <div class="form-group">
+                    <label for="lastname">Last Name:</label>
+                    <input type="text" id="lastname" name="lastname">
+                </div>
+
+                <div class="form-group">
+                    <label for="phonenumber">Phone Number:</label>
+                    <input type="text" id="phonenumber" name="phonenumber">
+                </div>
+
+                <div class="form-group">
+                    <label for="country">Country:</label>
+                    <input type="text" id="country" name="country">
+                </div>
+
+                <div class="form-group">
+                    <label for="province">Province:</label>
+                    <input type="text" id="province" name="province">
+                </div>
+
+                <div class="form-group">
+                    <label for="city">City:</label>
+                    <input type="text" id="city" name="city">
+                </div>
+
+                <div class="form-group">
+                    <label for="street">Street:</label>
+                    <input type="text" id="street" name="street">
+                </div>
+
+                <div class="form-group">
+                    <label for="housenumber">House Number:</label>
+                    <input type="text" id="housenumber" name="housenumber">
+                </div>
+
+                <div class="form-group">
+                    <label for="apartmentnumber">Apartment Number (Optional):</label>
+                    <input type="text" id="apartmentnumber" name="apartmentnumber">
+                </div>
+
+                <div class="form-group">
+                    <label for="biography">Biography:</label>
+                    <textarea id="biography" name="biography" rows="4"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="profileimage">Profile Image:</label>
+                    <input type="file" id="profileimage" name="profileimage">
+                </div>
+
+                <div class="form-group">
+                    <label for="dateofemployment">Date of Employment:</label>
+                    <input type="date" id="dateofemployment" name="dateofemployment">
+                </div>
+
+                <div class="form-group">
+                    <label for="employmentstatus">Employment Status:</label>
+                    <select id="employmentstatus" name="employmentstatus">
+                        <option value="Active">Active</option>
+                        <option value="On Leave">On Leave</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn-submit">Save Changes</button>
+            </form>
+        </div>
+    </div>
+</main>
+{% endblock %}

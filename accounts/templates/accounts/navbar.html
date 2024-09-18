@@ -1,7 +1,7 @@
 <nav>
     <ul>
         {% if user.is_authenticated %}
-        <li><a href="#">Profile</a></li>
+        <li><a href="{% url 'profile' %}" class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}">Profile</a></li>
         <li><a href="{% url 'logout' %}">Logout</a></li>
         {% else %}
         <li><a href="/" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">Login</a></li>

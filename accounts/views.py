@@ -12,7 +12,6 @@ from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from .tokens import token_generator
-from googlevoice import Voice
 
 
 @user_passes_test(test_func=lambda user: not user.is_authenticated, login_url="dashboard")
@@ -245,7 +244,7 @@ def forgot_password(request):
 
                 else:
                     pass
-                
+
                 return redirect(to=reverse(
                     viewname="confirm-password") + f"?method={request.GET['method']}&mobile={request.POST['mobile']}")
 
@@ -336,6 +335,16 @@ def change_password(request):
         context={
             "title": "Change Password",
             "form": form,
+        }
+    )
+
+
+def profile(request):
+    return render(
+        request=request,
+        template_name="accounts/profile.html",
+        context={
+            "title": "Profile",
         }
     )
 

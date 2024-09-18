@@ -89,9 +89,19 @@ class AdminProfile(admin.ModelAdmin):
         "user",
         "firstname",
         "lastname",
-        "profile_image",
-        "user_type",
+        "profileimage",
+        "usertype",
         "dateofbirth",
+        "phonenumber",
+        "country",
+        "province",
+        "city",
+        "street",
+        "housenumber",
+        "apartmentnumber",
+        "biography",
+        "dateofemployment",
+        "employmentstatus",
     ]
     form = AdminProfileForm
     fieldsets = (
@@ -103,25 +113,41 @@ class AdminProfile(admin.ModelAdmin):
             },
         ),
         (
+            "Uploading", {
+                "fields": [
+                    "profileimage",
+                ],
+            },
+        ),
+        (
             "Basic Information", {
                 "fields": [
                     "firstname",
                     "lastname",
+                    "biography",
                     "dateofbirth",
                 ],
             },
         ),
         (
-            "Role", {
+            "Contact Information", {
                 "fields": [
-                    "user_type",
+                    "phonenumber",
+                    "country",
+                    "province",
+                    "city",
+                    "street",
+                    "housenumber",
+                    "apartmentnumber",
                 ],
             },
         ),
         (
-            "Uploading", {
+            "Company Information", {
                 "fields": [
-                    "profile_image",
+                    "usertype",
+                    "dateofemployment",
+                    "employmentstatus",
                 ],
             },
         ),

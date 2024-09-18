@@ -174,13 +174,31 @@ class Profile(models.Model):
     user = models.OneToOneField(to=User, on_delete=models.CASCADE)
     firstname = models.CharField(max_length=200)
     lastname = models.CharField(max_length=200)
-    profile_image = models.OneToOneField(to=ProfileImage, on_delete=models.SET_NULL, null=True)
-    user_type = models.CharField(
+    profileimage = models.OneToOneField(to=ProfileImage, on_delete=models.SET_NULL, null=True)
+    usertype = models.CharField(
         default="Not Defined",
         max_length=200,
         choices=USER_TYPES,
     )
     dateofbirth = models.DateField(null=True, blank=True)
+    phonenumber = models.CharField(max_length=20, null=True)
+    country = models.CharField(max_length=100, null=True)
+    province = models.CharField(max_length=100, null=True)
+    city = models.CharField(max_length=100, null=True)
+    street = models.CharField(max_length=100, null=True)
+    housenumber = models.CharField(max_length=10, null=True)
+    apartmentnumber = models.CharField(max_length=10, null=True, blank=True)
+    biography = models.TextField(max_length=10000, null=True)
+    dateofemployment = models.DateField(null=True, blank=True)
+    employmentstatus = models.CharField(
+        max_length=50,
+        choices=(
+            ("Active", "Active"),
+            ("On Leave", "On Leave"),
+            ("Inactive", "Inactive"),
+        ),
+        default="Active",
+    )
 
     class Meta:
         verbose_name = "Profile"
