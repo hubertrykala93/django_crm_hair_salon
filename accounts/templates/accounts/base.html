@@ -13,7 +13,7 @@
 </head>
 <body>
     <header>
-        <div class="container">
+        <div>
             <div class="logo">
                 <a href="/">
                     <img src="/media/home/logo.png" alt="Elegance Hair Studio Logo">
@@ -23,11 +23,11 @@
         </div>
     </header>
 
-    <main class="container">
+    <main>
         {% if messages %}
-        <div class="messages">
+        <div>
             {% for message in messages %}
-            <div class="message {{ message.tags }}">
+            <div>
                 {{ message }}
             </div>
             {% endfor %}
@@ -38,16 +38,7 @@
         {% endblock %}
     </main>
 
-    <footer>
-        <div class="container">
-            <p>&copy; 2024 Elegance Hair Studio. All rights reserved.</p>
-            <p>
-                <a href="https://www.facebook.com" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                <a href="https://www.twitter.com" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                <a href="https://www.instagram.com" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-            </p>
-        </div>
-    </footer>
+    {% include 'accounts/footer.html' %}
 
     {% block extra_scripts %}
     {% endblock %}

@@ -3,43 +3,43 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-<div class="register-container">
+<div>
     <h2>Login to Your Account</h2>
-    <form method="post" class="register-form" novalidate>
+    <form method="post"novalidate>
         {% csrf_token %}
 
-        <div class="form-group">
+        <div>
             <label for="email">Email:</label>
             <input type="email" id="email" name="email" placeholder="E-mail Address" {% if form.email.value %}value="{{ form.email.value }}" {% endif %}>
             {% if form.email.errors %}
-            <ul class="errorlist">
+            <ul>
                 {% for error in form.email.errors %}
-                <li class="error">{{ error }}</li>
+                <li>{{ error }}</li>
                 {% endfor %}
             </ul>
             {% endif %}
         </div>
 
-        <div class="form-group">
+        <div>
             <label for="password">Password:</label>
             <input type="password" id="password" name="password" placeholder="Password" {% if form.password.value %}value="{{ form.password.value }}" {% endif %}>
             {% if form.password.errors %}
-            <ul class="errorlist">
+            <ul>
                 {% for error in form.password.errors %}
-                <li class="error">{{ error }}</li>
+                <li>{{ error }}</li>
                 {% endfor %}
             </ul>
             {% endif %}
         </div>
 
-        <div class="form-group">
+        <div>
             <input type="checkbox" id="remember_me" name="remember" {% if form.remember.value %}checked STARA{% endif %}>
             <label for="remember_me">Remember me</label>
         </div>
 
         {% if form.non_field_errors %}
-        <div class="form-errors">
-            <ul class="errorlist">
+        <div>
+            <ul>
                 {% for error in form.non_field_errors %}
                 <li>{{ error }}</li>
                 {% endfor %}
@@ -47,11 +47,11 @@
         </div>
         {% endif %}
 
-        <button type="submit" class="btn-submit">Login</button>
+        <button type="submit">Login</button>
     </form>
 
-    <p class="login-redirect">Don't have an account? <a href="{% url 'register' %}">Register here</a>.</p>
+    <p>Don't have an account? <a href="{% url 'register' %}">Register here</a>.</p>
 
-    <p class="login-redirect"><a href="{% url 'choose-method' %}">Forgot your password?</a></p>
+    <p><a href="{% url 'choose-method' %}">Forgot your password?</a></p>
 </div>
 {% endblock %}

@@ -4,46 +4,46 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-    <div class="register-container">
+    <div>
         <h2>Create an Account</h2>
-        <form method="post" class="register-form" novalidate>
+        <form method="post" novalidate>
             {% csrf_token %}
 
-            <div class="form-group">
+            <div>
                 <label for="email">Email:</label>
                 <input type="email" id="email" name="email" placeholder="E-mail Address" {% if form.email.value %}value="{{ form.email.value }}"{% endif %}>
                 {% if form.email.errors %}
-                <ul class="errorlist">
+                <ul>
                 {% for error in form.email.errors %}
-                <li class="error">{{ error }}</li>
+                <li>{{ error }}</li>
                 {% endfor %}
                 </ul>
                 {% endif %}
             </div>
-            <div class="form-group">
+            <div>
                 <label for="password">Password:</label>
                 <input type="password" id="password" name="password" placeholder="Password" {% if form.password.value %}value="{{ form.password.value }}"{% endif %}>
                 {% if form.password.errors %}
-                <ul class="errorlist">
+                <ul>
                 {% for error in form.password.errors %}
-                <li class="error">{{ error }}</li>
+                <li>{{ error }}</li>
                 {% endfor %}
                 </ul>
                 {% endif %}
             </div>
-            <div class="form-group">
+            <div>
                 <label for="repassword">Confirm Password:</label>
                 <input type="password" id="repassword" name="repassword" placeholder="Confirm Password" {% if form.repassword.value %}value="{{ form.repassword.value }}"{% endif %}>
                 {% if form.repassword.errors %}
-                <ul class="errorlist">
+                <ul>
                 {% for error in form.repassword.errors %}
-                <li class="error">{{ error }}</li>
+                <li>{{ error }}</li>
                 {% endfor %}
                 </ul>
                 {% endif %}
             </div>
-            <button type="submit" class="btn-submit">Register</button>
+            <button type="submit">Register</button>
         </form>
-        <p class="login-redirect">Already have an account? <a href="/">Login here</a>.</p>
+        <p>Already have an account? <a href="/">Login here</a>.</p>
     </div>
 {% endblock %}
