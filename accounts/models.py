@@ -73,8 +73,17 @@ class User(AbstractBaseUser, PermissionsMixin):
             profile, created = Profile.objects.get_or_create(user=self)
 
             if created:
+                basic_info = ProfileBasicInformation.objects.create()
+                contact_info = ProfileContactInformation.objects.create()
+                employment_info = ProfileEmploymentInformation.objects.create()
+
                 profile_image = ProfileImage.objects.create()
-                profile.profile_image = profile_image
+                basic_info.profileimage = profile_image
+                basic_info.save()
+
+                profile.basicinformation = basic_info
+                profile.contactinformation = contact_info
+                profile.employmentinformation = employment_info
 
                 profile.save()
 
@@ -161,26 +170,22 @@ class ProfileImage(models.Model):
         self.format = image.format
 
 
-class Profile(models.Model):
-    USER_TYPES = (
-        ("Owner", "Owner"),
-        ("Manager", "Manager"),
-        ("Receptionist", "Receptionist"),
-        ("Hairstylist", "Hairstylist"),
-        ("Assistant", "Assistant"),
-        ("Barber", "Barber"),
-        ("Not Defined", "Not Defined"),
-    )
-    user = models.OneToOneField(to=User, on_delete=models.CASCADE)
+class ProfileBasicInformation(models.Model):
     firstname = models.CharField(max_length=200)
     lastname = models.CharField(max_length=200)
-    profileimage = models.OneToOneField(to=ProfileImage, on_delete=models.SET_NULL, null=True)
-    usertype = models.CharField(
-        default="Not Defined",
-        max_length=200,
-        choices=USER_TYPES,
-    )
+    profileimage = models.OneToOneField(to=ProfileImage, on_delete=models.CASCADE, null=True)
+    biography = models.TextField(max_length=10000, null=True)
     dateofbirth = models.DateField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Profile Basic Information"
+        verbose_name_plural = "Profile Basic Information"
+
+    def __str__(self):
+        return str(self.pk)
+
+
+class ProfileContactInformation(models.Model):
     phonenumber = models.CharField(max_length=20, null=True)
     country = models.CharField(max_length=100, null=True)
     province = models.CharField(max_length=100, null=True)
@@ -188,7 +193,29 @@ class Profile(models.Model):
     street = models.CharField(max_length=100, null=True)
     housenumber = models.CharField(max_length=10, null=True)
     apartmentnumber = models.CharField(max_length=10, null=True, blank=True)
-    biography = models.TextField(max_length=10000, null=True)
+
+    class Meta:
+        verbose_name = "Profile Contact Information"
+        verbose_name_plural = "Profile Contact Information"
+
+    def __str__(self):
+        return str(self.pk)
+
+
+class ProfileEmploymentInformation(models.Model):
+    usertype = models.CharField(
+        default="Not Defined",
+        max_length=200,
+        choices=(
+            ("Owner", "Owner"),
+            ("Manager", "Manager"),
+            ("Receptionist", "Receptionist"),
+            ("Hairstylist", "Hairstylist"),
+            ("Assistant", "Assistant"),
+            ("Barber", "Barber"),
+            ("Not Defined", "Not Defined"),
+        ),
+    )
     dateofemployment = models.DateField(null=True, blank=True)
     employmentstatus = models.CharField(
         max_length=50,
@@ -199,6 +226,20 @@ class Profile(models.Model):
         ),
         default="Active",
     )
+
+    class Meta:
+        verbose_name = "Profile Employment Information"
+        verbose_name_plural = "Profile Employment Information"
+
+    def __str__(self):
+        return str(self.pk)
+
+
+class Profile(models.Model):
+    user = models.OneToOneField(to=User, on_delete=models.CASCADE)
+    basicinformation = models.OneToOneField(to=ProfileBasicInformation, on_delete=models.CASCADE, null=True)
+    contactinformation = models.OneToOneField(to=ProfileContactInformation, on_delete=models.CASCADE, null=True)
+    employmentinformation = models.OneToOneField(to=ProfileEmploymentInformation, on_delete=models.CASCADE, null=True)
 
     class Meta:
         verbose_name = "Profile"
@@ -219,14 +260,27 @@ def delete_profile(sender, instance, **kwargs):
     if instance.profile:
         profile = instance.profile
 
-        if hasattr(profile, "profile_image"):
-            if profile.profile_image and profile.profile_image.image:
-                image_path = profile.profile_image.image.path
+        if hasattr(profile, "basicinformation"):
+            if hasattr(profile.basicinformation, "profileimage"):
+                if profile.basicinformation.profileimage and profile.basicinformation.profileimage.image:
+                    image_path = profile.basicinformation.profileimage.image.path
 
-                if "default_profile_image.png" not in image_path:
-                    if os.path.isfile(path=image_path):
-                        os.remove(path=image_path)
+                    if "default_profile_image.png" not in image_path:
+                        if os.path.isfile(path=image_path):
+                            os.remove(path=image_path)
 
-                profile.profile_image.delete()
+                    profile.basicinformation.profileimage.delete()
+
+            if hasattr(profile, "basicinformation"):
+                if profile.basicinformation:
+                    profile.basicinformation.delete()
+
+            if hasattr(profile, "contactinformation"):
+                if profile.contactinformation:
+                    profile.contactinformation.delete()
+
+            if hasattr(profile, "employmentinformation"):
+                if profile.employmentinformation:
+                    profile.employmentinformation.delete()
 
         profile.delete()

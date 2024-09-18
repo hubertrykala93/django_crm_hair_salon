@@ -3,10 +3,6 @@
         {% if user.is_authenticated %}
         <li><a href="{% url 'profile' %}" class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}">Profile</a></li>
         <li><a href="{% url 'logout' %}">Logout</a></li>
-        {% else %}
-        <li><a href="/" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">Login</a></li>
-        <li><a href="{% url 'register' %}"
-               class="{% if request.resolver_match.url_name == 'register' %}active{% endif %}">Register</a></li>
         {% endif %}
     </ul>
 </nav>

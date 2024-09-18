@@ -8,14 +8,27 @@
     <div class="profile-container">
         <div class="profile-header">
             <div class="profile-image">
-                    <img src="" alt="">
+                <img src="{{ request.user.profile.basicinformation.profileimage.image.url }}" alt="{{ request.user.profile.basicinformation.profileimage.alt }}">
+
+                <form method="post" enctype="multipart/form-data" class="upload-form" novalidate>
+                    {% csrf_token %}
+                    <input type="file" id="profileimage" name="profileimage">
+                    <button name="update-profile-image" type="submit" class="btn-upload">Upload</button>
+                </form>
             </div>
             <div class="profile-info">
-                <h1>First Name, Last Name</h1>
-                <p class="user-type">User Type</p>
+                {% if request.user.profile.basicinformation.firstname and request.user.profile.basicinformation.lastname %}
+                <h1>{{ request.user.profile.basicinformation.firstname }} {{ request.user.profile.basicinformation.lastname }}</h1>
+                {% else %}
+                <h1>{{ request.user.username }}</h1>
+                {% endif %}
+                <p class="user-type">{{ request.user.profile.employmentinformation.usertype }}</p>
                 <p class="status">
-                    Status: <span class="">Status</span>
+                    Employment Status: <span>{{ request.user.profile.employmentinformation.employmentstatus }}</span>
                 </p>
+                <div class="employment-info">
+                    <p>Date of Employment: <span>{{ request.user.profile.employmentinformation.dateofemployment|date:"Y-m-d" }}</span></p>
+                </div>
             </div>
         </div>
 
@@ -25,7 +38,7 @@
                 {% csrf_token %}
                 <div class="form-group">
                     <label for="email">Email:</label>
-                    <input type="email" id="email" name="email">
+                    <input type="email" id="email" name="email" value="{{ request.user.email }}">
                 </div>
 
                 <div class="form-group">
@@ -38,84 +51,76 @@
                     <input type="password" id="repassword" name="repassword">
                 </div>
 
-                <button type="submit" class="btn-submit">Update Account</button>
+                <button name="update-account" type="submit" class="btn-submit">Update Account</button>
             </form>
         </div>
 
+        <h2>Profile Details</h2>
         <div class="profile-details">
-            <h2>Profile Details</h2>
             <form method="post" enctype="multipart/form-data" class="profile-form" novalidate>
                 {% csrf_token %}
-                <div class="form-group">
-                    <label for="firstname">First Name:</label>
-                    <input type="text" id="firstname" name="firstname">
+
+                <!-- Basic Information Section -->
+                <div class="info-section">
+                    <h3>Basic Information</h3>
+
+                    <div class="form-group">
+                        <label for="firstname">First Name:</label>
+                        <input type="text" id="firstname" name="firstname" {% if request.user.profile.basicinformation.firstname %}value="{{ request.user.profile.basicinformation.firstname }}"{% endif %}>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lastname">Last Name:</label>
+                        <input type="text" id="lastname" name="lastname" {% if request.user.profile.basicinformation.lastname %}value="{{ request.user.profile.basicinformation.lastname }}"{% endif %}>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="biography">Biography:</label>
+                        <textarea id="biography" name="biography" rows="4">{% if request.user.profile.basicinformation.biography %}{{ request.user.profile.basicinformation.biography }}{% endif %}</textarea>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="lastname">Last Name:</label>
-                    <input type="text" id="lastname" name="lastname">
+                <!-- Contact Information Section -->
+                <div class="info-section">
+                    <h3>Contact Information</h3>
+
+                    <div class="form-group">
+                        <label for="phonenumber">Phone Number:</label>
+                        <input type="text" id="phonenumber" name="phonenumber" {% if request.user.profile.contactinformation.phonenumber %}value="{{ request.user.profile.contactinformation.phonenumber }}"{% endif %}>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="country">Country:</label>
+                        <input type="text" id="country" name="country" {% if request.user.profile.contactinformation.country %}value="{{ request.user.profile.contactinformation.country }}"{% endif %}>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="province">Province:</label>
+                        <input type="text" id="province" name="province" {% if request.user.profile.contactinformation.province %}value="{{ request.user.profile.contactinformation.province }}"{% endif %}>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="city">City:</label>
+                        <input type="text" id="city" name="city" {% if request.user.profile.contactinformation.city %}value="{{ request.user.profile.contactinformation.city }}"{% endif %}>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="street">Street:</label>
+                        <input type="text" id="street" name="street" {% if request.user.profile.contactinformation.street %}value="{{ request.user.profile.contactinformation.street }}"{% endif %}>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="housenumber">House Number:</label>
+                        <input type="text" id="housenumber" name="housenumber" {% if request.user.profile.contactinformation.housenumber %}value="{{ request.user.profile.contactinformation.housenumber }}"{% endif %}>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="apartmentnumber">Apartment Number (Optional):</label>
+                        <input type="text" id="apartmentnumber" name="apartmentnumber" {% if request.user.profile.contactinformation.apartmentnumber %}value="{{ request.user.profile.contactinformation.apartmentnumber }}"{% endif %}>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="phonenumber">Phone Number:</label>
-                    <input type="text" id="phonenumber" name="phonenumber">
-                </div>
-
-                <div class="form-group">
-                    <label for="country">Country:</label>
-                    <input type="text" id="country" name="country">
-                </div>
-
-                <div class="form-group">
-                    <label for="province">Province:</label>
-                    <input type="text" id="province" name="province">
-                </div>
-
-                <div class="form-group">
-                    <label for="city">City:</label>
-                    <input type="text" id="city" name="city">
-                </div>
-
-                <div class="form-group">
-                    <label for="street">Street:</label>
-                    <input type="text" id="street" name="street">
-                </div>
-
-                <div class="form-group">
-                    <label for="housenumber">House Number:</label>
-                    <input type="text" id="housenumber" name="housenumber">
-                </div>
-
-                <div class="form-group">
-                    <label for="apartmentnumber">Apartment Number (Optional):</label>
-                    <input type="text" id="apartmentnumber" name="apartmentnumber">
-                </div>
-
-                <div class="form-group">
-                    <label for="biography">Biography:</label>
-                    <textarea id="biography" name="biography" rows="4"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="profileimage">Profile Image:</label>
-                    <input type="file" id="profileimage" name="profileimage">
-                </div>
-
-                <div class="form-group">
-                    <label for="dateofemployment">Date of Employment:</label>
-                    <input type="date" id="dateofemployment" name="dateofemployment">
-                </div>
-
-                <div class="form-group">
-                    <label for="employmentstatus">Employment Status:</label>
-                    <select id="employmentstatus" name="employmentstatus">
-                        <option value="Active">Active</option>
-                        <option value="On Leave">On Leave</option>
-                        <option value="Inactive">Inactive</option>
-                    </select>
-                </div>
-
-                <button type="submit" class="btn-submit">Save Changes</button>
+                <button name="update-profile" type="submit" class="btn-submit">Save Changes</button>
             </form>
         </div>
     </div>

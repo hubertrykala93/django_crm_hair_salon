@@ -340,6 +340,20 @@ def change_password(request):
 
 
 def profile(request):
+    if request.method == "POST":
+        print("POST Method.")
+        if "update-profile-image" in request.POST:
+            print("Update Profile Image.")
+
+        if "update-account" in request.POST:
+            print("Update Account.")
+
+        if "update-profile" in request.POST:
+            print("Update Profile.")
+
+    else:
+        print("GET Method.")
+
     return render(
         request=request,
         template_name="accounts/profile.html",

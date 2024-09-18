@@ -1,7 +1,9 @@
 from django.contrib import admin
 from django.contrib.auth.models import Group
-from .models import User, Profile, ProfileImage, OneTimePassword
-from .forms import AdminRegisterForm, AdminProfileForm, AdminProfileImageForm, AdminOneTimePasswordForm
+from .models import User, Profile, ProfileImage, OneTimePassword, ProfileBasicInformation, ProfileContactInformation, \
+    ProfileEmploymentInformation
+from .forms import AdminRegisterForm, AdminProfileForm, AdminProfileImageForm, AdminOneTimePasswordForm, \
+    AdminProfileBasicInformationForm, AdminProfileContactInformationForm, AdminProfileEmploymentInformationForm
 from django.contrib.sessions.models import Session
 
 admin.site.unregister(Group)
@@ -82,43 +84,18 @@ class AdminOneTimePassword(admin.ModelAdmin):
     formatted_created_at.short_description = "Created At"
 
 
-@admin.register(Profile)
-class AdminProfile(admin.ModelAdmin):
+@admin.register(ProfileBasicInformation)
+class AdminProfileBasicInformation(admin.ModelAdmin):
     list_display = [
         "id",
-        "user",
-        "firstname",
-        "lastname",
-        "profileimage",
-        "usertype",
-        "dateofbirth",
-        "phonenumber",
-        "country",
-        "province",
-        "city",
-        "street",
-        "housenumber",
-        "apartmentnumber",
+        "get_firstname",
+        "get_lastname",
         "biography",
-        "dateofemployment",
-        "employmentstatus",
+        "formatted_dateofbirth",
+        "formatted_profile_image",
     ]
-    form = AdminProfileForm
+    form = AdminProfileBasicInformationForm
     fieldsets = (
-        (
-            "Related User", {
-                "fields": [
-                    "user",
-                ],
-            },
-        ),
-        (
-            "Uploading", {
-                "fields": [
-                    "profileimage",
-                ],
-            },
-        ),
         (
             "Basic Information", {
                 "fields": [
@@ -129,6 +106,54 @@ class AdminProfile(admin.ModelAdmin):
                 ],
             },
         ),
+        (
+            "Uploading", {
+                "fields": [
+                    "profileimage",
+                ],
+            },
+        ),
+    )
+
+    def get_firstname(self, obj):
+        if obj.firstname:
+            return obj.firstname
+
+    get_firstname.short_description = "First Name"
+
+    def get_lastname(self, obj):
+        if obj.lastname:
+            return obj.lastname
+
+    get_lastname.short_description = "Last Name"
+
+    def formatted_dateofbirth(self, obj):
+        if obj.dateofbirth:
+            return obj.dateofbirth.strftime("%Y-%m-%d")
+
+    formatted_dateofbirth.short_description = "Date Of Birth"
+
+    def formatted_profile_image(self, obj):
+        if obj.profileimage:
+            return obj.profileimage
+
+    formatted_profile_image.short_description = "Profile Image"
+
+
+@admin.register(ProfileContactInformation)
+class AdminProfileContactInformation(admin.ModelAdmin):
+    list_display = [
+        "id",
+        "get_phone_number",
+        "country",
+        "province",
+        "city",
+        "street",
+        "get_house_number",
+        "get_apartment_number",
+    ]
+    form = AdminProfileContactInformationForm
+    fieldsets = (
         (
             "Contact Information", {
                 "fields": [
@@ -142,8 +167,39 @@ class AdminProfile(admin.ModelAdmin):
                 ],
             },
         ),
+    )
+
+    def get_phone_number(self, obj):
+        if obj.phonenumber:
+            return obj.phonenumber
+
+    get_phone_number.short_description = "Phone Number"
+
+    def get_house_number(self, obj):
+        if obj.housenumber:
+            return obj.housenumber
+
+    get_house_number.short_description = "House Number"
+
+    def get_apartment_number(self, obj):
+        if obj.apartmentnumber:
+            return obj.apartmentnumber
+
+    get_apartment_number.short_description = "Apartment Number"
+
+
+@admin.register(ProfileEmploymentInformation)
+class AdminProfileEmploymentInformation(admin.ModelAdmin):
+    list_display = [
+        "id",
+        "get_user_type",
+        "get_date_of_employment",
+        "get_employment_status",
+    ]
+    form = AdminProfileEmploymentInformationForm
+    fieldsets = (
         (
-            "Company Information", {
+            "Employment Information", {
                 "fields": [
                     "usertype",
                     "dateofemployment",
@@ -153,11 +209,90 @@ class AdminProfile(admin.ModelAdmin):
         ),
     )
 
-    def formatted_dateofbirth(self, obj):
-        if obj.dateofbirth:
-            return obj.dateofbirth.strftime("%Y-%m-%d")
+    def get_user_type(self, obj):
+        if obj.usertype:
+            return obj.usertype
 
-    formatted_dateofbirth.short_description = "Date Of Birth"
+    get_user_type.short_description = "User Type"
+
+    def get_date_of_employment(self, obj):
+        if obj.dateofemployment:
+            return obj.dateofemployment.strftime("%Y-%m-%d")
+
+    get_date_of_employment.short_description = "Date of Employment"
+
+    def get_employment_status(self, obj):
+        if obj.employmentstatus:
+            return obj.employmentstatus
+
+    get_employment_status.short_description = "Employment Status"
+
+
+@admin.register(Profile)
+class AdminProfile(admin.ModelAdmin):
+    list_display = [
+        "id",
+        "user",
+        "formatted_basicinformation",
+        "formatted_contactinformation",
+        "formatted_employmentinformation",
+        "get_profile_image",
+    ]
+    form = AdminProfileForm
+    fieldsets = (
+        (
+            "Related User", {
+                "fields": [
+                    "user",
+                ],
+            },
+        ),
+        (
+            "Basic Information", {
+                "fields": [
+                    "basicinformation",
+                ],
+            },
+        ),
+        (
+            "Contact Information", {
+                "fields": [
+                    "contactinformation",
+                ],
+            },
+        ),
+        (
+            "Employment Information", {
+                "fields": [
+                    "employmentinformation",
+                ],
+            },
+        ),
+    )
+
+    def formatted_basicinformation(self, obj):
+        if obj.basicinformation:
+            return obj.basicinformation
+
+    formatted_basicinformation.short_description = "Basic Information"
+
+    def formatted_contactinformation(self, obj):
+        if obj.contactinformation:
+            return obj.contactinformation
+
+    formatted_contactinformation.short_description = "Contact Information"
+
+    def formatted_employmentinformation(self, obj):
+        if obj.employmentinformation:
+            return obj.employmentinformation
+
+    formatted_employmentinformation.short_description = "Employment Information"
+
+    def get_profile_image(self, obj):
+        if obj.basicinformation.profileimage:
+            return obj.basicinformation.profileimage
+
+    get_profile_image.short_description = "Profile Image"
 
 
 @admin.register(ProfileImage)
