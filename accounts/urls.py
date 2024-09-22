@@ -10,5 +10,6 @@ urlpatterns = [
     path(route="confirm-password", view=accounts_views.confirm_one_time_password, name="confirm-password"),
     path(route="change-password", view=accounts_views.change_password, name="change-password"),
     path(route="profile", view=accounts_views.profile, name="profile"),
+    path(route="update-profile-form", view=accounts_views.update_profile_form, name="update-profile-form"),
     path(route="logout", view=accounts_views.log_out, name="logout"),
 ]

@@ -4,6 +4,8 @@ from .models import User, Profile, ProfileImage, OneTimePassword, ProfileBasicIn
 from django.core.exceptions import ValidationError
 import re
 from django.contrib.auth.hashers import make_password
+from PIL import Image
+from datetime import date, datetime
 
 
 class AdminRegisterForm(forms.ModelForm):
@@ -278,19 +280,6 @@ class LoginForm(forms.Form):
         required=False,
     )
 
-    def clean(self):
-        email = self.cleaned_data.get("email")
-        password = self.cleaned_data.get("password")
-
-        if email and password:
-            user = User.objects.get(email=email)
-
-            if not user.is_verified:
-                self.add_error(
-                    field=None,
-                    error="Your account has not been activated yet. Please activate your account to log in.",
-                )
-
     def clean_email(self):
         email = self.cleaned_data.get("email")
 
@@ -495,3 +484,336 @@ class ChangePasswordForm(forms.ModelForm):
                 )
 
         return repassword
+
+
+class UpdateProfileImageForm(forms.Form):
+    profileimage = forms.ImageField(
+        required=False,
+    )
+
+    def clean_profileimage(self):
+        profileimage = self.cleaned_data.get("profileimage")
+        allowed_extensions = ["jpg", "jpeg", "png", "webp"]
+
+        if profileimage:
+            if profileimage.name.split(".")[-1] not in allowed_extensions:
+                raise ValidationError(
+                    message="Invalid file format, allowed formats are 'jpg', 'jpeg', 'png', 'webp'.",
+                )
+
+            if profileimage.size > 1000000:
+                raise ValidationError(
+                    message="File size too large, the maximum allowed size is 1MB.",
+                )
+
+            try:
+                img = Image.open(fp=profileimage)
+                img.verify()
+
+            except(IOError, SyntaxError):
+                raise ValidationError(
+                    message="The file is not a valid image.",
+                )
+
+        return profileimage
+
+
+class UpdateUserForm(forms.Form):
+    email = forms.CharField(
+        error_messages={
+            "required": "Email is required.",
+        },
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput,
+        required=False
+    )
+    repassword = forms.CharField(
+        widget=forms.PasswordInput,
+        required=False
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.instance = kwargs.pop("instance", None)
+        super(UpdateUserForm, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        password = self.cleaned_data.get("password")
+        repassword = self.cleaned_data.get("repassword")
+
+        if repassword and not password:
+            self.add_error(
+                field=None,
+                error="To make changes, you must also provide the password."
+            )
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+
+        if len(email) > 255:
+            raise ValidationError(
+                message="The e-mail address cannot be longer than 255 characters.",
+            )
+
+        if not re.match(pattern=r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)",
+                        string=email):
+            raise ValidationError(
+                message="The e-mail address format is invalid.",
+            )
+
+        if self.instance.email != email:
+            if User.objects.filter(email=email).exists():
+                raise ValidationError(
+                    message=f"The user with the e-mail address '{email}' already exists.",
+                )
+
+        return email
+
+    def clean_password(self):
+        password = self.cleaned_data.get("password")
+
+        if password:
+            if len(password) < 8:
+                raise ValidationError(
+                    message="The password should consist of at least 8 characters.",
+                )
+
+            if len(password) > 255:
+                raise ValidationError(
+                    message="The password cannot be longer than 255 characters.",
+                )
+
+            if not re.match(pattern="^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$", string=password):
+                raise ValidationError(
+                    message="The password should contain at least one uppercase letter, one lowercase letter, one number, "
+                            "and one special character.",
+                )
+
+        return password
+
+    def clean_repassword(self):
+        password = self.cleaned_data.get("password")
+        repassword = self.cleaned_data.get("repassword")
+
+        if password:
+            if not repassword:
+                raise ValidationError(
+                    message="Confirm Password is required.",
+                )
+
+            if repassword != password:
+                raise ValidationError(
+                    message="Confirm Password does not match.",
+                )
+
+        return repassword
+
+
+class UpdateProfileForm(forms.Form):
+    firstname = forms.CharField(
+        error_messages={
+            "required": "Firstname is required.",
+        },
+    )
+    lastname = forms.CharField(
+        error_messages={
+            "required": "Lastname is required.",
+        },
+    )
+    biography = forms.CharField(
+        required=False,
+    )
+    dateofbirth = forms.CharField(
+        error_messages={
+            "required": "Date of Birth is required.",
+        }
+    )
+    phonenumber = forms.CharField(
+        error_messages={
+            "required": "Phone Number is required.",
+        }
+    )
+    country = forms.CharField(
+        error_messages={
+            "required": "Country is required.",
+        }
+    )
+    province = forms.CharField(
+        error_messages={
+            "required": "Province is required.",
+        }
+    )
+    city = forms.CharField(
+        error_messages={
+            "required": "City is required.",
+        }
+    )
+    street = forms.CharField(
+        error_messages={
+            "required": "Street is required.",
+        }
+    )
+    housenumber = forms.CharField(
+        error_messages={
+            "required": "House Number is required.",
+        }
+    )
+    apartmentnumber = forms.CharField(
+        required=False,
+    )
+
+    def clean_firstname(self):
+        firstname = self.cleaned_data.get("firstname")
+
+        if len(firstname) < 2:
+            raise ValidationError(
+                message="The firstname should contain at least 2 characters.",
+            )
+
+        if len(firstname) > 50:
+            raise ValidationError(
+                message="The firstname should contain a maximum of 50 characters.",
+            )
+
+        if not firstname.isalpha():
+            raise ValidationError(
+                message="The firstname should consist of letters only.",
+            )
+
+        return firstname
+
+    def clean_lastname(self):
+        lastname = self.cleaned_data.get("lastname")
+
+        if len(lastname) < 2:
+            raise ValidationError(
+                message="The lastname should contain at least 2 characters."
+            )
+
+        if len(lastname) > 100:
+            raise ValidationError(
+                message="The lastname should contain a maximum of 100 characters.",
+            )
+
+        if not lastname.isalpha():
+            raise ValidationError(
+                message="The lastname should consist of letters only.",
+            )
+
+        return lastname
+
+    def clean_dateofbirth(self):
+        dateofbirth = self.cleaned_data.get("dateofbirth")
+
+        try:
+            date_object = datetime.strptime(dateofbirth, "%Y-%m-%d").date()
+
+        except ValueError:
+            raise ValidationError(
+                message="Date must be in the format YYYY-MM-DD.",
+            )
+
+        if date_object >= date.today():
+            raise ValidationError(
+                message="The date of birth cannot be greater than or equal to the current date.",
+            )
+
+        if not re.match(pattern="^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$", string=dateofbirth):
+            raise ValidationError(
+                message="Date must be in the format YYYY-MM-DD.",
+            )
+
+        return dateofbirth
+
+    def clean_biography(self):
+        biography = self.cleaned_data.get("biography")
+
+        if len(biography) < 10:
+            raise ValidationError(
+                message="The biography should contain at least 10 characters.",
+            )
+
+        if len(biography) > 200:
+            raise ValidationError(
+                message="The biography should contain a maximum of 200 characters.",
+            )
+
+        return biography
+
+    def clean_phonenumber(self):
+        phonenumber = self.cleaned_data.get("phonenumber")
+
+        if not re.match(pattern="^\+?\d{0,3}?[-. (]?\d{3}[-. )]?\d{3}[-. ]?\d{3}$", string=phonenumber):
+            raise ValidationError(
+                message="Invalid phone number format.",
+            )
+
+        return phonenumber
+
+    def clean_country(self):
+        country = self.cleaned_data.get("country")
+
+        if len(country) < 4:
+            raise ValidationError(
+                message="The country should contain at least 4 characters.",
+            )
+
+        if len(country) > 56:
+            raise ValidationError(
+                message="The country should contain a maximum of 56 characters.",
+            )
+
+    def clean_province(self):
+        province = self.cleaned_data.get("province")
+
+        if len(province) < 3:
+            raise ValidationError(
+                message="The province should contain at least 3 characters.",
+            )
+
+        if len(province) > 23:
+            raise ValidationError(
+                message="The province should contain a maximum of 23 characters.",
+            )
+
+        return province
+
+    def clean_city(self):
+        city = self.cleaned_data.get("city")
+
+        if len(city) > 85:
+            raise ValidationError(
+                message="The city should contain a maximum of 85 characters.",
+            )
+
+        return city
+
+    def clean_street(self):
+        street = self.cleaned_data.get("street")
+
+        if len(street) > 58:
+            raise ValidationError(
+                message="The city should contain a maximum of 58 characters.",
+            )
+
+        return street
+
+    def clean_housenumber(self):
+        housenumber = self.cleaned_data.get("housenumber")
+
+        if len(housenumber) > 10:
+            raise ValidationError(
+                message="The house number should contain a maximum of 10 characters.",
+            )
+
+        return housenumber
+
+    def clean_apartmentnumber(self):
+        apartmentnumber = self.cleaned_data.get("apartmentnumber")
+
+        if len(apartmentnumber) > 10:
+            raise ValidationError(
+                message="The apartment number should contain a maximum of 10 characters.",
+            )
+
+        return apartmentnumber

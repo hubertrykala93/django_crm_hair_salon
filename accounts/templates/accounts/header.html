@@ -1,0 +1,13 @@
+<header>
+    <div class="container">
+        <a href="/" class="logo">
+            <img src="/media/home/logo.png" alt="Elegance Hair Studio Logo">
+        </a>
+        {% include 'accounts/navbar.html' %}
+        {% if not request.user.is_authenticated %}
+        <a href="/" class="btn">contact us</a>
+        {% else %}
+        <a href="{% url 'logout' %}" class="btn">Logout</a>
+        {% endif %}
+    </div>
+</header>

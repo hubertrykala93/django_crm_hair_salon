@@ -1,9 +1,10 @@
 from django.shortcuts import render, redirect, reverse
-from .forms import RegisterForm, LoginForm, PasswordResetForm, OneTimePasswordForm, ChangePasswordForm
+from .forms import RegisterForm, LoginForm, PasswordResetForm, OneTimePasswordForm, ChangePasswordForm, UpdateUserForm, \
+    UpdateProfileImageForm, UpdateProfileForm
 from django.contrib import messages
 from .models import User, OneTimePassword
 from django.contrib.auth.hashers import make_password
-from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth import login, authenticate, logout, update_session_auth_hash
 from django.contrib.auth.decorators import user_passes_test
 from django.core.mail import EmailMultiAlternatives
 from django.contrib.sites.shortcuts import get_current_site
@@ -25,23 +26,30 @@ def index(request):
                 password=request.POST["password"],
             )
 
-            if user is not None:
-                if "remember" in request.POST:
-                    request.session["user_id"] = user.id
-                    request.session.set_expiry(value=1000000)
-                    request.session.modified = True
+            if user.is_verified:
+                if user is not None:
+                    if "remember" in request.POST:
+                        request.session["user_id"] = user.id
+                        request.session.set_expiry(value=1000000)
+                        request.session.modified = True
 
-                login(
+                    login(
+                        request=request,
+                        user=user,
+                    )
+
+                    messages.success(
+                        request=request,
+                        message="You have been logged in successfully.",
+                    )
+
+                    return redirect(to="dashboard")
+
+            else:
+                messages.info(
                     request=request,
-                    user=user,
+                    message="Your account has not been activated yet. Please activate your account to log in.",
                 )
-
-                messages.success(
-                    request=request,
-                    message="You have been logged in successfully.",
-                )
-
-                return redirect(to="dashboard")
 
     else:
         form = LoginForm()
@@ -110,6 +118,13 @@ def register(request):
 
                 return redirect(to="register")
 
+        else:
+            if len(request.POST["password"]) != 0 and len(request.POST["repassword"]) == 0:
+                messages.error(
+                    request=request,
+                    message="To register an account, you also need to provide the Confirm Password.",
+                )
+
     else:
         form = RegisterForm()
 
@@ -170,7 +185,6 @@ def activate(request, uidb64, token):
 def password_reset_method(request):
     if request.method == "POST":
         if "method" in request.POST:
-            print(request.POST)
             if request.POST["method"] == "email":
                 return redirect(to=reverse(viewname="forgot-password") + f"?method={request.POST['method']}")
 
@@ -270,9 +284,6 @@ def confirm_one_time_password(request):
 
             return redirect(f"{reverse('change-password')}?email={user.email}")
 
-        else:
-            print("Not Valid")
-
     else:
         form = OneTimePasswordForm()
 
@@ -341,24 +352,139 @@ def change_password(request):
 
 def profile(request):
     if request.method == "POST":
-        print("POST Method.")
-        if "update-profile-image" in request.POST:
-            print("Update Profile Image.")
+        profileimage_update_form = UpdateProfileImageForm(files=request.FILES, prefix="profileimage")
+        update_user_form = UpdateUserForm(data=request.POST, instance=request.user, prefix="user")
+        update_profile_form = UpdateProfileForm(data=request.POST, prefix="profile")
 
-        if "update-account" in request.POST:
-            print("Update Account.")
+        if "update-profile-image" in request.POST:
+            if profileimage_update_form.is_valid():
+                profile_image_uploaded = request.FILES.get("profileimage", None)
+
+                if profile_image_uploaded is not None:
+                    profile_image = request.user.profile.basicinformation.profileimage
+                    profile_image.image = request.FILES["profileimage"]
+                    profile_image.save()
+
+                    messages.success(
+                        request=request,
+                        message="Profile picture has been successfully changed.",
+                    )
+
+            else:
+                print(profileimage_update_form.errors)
+
+        if "update-user" in request.POST:
+            if update_user_form.is_valid():
+                user = request.user
+                password = request.POST.get("password", None)
+
+                if password:
+                    if request.user.email == request.POST["email"]:
+                        user.set_password(raw_password=request.POST["password"])
+                        user.save()
+
+                    else:
+                        user.email = request.POST["email"]
+                        user.set_password(raw_password=request.POST["password"])
+                        user.save()
+
+                else:
+                    user.email = request.POST["email"]
+                    user.save()
+
+                update_session_auth_hash(request=request, user=user)
+
+                messages.success(
+                    request=request,
+                    message="Account details have been successfully changed.",
+                )
+
+            else:
+                print(update_user_form.errors)
 
         if "update-profile" in request.POST:
-            print("Update Profile.")
+            if update_profile_form.is_valid():
+                profile = request.user.profile
+
+                original_firstname = profile.basicinformation.firstname
+                original_lastname = profile.basicinformation.lastname
+                original_dateofbirth = profile.basicinformation.dateofbirth
+                original_biography = profile.basicinformation.biography
+
+                original_phonenumber = profile.contactinformation.phonenumber
+                original_country = profile.contactinformation.country
+                original_province = profile.contactinformation.province
+                original_city = profile.contactinformation.city
+                original_street = profile.contactinformation.street
+                original_housenumber = profile.contactinformation.housenumber
+                original_apartmentnumber = profile.contactinformation.apartmentnumber
+
+                changed_fields = (
+                        original_firstname != request.POST["firstname"] or
+                        original_lastname != request.POST["lastname"] or
+                        original_dateofbirth.strftime("%Y-%m-%d") != request.POST["dateofbirth"] or
+                        original_biography != request.POST["biography"] or
+                        original_phonenumber != request.POST["phonenumber"] or
+                        original_country != request.POST["country"] or
+                        original_province != request.POST["province"] or
+                        original_city != request.POST["city"] or
+                        original_street != request.POST["street"] or
+                        original_housenumber != request.POST["housenumber"] or
+                        original_apartmentnumber != request.POST["apartmentnumber"]
+                )
+
+                if changed_fields:
+                    messages.success(
+                        request=request,
+                        message="Profile details have been successfully changed.",
+                    )
+
+                else:
+                    messages.info(
+                        request=request,
+                        message="No changes have been made.",
+                    )
+
+            else:
+                print(update_profile_form.errors)
 
     else:
-        print("GET Method.")
+        print(f"Request POST -> {request.POST}")
+        profileimage_update_form = UpdateProfileImageForm()
+        update_user_form = UpdateUserForm(instance=request.user)
+        update_profile_form = UpdateProfileForm()
+
+    print(f"Update User Form Data -> {update_user_form.data}")
 
     return render(
         request=request,
         template_name="accounts/profile.html",
         context={
             "title": "Profile",
+            "profileimage_update_form": profileimage_update_form,
+            "update_user_form": update_user_form,
+            "update_profile_form": update_profile_form,
+        }
+    )
+
+
+def update_profile_form(request):
+    form = UpdateProfileForm(data=request.POST)
+
+    if request.method == "POST":
+        if form.is_valid():
+            messages.success(
+                request=request,
+                message="Profile details have been successfully changed.",
+            )
+
+            return redirect(to="profile")
+
+    return render(
+        request=request,
+        template_name="accounts/profile.html",
+        context={
+            "update_profile_form": form,
         }
     )
 

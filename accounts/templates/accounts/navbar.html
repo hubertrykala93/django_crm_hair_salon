@@ -2,7 +2,6 @@
     <ul>
         {% if user.is_authenticated %}
         <li><a href="{% url 'profile' %}" class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}">Profile</a></li>
-        <li><a href="{% url 'logout' %}">Logout</a></li>
         {% endif %}
     </ul>
 </nav>

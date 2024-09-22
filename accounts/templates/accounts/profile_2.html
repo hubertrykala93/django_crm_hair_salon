@@ -45,6 +45,7 @@
             <form method="post" novalidate>
                 {% csrf_token %}
                 <div>
+                    <h1>Update User Form Email -> {{ update_user_form.email }}</h1>
                     <label for="email">Email:</label>
                     <input type="email" id="email" name="email" {% if request.user.email %}value="{{ request.user.email }}"{% endif %}>
                     {% if update_user_form.email.errors %}
