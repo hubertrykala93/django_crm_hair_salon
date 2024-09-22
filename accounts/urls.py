@@ -12,4 +12,5 @@ urlpatterns = [
     path(route="profile", view=accounts_views.profile, name="profile"),
     path(route="update-profile-form", view=accounts_views.update_profile_form, name="update-profile-form"),
     path(route="logout", view=accounts_views.log_out, name="logout"),
+    path(route="contact-us", view=accounts_views.contact_us, name="contact-us"),
 ]

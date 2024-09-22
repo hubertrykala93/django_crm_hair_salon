@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<section class="contact-us">
+    <div class="container">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <h2>Get in Touch</h2>
+
+            <div class="form-row">
+                <label for="firstname">Firstname:</label>
+                <input type="text" id="firstname" name="firstname" placeholder="First Name" {% if form.firstname.value %}value="{{ form.firstname.value }}"{% endif %}>
+                {% if form.firstname.errors %}
+                <span class="form-error">{{ form.firstname.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-row">
+                <label for="lastname">Lastname:</label>
+                <input type="text" id="lastname" name="lastname" placeholder="Last Name" {% if form.lastname.value %}value="{{ form.lastname.value }}"{% endif %}>
+                {% if form.lastname.errors %}
+                <span class="form-error">{{ form.lastname.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-row">
+                <label for="email">Email:</label>
+                <input type="text" id="email" name="email" placeholder="E-mail Address" {% if form.email.value %}value="{{ form.email.value }}"{% endif %}>
+                {% if form.email.errors %}
+                <span class="form-error">{{ form.email.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-row">
+                <label for="subject">Subject:</label>
+                <input type="text" id="subject" name="subject" placeholder="Subject" {% if form.subject.value %}value="{{ form.subject.value }}"{% endif %}>
+                {% if form.subject.errors %}
+                <span class="form-error">{{ form.subject.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-row">
+                <label for="message">Message:</label>
+                <textarea id="message" name="message" placeholder="Message">{% if form.message.value %}{{ form.message.value }}{% endif %}</textarea>
+                {% if form.message.errors %}
+                <span class="form-error">{{ form.message.errors.0 }}</span>
+                {% endif %}
+            </div>
+            <button class="btn form-submit-btn" type="submit">Send</button>
+        </form>
+    </div>
+</section>
+{% endblock %}

@@ -18,7 +18,7 @@
             </div>
             <div class="form-row">
                 <label for="password">Password:</label>
-                <input type="password" id="password" name="password" placeholder="Password" {% if form.password.value %}value="{{ form.password.value }}" {% endif %}>
+                <input type="password" id="password" name="password" placeholder="Password">
                 {% if form.password.errors %}
                 <span class="form-error">{{ form.password.errors.0 }}</span>
                 {% endif %}
@@ -26,20 +26,10 @@
 
             <div class="form-row">
                 <label class="form-checkbox" for="remember_me">
-                    <input type="checkbox" id="remember_me" name="remember" {% if form.remember.value %}checked STARA{% endif %}>
+                    <input type="checkbox" id="remember_me" name="remember" {% if form.remember.value %}checked{% endif %}>
                     Remember me
                 </label>
             </div>
-
-            {% if form.non_field_errors %}
-            <div>
-                <ul>
-                    {% for error in form.non_field_errors %}
-                    <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-            {% endif %}
 
             <button class="btn form-submit-btn" type="submit">Login</button>
             <div class="form-questions">

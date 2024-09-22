@@ -1,6 +1,8 @@
+import os
+
 from django.shortcuts import render, redirect, reverse
 from .forms import RegisterForm, LoginForm, PasswordResetForm, OneTimePasswordForm, ChangePasswordForm, UpdateUserForm, \
-    UpdateProfileImageForm, UpdateProfileForm
+    UpdateProfileImageForm, UpdateProfileForm, ContactUsForm
 from django.contrib import messages
 from .models import User, OneTimePassword
 from django.contrib.auth.hashers import make_password
@@ -370,9 +372,6 @@ def profile(request):
                         message="Profile picture has been successfully changed.",
                     )
 
-            else:
-                print(profileimage_update_form.errors)
-
         if "update-user" in request.POST:
             if update_user_form.is_valid():
                 user = request.user
@@ -398,9 +397,6 @@ def profile(request):
                     request=request,
                     message="Account details have been successfully changed.",
                 )
-
-            else:
-                print(update_user_form.errors)
 
         if "update-profile" in request.POST:
             if update_profile_form.is_valid():
@@ -445,20 +441,14 @@ def profile(request):
                         message="No changes have been made.",
                     )
 
-            else:
-                print(update_profile_form.errors)
-
     else:
-        print(f"Request POST -> {request.POST}")
         profileimage_update_form = UpdateProfileImageForm()
         update_user_form = UpdateUserForm(instance=request.user)
         update_profile_form = UpdateProfileForm()
 
-    print(f"Update User Form Data -> {update_user_form.data}")
-
     return render(
         request=request,
-        template_name="accounts/profile.html",
+        template_name="accounts/profile-page.html",
         context={
             "title": "Profile",
             "profileimage_update_form": profileimage_update_form,
@@ -482,7 +472,7 @@ def update_profile_form(request):
 
     return render(
         request=request,
-        template_name="accounts/profile.html",
+        template_name="accounts/profile-page.html",
         context={
             "update_profile_form": form,
         }
@@ -493,3 +483,59 @@ def log_out(request):
     logout(request=request)
 
     return redirect(to="home")
+
+
+def contact_us(request):
+    form = ContactUsForm(data=request.POST or None)
+
+    if request.method == "POST":
+        if form.is_valid():
+            firstname, lastname, email, subject, message = [
+                request.POST["firstname"].strip(),
+                request.POST["lastname"].strip(),
+                request.POST["email"].strip(),
+                request.POST["subject"].strip(),
+                request.POST["message"].strip()
+            ]
+
+            try:
+                html_message = render_to_string(
+                    template_name="contact-us-mail.html",
+                    context={
+                        "firstname": firstname,
+                        "lastname": lastname,
+                        "email": email,
+                        "subject": subject,
+                        "message": message,
+                    }
+                )
+
+                message = EmailMultiAlternatives(
+                    subject=subject,
+                    body=html_message,
+                    from_email=os.environ.get("EMAIL_FROM"),
+                    to=[os.environ.get("EMAIL_HOST_USER")],
+                )
+
+                message.send()
+
+                messages.success(
+                    request=request,
+                    message="The message has been sent, we will respond to you shortly.",
+                )
+
+            except Exception as e:
+                print(e)
+                messages.error(
+                    request=request,
+                    message="Failed to send the email, please try again.",
+                )
+
+    return render(
+        request=request,
+        template_name="contact-us.html",
+        context={
+            "title": "Contact Us",
+            "form": form,
+        }
+    )

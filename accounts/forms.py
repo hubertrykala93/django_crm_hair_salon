@@ -817,3 +817,101 @@ class UpdateProfileForm(forms.Form):
             )
 
         return apartmentnumber
+
+
+class ContactUsForm(forms.Form):
+    firstname = forms.CharField(
+        error_messages={
+            "required": "Firstname is required.",
+        }
+    )
+    lastname = forms.CharField(
+        error_messages={
+            "required": "Lastname is required.",
+        }
+    )
+    email = forms.CharField(
+        error_messages={
+            "required": "Email is required.",
+        }
+    )
+    subject = forms.CharField(
+        error_messages={
+            "required": "Subject is required.",
+        }
+    )
+    message = forms.CharField(
+        error_messages={
+            "required": "Message is required.",
+        }
+    )
+
+    def clean_firstname(self):
+        firstname = self.cleaned_data.get("firstname")
+
+        if len(firstname) < 2:
+            raise ValidationError(
+                message="The firstname should contain at least 2 characters.",
+            )
+
+        if len(firstname) > 50:
+            raise ValidationError(
+                message="The firstname should contain a maximum of 50 characters.",
+            )
+
+        if not firstname.isalpha():
+            raise ValidationError(
+                message="The firstname should consist of letters only.",
+            )
+
+        return firstname
+
+    def clean_lastname(self):
+        lastname = self.cleaned_data.get("lastname")
+
+        if len(lastname) < 2:
+            raise ValidationError(
+                message="The lastname should contain at least 2 characters."
+            )
+
+        if len(lastname) > 100:
+            raise ValidationError(
+                message="The lastname should contain a maximum of 100 characters.",
+            )
+
+        if not lastname.isalpha():
+            raise ValidationError(
+                message="The lastname should consist of letters only.",
+            )
+
+        return lastname
+
+    def clean_subject(self):
+        subject = self.cleaned_data.get("subject")
+
+        if len(subject) < 10:
+            raise ValidationError(
+                message="The subject should contain at least 10 characters.",
+            )
+
+        if len(subject) > 50:
+            raise ValidationError(
+                message="The lastname should contain a maximum of 50 characters.",
+            )
+
+        return subject
+
+    def clean_message(self):
+        message = self.cleaned_data.get("message")
+
+        if len(message) < 20:
+            raise ValidationError(
+                message="The message should contain at least 20 characters.",
+            )
+
+        if len(message) > 500:
+            raise ValidationError(
+                message="The message should contain a maximum of 500 characters.",
+            )
+
+        return message
