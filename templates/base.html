@@ -16,18 +16,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
 </head>
 <body>
-    {% include 'accounts/header.html' %}
+    {% include 'header.html' %}
 
     <main>
         {% if messages %}
-        {% include 'accounts/messages.html' %}
+        {% include 'messages.html' %}
         {% endif %}
 
         {% block content %}
         {% endblock %}
     </main>
 
-    {% include 'accounts/footer.html' %}
+    {% include 'footer.html' %}
 
     {% block extra_scripts %}
     {% endblock %}
