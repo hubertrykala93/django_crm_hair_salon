@@ -76,14 +76,21 @@ class User(AbstractBaseUser, PermissionsMixin):
                 basic_info = ProfileBasicInformation.objects.create()
                 contact_info = ProfileContactInformation.objects.create()
                 employment_info = ProfileEmploymentInformation.objects.create()
+                job_position = JobPosition.objects.create()
+                employment_status = EmploymentStatus.objects.create()
+                contract = Contract.objects.create()
 
                 profile_image = ProfileImage.objects.create()
-                basic_info.profileimage = profile_image
+                basic_info.profile_image = profile_image
                 basic_info.save()
 
                 profile.basicinformation = basic_info
                 profile.contactinformation = contact_info
                 profile.employmentinformation = employment_info
+                profile.employmentinformation.job_position = job_position
+                profile.employmentinformation.employment_status = employment_status
+                profile.employmentinformation.contract = contract
+                employment_info.save()
 
                 profile.save()
 
@@ -173,9 +180,9 @@ class ProfileImage(models.Model):
 class ProfileBasicInformation(models.Model):
     firstname = models.CharField(max_length=200)
     lastname = models.CharField(max_length=200)
-    profileimage = models.OneToOneField(to=ProfileImage, on_delete=models.CASCADE, null=True)
+    profile_image = models.OneToOneField(to=ProfileImage, on_delete=models.CASCADE, null=True)
     biography = models.TextField(max_length=10000, null=True)
-    dateofbirth = models.DateField(null=True, blank=True)
+    date_of_birth = models.DateField(null=True, blank=True)
 
     class Meta:
         verbose_name = "Profile Basic Information"
@@ -186,14 +193,14 @@ class ProfileBasicInformation(models.Model):
 
 
 class ProfileContactInformation(models.Model):
-    phonenumber = models.CharField(max_length=20, null=True)
+    phone_number = models.CharField(max_length=20, null=True)
     country = models.CharField(max_length=100, null=True)
     province = models.CharField(max_length=100, null=True)
     city = models.CharField(max_length=100, null=True)
-    postalcode = models.CharField(max_length=100, null=True)
+    postal_code = models.CharField(max_length=100, null=True)
     street = models.CharField(max_length=100, null=True)
-    housenumber = models.CharField(max_length=10, null=True)
-    apartmentnumber = models.CharField(max_length=10, null=True, blank=True)
+    house_number = models.CharField(max_length=10, null=True)
+    apartment_number = models.CharField(max_length=10, null=True, blank=True)
 
     class Meta:
         verbose_name = "Profile Contact Information"
@@ -203,49 +210,62 @@ class ProfileContactInformation(models.Model):
         return str(self.pk)
 
 
-class ProfileEmploymentInformation(models.Model):
-    usertype = models.CharField(
-        default="Not Defined",
-        max_length=200,
-        choices=(
-            ("Owner", "Owner"),
-            ("Manager", "Manager"),
-            ("Receptionist", "Receptionist"),
-            ("Hairstylist", "Hairstylist"),
-            ("Assistant", "Assistant"),
-            ("Barber", "Barber"),
-            ("Not Defined", "Not Defined"),
-        ),
-    )
-    dateofemployment = models.DateField(null=True, blank=True)
-    employmentstatus = models.CharField(
-        default="Inactive",
-        max_length=50,
-        choices=(
-            ("Active", "Active"),
-            ("On Leave", "On Leave"),
-            ("Inactive", "Inactive"),
+class JobPosition(models.Model):
+    name = models.CharField(default="Not Defined", max_length=200)
 
-        ),
-    )
-    contracttype = models.CharField(
-        default="Not Defined",
-        max_length=200,
-        choices=(
-            ("Employment Contract", "Employment Contract"),
-            ("Contract of Mandate", "Contract of Mandate"),
-            ("Contract for Specific Work", "Contract for Specific Work"),
-            ("B2B", "B2B"),
-            ("Agency Contract", "Agency Contract"),
-            ("Internship Contract", "Internship Contract"),
-            ("Temporary Employment Contract", "Temporary Employment Contract"),
-        )
-    )
-    contractstartdate = models.DateField(null=True, blank=True)
-    contractenddate = models.DateField(null=True, blank=True)
-    contractduration = models.DurationField(null=True, blank=True)
-    salary = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    class Meta:
+        verbose_name = "Job Position"
+        verbose_name_plural = "Job Positions"
+
+    def __str__(self):
+        return str(self.id)
+
+    # positions = ["Owner","Manager","Receptionist","Hairstylist","Assistant","Barber"]
+
+
+class EmploymentStatus(models.Model):
+    name = models.CharField(default="Inactive", max_length=100)
+
+    class Meta:
+        verbose_name = "Employment Status"
+        verbose_name_plural = "Employment Statuses"
+
+    def __str__(self):
+        return str(self.id)
+
+    # statuses = ["Active", "Inactive", "On Leave"]
+
+
+class Contract(models.Model):
+    name = models.CharField(default="Not Defined", max_length=100)
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    duration = models.DurationField(null=True, blank=True)
+    salary = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     work_hours_per_week = models.IntegerField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Contract"
+        verbose_name_plural = "Contracts"
+
+    def __str__(self):
+        return str(self.id)
+    
+    # contracts = [
+    #     "Employment Contract",
+    #     "Contract of Mandate",
+    #     "Contract for Specific Work",
+    #     "B2B",
+    #     "Agency Contract",
+    #     "Internship Contract",
+    #     "Temporary Employment Contract"
+    # ]
+
+
+class ProfileEmploymentInformation(models.Model):
+    job_position = models.OneToOneField(to=JobPosition, on_delete=models.CASCADE, null=True, blank=True)
+    employment_status = models.OneToOneField(to=EmploymentStatus, on_delete=models.CASCADE, null=True, blank=True)
+    contract = models.OneToOneField(to=Contract, on_delete=models.CASCADE, null=True, blank=True)
 
     # benefits
 
@@ -281,28 +301,58 @@ def delete_profile(sender, instance, **kwargs):
 
     if instance.profile:
         profile = instance.profile
+        print(profile.basicinformation)
+        print(profile.basicinformation.profile_image)
 
         if hasattr(profile, "basicinformation"):
-            if hasattr(profile.basicinformation, "profileimage"):
-                if profile.basicinformation.profileimage and profile.basicinformation.profileimage.image:
-                    image_path = profile.basicinformation.profileimage.image.path
+            print("Profile has Attribute BasicInformation.")
+            if hasattr(profile.basicinformation, "profile_image"):
+                print("BasicInformation has Attribute ProfileImage.")
+                if profile.basicinformation.profile_image:
+                    print("Profile BasicInformation ProfileImage & Profile BasicInformation ProfileImage Image")
+                    image_path = profile.basicinformation.profile_image.image.path
 
                     if "default_profile_image.png" not in image_path:
                         if os.path.isfile(path=image_path):
                             os.remove(path=image_path)
 
-                    profile.basicinformation.profileimage.delete()
+                    print("Profile Image Deleting...")
+                    profile.basicinformation.profile_image.delete()
+                    print("Profile Image Delete.")
 
-            if hasattr(profile, "basicinformation"):
-                if profile.basicinformation:
-                    profile.basicinformation.delete()
+                print("Profile Basic Information Deleting...")
+                profile.basicinformation.delete()
+                print("Profile Basic Information Delete.")
 
             if hasattr(profile, "contactinformation"):
+                print("Profile has Attribute ContactInformation.")
                 if profile.contactinformation:
+                    print("Profile ContactInformation Deleting...")
                     profile.contactinformation.delete()
+                    print("Profile ContactInformation Deleted.")
 
             if hasattr(profile, "employmentinformation"):
+                print("Profile has Attribute EmploymentInformation.")
                 if profile.employmentinformation:
-                    profile.employmentinformation.delete()
+                    if hasattr(profile.employmentinformation, "job_position"):
+                        print("Job Position Deleting...")
+                        profile.employmentinformation.job_position.delete()
+                        print("Job Position Deleted.")
 
+                    if hasattr(profile.employmentinformation, "employment_status"):
+                        print("Employment Status Deleting...")
+                        profile.employmentinformation.employment_status.delete()
+                        print("Employment Status Deleted.")
+
+                    if hasattr(profile.employmentinformation, "contract"):
+                        print("Contract Deleting...")
+                        profile.employmentinformation.contract.delete()
+                        print("Contract Deleted.")
+
+                    print("Profile EmploymentInformation Deleting...")
+                    profile.employmentinformation.delete()
+                    print("Profile EmploymentInformation Deleted.")
+
+        print("Profile Deleting...")
         profile.delete()
+        print("Profile Deleted.")

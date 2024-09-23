@@ -1,6 +1,6 @@
 from django import forms
 from .models import User, Profile, ProfileImage, OneTimePassword, ProfileBasicInformation, ProfileContactInformation, \
-    ProfileEmploymentInformation
+    ProfileEmploymentInformation, JobPosition, EmploymentStatus, Contract
 from django.core.exceptions import ValidationError
 import re
 from django.contrib.auth.hashers import make_password
@@ -71,7 +71,7 @@ class AdminOneTimePasswordForm(forms.ModelForm):
 class AdminProfileBasicInformationForm(forms.ModelForm):
     firstname = forms.CharField(help_text="Enter first name.", label="First Name", required=False)
     lastname = forms.CharField(help_text="Enter last name.", label="Last Name", required=False)
-    dateofbirth = forms.DateField(help_text="Enter date of birth.", label="Date of Birth", required=False)
+    date_of_birth = forms.DateField(help_text="Enter date of birth.", label="Date of Birth", required=False)
     biography = forms.CharField(help_text="Enter biography.", label="Biography", required=False, widget=forms.Textarea)
 
     class Meta:
@@ -81,30 +81,56 @@ class AdminProfileBasicInformationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(AdminProfileBasicInformationForm, self).__init__(*args, **kwargs)
 
-        self.fields["profileimage"].help_text = "Select the profile image."
-        self.fields["profileimage"].label = "Profile Image"
-        self.fields["profileimage"].required = False
+        self.fields["profile_image"].help_text = "Select the profile image."
+        self.fields["profile_image"].label = "Profile Image"
+        self.fields["profile_image"].required = False
 
 
 class AdminProfileContactInformationForm(forms.ModelForm):
-    phonenumber = forms.CharField(help_text="Enter phone number.", label="Phone Number", required=False)
+    phone_number = forms.CharField(help_text="Enter phone number.", label="Phone Number", required=False)
     country = forms.CharField(help_text="Enter country.", label="Country", required=False)
     province = forms.CharField(help_text="Enter province.", label="Province", required=False)
     city = forms.CharField(help_text="Enter city.", label="City", required=False)
-    postalcode = forms.CharField(help_text="Enter postal code.", label="Postal Code", required=False)
+    postal_code = forms.CharField(help_text="Enter postal code.", label="Postal Code", required=False)
     street = forms.CharField(help_text="Enter street.", label="Street", required=False)
-    housenumber = forms.CharField(help_text="Enter house number.", label="House Number", required=False)
-    apartmentnumber = forms.CharField(help_text="Enter apartment number.", label="Apartment Number", required=False)
+    house_number = forms.CharField(help_text="Enter house number.", label="House Number", required=False)
+    apartment_number = forms.CharField(help_text="Enter apartment number.", label="Apartment Number", required=False)
 
     class Meta:
         model = ProfileContactInformation
         fields = "__all__"
 
 
-class AdminProfileEmploymentInformationForm(forms.ModelForm):
-    dateofemployment = forms.DateField(help_text="Enter date of employment (YYYY-MM-DD).", label="Date of Employment",
-                                       required=True)
+class AdminJobPositionForm(forms.ModelForm):
+    name = forms.CharField(help_text="Enter job position name.", label_suffix="Job Position", required=True)
 
+    class Meta:
+        model = JobPosition
+        fields = "__all__"
+
+
+class AdminEmploymentStatusForm(forms.ModelForm):
+    name = forms.CharField(help_text="Enter employment status name.", label_suffix="Employment Status", required=True)
+
+    class Meta:
+        model = EmploymentStatus
+        fields = "__all__"
+
+
+class AdminContractForm(forms.ModelForm):
+    name = forms.CharField(help_text="Enter contract name.", label="Contract", required=True)
+    start_date = forms.DateField(help_text="Enter the start of the contract.", label="Start Date", required=True)
+    end_date = forms.DateField(help_text="Enter the end of the contract.", label="End Date", required=False)
+    salary = forms.DecimalField(help_text="Enter the salary.", label="Contract Salary", required=True)
+    work_hours_per_week = forms.IntegerField(help_text="Enter the number of working hours per week.",
+                                             label="Working Hours", required=False)
+
+    class Meta:
+        model = Contract
+        exclude = ["duration"]
+
+
+class AdminProfileEmploymentInformationForm(forms.ModelForm):
     class Meta:
         model = ProfileEmploymentInformation
         fields = "__all__"
@@ -112,14 +138,17 @@ class AdminProfileEmploymentInformationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(AdminProfileEmploymentInformationForm, self).__init__(*args, **kwargs)
 
-        self.fields["usertype"].help_text = "Select user type."
-        self.fields["employmentstatus"].help_text = "Select employment status."
+        self.fields["job_position"].help_text = "Select job position."
+        self.fields["employment_status"].help_text = "Select employment status."
+        self.fields["contract"].help_text = "Select contract."
 
-        self.fields["usertype"].label = "User Type"
-        self.fields["employmentstatus"].label = "Employment Status"
+        self.fields["job_position"].label = "Job Position"
+        self.fields["employment_status"].label = "Employment Status"
+        self.fields["contract"].label = "Contract"
 
-        self.fields["usertype"].required = True
-        self.fields["employmentstatus"].required = True
+        self.fields["job_position"].required = True
+        self.fields["employment_status"].required = True
+        self.fields["contract"].required = True
 
 
 class AdminProfileForm(forms.ModelForm):

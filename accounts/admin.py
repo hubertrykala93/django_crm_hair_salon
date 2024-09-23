@@ -1,9 +1,10 @@
 from django.contrib import admin
 from django.contrib.auth.models import Group
 from .models import User, Profile, ProfileImage, OneTimePassword, ProfileBasicInformation, ProfileContactInformation, \
-    ProfileEmploymentInformation
+    ProfileEmploymentInformation, JobPosition, EmploymentStatus, Contract
 from .forms import AdminRegisterForm, AdminProfileForm, AdminProfileImageForm, AdminOneTimePasswordForm, \
-    AdminProfileBasicInformationForm, AdminProfileContactInformationForm, AdminProfileEmploymentInformationForm
+    AdminProfileBasicInformationForm, AdminProfileContactInformationForm, AdminProfileEmploymentInformationForm, \
+    AdminJobPositionForm, AdminEmploymentStatusForm, AdminContractForm
 from django.contrib.sessions.models import Session
 
 admin.site.unregister(Group)
@@ -91,7 +92,7 @@ class AdminProfileBasicInformation(admin.ModelAdmin):
         "get_firstname",
         "get_lastname",
         "biography",
-        "formatted_dateofbirth",
+        "formatted_date_of_birth",
         "formatted_profile_image",
     ]
     form = AdminProfileBasicInformationForm
@@ -102,14 +103,14 @@ class AdminProfileBasicInformation(admin.ModelAdmin):
                     "firstname",
                     "lastname",
                     "biography",
-                    "dateofbirth",
+                    "date_of_birth",
                 ],
             },
         ),
         (
             "Uploading", {
                 "fields": [
-                    "profileimage",
+                    "profile_image",
                 ],
             },
         ),
@@ -127,15 +128,15 @@ class AdminProfileBasicInformation(admin.ModelAdmin):
 
     get_lastname.short_description = "Last Name"
 
-    def formatted_dateofbirth(self, obj):
-        if obj.dateofbirth:
-            return obj.dateofbirth.strftime("%Y-%m-%d")
+    def formatted_date_of_birth(self, obj):
+        if obj.date_of_birth:
+            return obj.date_of_birth.strftime("%Y-%m-%d")
 
-    formatted_dateofbirth.short_description = "Date Of Birth"
+    formatted_date_of_birth.short_description = "Date Of Birth"
 
     def formatted_profile_image(self, obj):
-        if obj.profileimage:
-            return obj.profileimage
+        if obj.profile_image:
+            return obj.profile_image
 
     formatted_profile_image.short_description = "Profile Image"
 
@@ -148,7 +149,7 @@ class AdminProfileContactInformation(admin.ModelAdmin):
         "country",
         "province",
         "city",
-        "postalcode",
+        "postal_code",
         "street",
         "get_house_number",
         "get_apartment_number",
@@ -158,74 +159,144 @@ class AdminProfileContactInformation(admin.ModelAdmin):
         (
             "Contact Information", {
                 "fields": [
-                    "phonenumber",
+                    "phone_number",
                     "country",
                     "province",
                     "city",
-                    "postalcode",
+                    "postal_code",
                     "street",
-                    "housenumber",
-                    "apartmentnumber",
+                    "house_number",
+                    "apartment_number",
                 ],
             },
         ),
     )
 
     def get_phone_number(self, obj):
-        if obj.phonenumber:
-            return obj.phonenumber
+        if obj.phone_number:
+            return obj.phone_number
 
     get_phone_number.short_description = "Phone Number"
 
     def get_house_number(self, obj):
-        if obj.housenumber:
-            return obj.housenumber
+        if obj.house_number:
+            return obj.house_number
 
     get_house_number.short_description = "House Number"
 
     def get_apartment_number(self, obj):
-        if obj.apartmentnumber:
-            return obj.apartmentnumber
+        if obj.apartment_number:
+            return obj.apartment_number
 
     get_apartment_number.short_description = "Apartment Number"
+
+
+@admin.register(JobPosition)
+class AdminJobPosition(admin.ModelAdmin):
+    list_display = ["id", "name"]
+    form = AdminJobPositionForm
+    fieldsets = (
+        (
+            "Basic", {
+                "fields": [
+                    "name",
+                ],
+            },
+        ),
+    )
+
+
+@admin.register(EmploymentStatus)
+class AdminEmploymentStatus(admin.ModelAdmin):
+    list_display = ["id", "name"]
+    form = AdminEmploymentStatusForm
+    fieldsets = (
+        (
+            "Basic", {
+                "fields": [
+                    "name",
+                ],
+            },
+        ),
+    )
+
+
+@admin.register(Contract)
+class AdminContract(admin.ModelAdmin):
+    list_display = [
+        "id",
+        "name",
+        "start_date",
+        "end_date",
+        "duration",
+        "salary",
+        "work_hours_per_week",
+    ]
+    form = AdminContractForm
+    fieldsets = (
+        (
+            "Contract Name", {
+                "fields": [
+                    "name",
+                ],
+            },
+        ),
+        (
+            "Dates", {
+                "fields": [
+                    "start_date",
+                    "end_date",
+                    "duration",
+                ],
+            },
+        ),
+        (
+            "Paycheck", {
+                "fields": [
+                    "salary",
+                ],
+            },
+        ),
+        (
+            "Working Hours", {
+                "fields": [
+                    "work_hours_per_week",
+                ],
+            },
+        ),
+    )
 
 
 @admin.register(ProfileEmploymentInformation)
 class AdminProfileEmploymentInformation(admin.ModelAdmin):
     list_display = [
         "id",
-        "get_user_type",
-        "get_date_of_employment",
+        "get_job_position",
         "get_employment_status",
+        "contract",
     ]
     form = AdminProfileEmploymentInformationForm
     fieldsets = (
         (
             "Employment Information", {
                 "fields": [
-                    "usertype",
-                    "dateofemployment",
-                    "employmentstatus",
+                    "job_position",
+                    "employment_status",
+                    "contract",
                 ],
             },
         ),
     )
 
-    def get_user_type(self, obj):
-        if obj.usertype:
-            return obj.usertype
+    def get_job_position(self, obj):
+        if obj.job_position:
+            return obj.job_position
 
-    get_user_type.short_description = "User Type"
-
-    def get_date_of_employment(self, obj):
-        if obj.dateofemployment:
-            return obj.dateofemployment.strftime("%Y-%m-%d")
-
-    get_date_of_employment.short_description = "Date of Employment"
+    get_job_position.short_description = "Job Position"
 
     def get_employment_status(self, obj):
-        if obj.employmentstatus:
-            return obj.employmentstatus
+        if obj.employment_status:
+            return obj.employment_status
 
     get_employment_status.short_description = "Employment Status"
 
@@ -291,8 +362,8 @@ class AdminProfile(admin.ModelAdmin):
     formatted_employmentinformation.short_description = "Employment Information"
 
     def get_profile_image(self, obj):
-        if obj.basicinformation.profileimage:
-            return obj.basicinformation.profileimage
+        if obj.basicinformation.profile_image:
+            return obj.basicinformation.profile_image
 
     get_profile_image.short_description = "Profile Image"
 
