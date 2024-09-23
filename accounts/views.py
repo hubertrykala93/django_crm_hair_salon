@@ -7,7 +7,7 @@ from django.contrib import messages
 from .models import User, OneTimePassword
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import login, authenticate, logout, update_session_auth_hash
-from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.decorators import user_passes_test, login_required
 from django.core.mail import EmailMultiAlternatives
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.html import strip_tags
@@ -184,6 +184,7 @@ def activate(request, uidb64, token):
     return redirect(to="home")
 
 
+@user_passes_test(test_func=lambda user: not user.is_authenticated, login_url="dashboard")
 def password_reset_method(request):
     if request.method == "POST":
         if "method" in request.POST:
@@ -205,6 +206,7 @@ def password_reset_method(request):
     )
 
 
+@user_passes_test(test_func=lambda user: not user.is_authenticated, login_url="dashboard")
 def forgot_password(request):
     if request.method == "POST":
         form = PasswordResetForm(data=request.POST)
@@ -277,6 +279,7 @@ def forgot_password(request):
     )
 
 
+@user_passes_test(test_func=lambda user: not user.is_authenticated, login_url="dashboard")
 def confirm_one_time_password(request):
     if request.method == "POST":
         form = OneTimePasswordForm(data=request.POST)
@@ -299,6 +302,7 @@ def confirm_one_time_password(request):
     )
 
 
+@user_passes_test(test_func=lambda user: not user.is_authenticated, login_url="dashboard")
 def change_password(request):
     if request.method == "POST":
         form = ChangePasswordForm(
@@ -352,6 +356,7 @@ def change_password(request):
     )
 
 
+@login_required(login_url="home")
 def profile(request):
     form = UpdateProfileImageForm(files=request.FILES)
 
@@ -377,6 +382,9 @@ def profile(request):
             "form": form,
         }
     )
+
+
+login_required(login_url="home")
 
 
 def edit_user(request):
@@ -439,9 +447,9 @@ def edit_user(request):
     )
 
 
+@login_required(login_url="home")
 def edit_profile(request):
     form = UpdateProfileForm(data=request.POST or None, instance=request.user.profile)
-    print(f"Request POST -> {request.POST}")
 
     if request.method == "POST":
         if form.is_valid():
@@ -457,12 +465,14 @@ def edit_profile(request):
     )
 
 
+@login_required(login_url="home")
 def log_out(request):
     logout(request=request)
 
     return redirect(to="home")
 
 
+@user_passes_test(test_func=lambda user: not user.is_authenticated, login_url="dashboard")
 def contact_us(request):
     form = ContactUsForm(data=request.POST or None)
 

@@ -102,23 +102,18 @@ class AdminProfileContactInformationForm(forms.ModelForm):
 
 
 class AdminJobPositionForm(forms.ModelForm):
-    name = forms.CharField(help_text="Enter job position name.", label_suffix="Job Position", required=True)
-
     class Meta:
         model = JobPosition
         fields = "__all__"
 
 
 class AdminEmploymentStatusForm(forms.ModelForm):
-    name = forms.CharField(help_text="Enter employment status name.", label_suffix="Employment Status", required=True)
-
     class Meta:
         model = EmploymentStatus
         fields = "__all__"
 
 
 class AdminContractForm(forms.ModelForm):
-    name = forms.CharField(help_text="Enter contract name.", label="Contract", required=True)
     start_date = forms.DateField(help_text="Enter the start of the contract.", label="Start Date", required=True)
     end_date = forms.DateField(help_text="Enter the end of the contract.", label="End Date", required=False)
     salary = forms.DecimalField(help_text="Enter the salary.", label="Contract Salary", required=True)
@@ -163,17 +158,17 @@ class AdminProfileForm(forms.ModelForm):
         self.fields["user"].label = "User"
         self.fields["user"].required = True
 
-        self.fields["basicinformation"].help_text = "Select the basic information for this user."
-        self.fields["basicinformation"].label = "Basic Information"
-        self.fields["basicinformation"].required = True
+        self.fields["basic_information"].help_text = "Select the basic information for this user."
+        self.fields["basic_information"].label = "Basic Information"
+        self.fields["basic_information"].required = True
 
-        self.fields["contactinformation"].help_text = "Select the contact information for this user."
-        self.fields["contactinformation"].label = "Contact Information"
-        self.fields["contactinformation"].required = True
+        self.fields["contact_information"].help_text = "Select the contact information for this user."
+        self.fields["contact_information"].label = "Contact Information"
+        self.fields["contact_information"].required = True
 
-        self.fields["employmentinformation"].help_text = "Select the employment information for this user."
-        self.fields["employmentinformation"].label = "Employment Information"
-        self.fields["employmentinformation"].required = True
+        self.fields["employment_information"].help_text = "Select the employment information for this user."
+        self.fields["employment_information"].label = "Employment Information"
+        self.fields["employment_information"].required = True
 
 
 class AdminProfileImageForm(forms.ModelForm):

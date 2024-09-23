@@ -84,12 +84,12 @@ class User(AbstractBaseUser, PermissionsMixin):
                 basic_info.profile_image = profile_image
                 basic_info.save()
 
-                profile.basicinformation = basic_info
-                profile.contactinformation = contact_info
-                profile.employmentinformation = employment_info
-                profile.employmentinformation.job_position = job_position
-                profile.employmentinformation.employment_status = employment_status
-                profile.employmentinformation.contract = contract
+                profile.basic_information = basic_info
+                profile.contact_information = contact_info
+                profile.employment_information = employment_info
+                profile.employment_information.job_position = job_position
+                profile.employment_information.employment_status = employment_status
+                profile.employment_information.contract = contract
                 employment_info.save()
 
                 profile.save()
@@ -211,7 +211,17 @@ class ProfileContactInformation(models.Model):
 
 
 class JobPosition(models.Model):
-    name = models.CharField(default="Not Defined", max_length=200)
+    name = models.CharField(
+        max_length=200,
+        choices=(
+            ("Owner", "Owner"),
+            ("Manager", "Manager"),
+            ("Receptionist", "Receptionist"),
+            ("Hairstylist", "Hairstylist"),
+            ("Assistant", "Assistant"),
+            ("Barber", "Barber"),
+        )
+    )
 
     class Meta:
         verbose_name = "Job Position"
@@ -220,11 +230,16 @@ class JobPosition(models.Model):
     def __str__(self):
         return str(self.id)
 
-    # positions = ["Owner","Manager","Receptionist","Hairstylist","Assistant","Barber"]
-
 
 class EmploymentStatus(models.Model):
-    name = models.CharField(default="Inactive", max_length=100)
+    name = models.CharField(
+        max_length=100,
+        choices=(
+            ("Active", "Active"),
+            ("Inactive", "Inactive"),
+            ("On Leave", "On Leave"),
+        )
+    )
 
     class Meta:
         verbose_name = "Employment Status"
@@ -233,11 +248,20 @@ class EmploymentStatus(models.Model):
     def __str__(self):
         return str(self.id)
 
-    # statuses = ["Active", "Inactive", "On Leave"]
-
 
 class Contract(models.Model):
-    name = models.CharField(default="Not Defined", max_length=100)
+    name = models.CharField(
+        max_length=100,
+        choices=(
+            ("Employment Contract", "Employment Contract"),
+            ("Contract of Mandate", "Contract of Mandate"),
+            ("Contract for Specific Work", "Contract for Specific Work"),
+            ("B2B", "B2B"),
+            ("Agency Contract", "Agency Contract"),
+            ("Internship Contract", "Internship Contract"),
+            ("Temporary Employment Contract", "Temporary Employment Contract"),
+        )
+    )
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
     duration = models.DurationField(null=True, blank=True)
@@ -250,16 +274,6 @@ class Contract(models.Model):
 
     def __str__(self):
         return str(self.id)
-    
-    # contracts = [
-    #     "Employment Contract",
-    #     "Contract of Mandate",
-    #     "Contract for Specific Work",
-    #     "B2B",
-    #     "Agency Contract",
-    #     "Internship Contract",
-    #     "Temporary Employment Contract"
-    # ]
 
 
 class ProfileEmploymentInformation(models.Model):
@@ -279,9 +293,9 @@ class ProfileEmploymentInformation(models.Model):
 
 class Profile(models.Model):
     user = models.OneToOneField(to=User, on_delete=models.CASCADE)
-    basicinformation = models.OneToOneField(to=ProfileBasicInformation, on_delete=models.CASCADE, null=True)
-    contactinformation = models.OneToOneField(to=ProfileContactInformation, on_delete=models.CASCADE, null=True)
-    employmentinformation = models.OneToOneField(to=ProfileEmploymentInformation, on_delete=models.CASCADE, null=True)
+    basic_information = models.OneToOneField(to=ProfileBasicInformation, on_delete=models.CASCADE, null=True)
+    contact_information = models.OneToOneField(to=ProfileContactInformation, on_delete=models.CASCADE, null=True)
+    employment_information = models.OneToOneField(to=ProfileEmploymentInformation, on_delete=models.CASCADE, null=True)
 
     class Meta:
         verbose_name = "Profile"
@@ -301,58 +315,35 @@ def delete_profile(sender, instance, **kwargs):
 
     if instance.profile:
         profile = instance.profile
-        print(profile.basicinformation)
-        print(profile.basicinformation.profile_image)
 
-        if hasattr(profile, "basicinformation"):
-            print("Profile has Attribute BasicInformation.")
-            if hasattr(profile.basicinformation, "profile_image"):
-                print("BasicInformation has Attribute ProfileImage.")
-                if profile.basicinformation.profile_image:
-                    print("Profile BasicInformation ProfileImage & Profile BasicInformation ProfileImage Image")
-                    image_path = profile.basicinformation.profile_image.image.path
+        if hasattr(profile, "basic_information"):
+            if hasattr(profile.basic_information, "profile_image"):
+                if profile.basic_information.profile_image:
+                    image_path = profile.basic_information.profile_image.image.path
 
                     if "default_profile_image.png" not in image_path:
                         if os.path.isfile(path=image_path):
                             os.remove(path=image_path)
 
-                    print("Profile Image Deleting...")
-                    profile.basicinformation.profile_image.delete()
-                    print("Profile Image Delete.")
+                    profile.basic_information.profile_image.delete()
 
-                print("Profile Basic Information Deleting...")
-                profile.basicinformation.delete()
-                print("Profile Basic Information Delete.")
+                profile.basic_information.delete()
 
-            if hasattr(profile, "contactinformation"):
-                print("Profile has Attribute ContactInformation.")
-                if profile.contactinformation:
-                    print("Profile ContactInformation Deleting...")
-                    profile.contactinformation.delete()
-                    print("Profile ContactInformation Deleted.")
+            if hasattr(profile, "contact_information"):
+                if profile.contact_information:
+                    profile.contact_information.delete()
 
-            if hasattr(profile, "employmentinformation"):
-                print("Profile has Attribute EmploymentInformation.")
-                if profile.employmentinformation:
-                    if hasattr(profile.employmentinformation, "job_position"):
-                        print("Job Position Deleting...")
-                        profile.employmentinformation.job_position.delete()
-                        print("Job Position Deleted.")
+            if hasattr(profile, "employment_information"):
+                if profile.employment_information:
+                    if hasattr(profile.employment_information, "job_position"):
+                        profile.employment_information.job_position.delete()
 
-                    if hasattr(profile.employmentinformation, "employment_status"):
-                        print("Employment Status Deleting...")
-                        profile.employmentinformation.employment_status.delete()
-                        print("Employment Status Deleted.")
+                    if hasattr(profile.employment_information, "employment_status"):
+                        profile.employment_information.employment_status.delete()
 
-                    if hasattr(profile.employmentinformation, "contract"):
-                        print("Contract Deleting...")
-                        profile.employmentinformation.contract.delete()
-                        print("Contract Deleted.")
+                    if hasattr(profile.employment_information, "contract"):
+                        profile.employment_information.contract.delete()
 
-                    print("Profile EmploymentInformation Deleting...")
-                    profile.employmentinformation.delete()
-                    print("Profile EmploymentInformation Deleted.")
+                    profile.employment_information.delete()
 
-        print("Profile Deleting...")
         profile.delete()
-        print("Profile Deleted.")

@@ -197,7 +197,7 @@ class AdminJobPosition(admin.ModelAdmin):
     form = AdminJobPositionForm
     fieldsets = (
         (
-            "Basic", {
+            "Position", {
                 "fields": [
                     "name",
                 ],
@@ -246,7 +246,6 @@ class AdminContract(admin.ModelAdmin):
                 "fields": [
                     "start_date",
                     "end_date",
-                    "duration",
                 ],
             },
         ),
@@ -306,10 +305,9 @@ class AdminProfile(admin.ModelAdmin):
     list_display = [
         "id",
         "user",
-        "formatted_basicinformation",
-        "formatted_contactinformation",
-        "formatted_employmentinformation",
-        "get_profile_image",
+        "basic_information",
+        "contact_information",
+        "employment_information",
     ]
     form = AdminProfileForm
     fieldsets = (
@@ -323,49 +321,25 @@ class AdminProfile(admin.ModelAdmin):
         (
             "Basic Information", {
                 "fields": [
-                    "basicinformation",
+                    "basic_information",
                 ],
             },
         ),
         (
             "Contact Information", {
                 "fields": [
-                    "contactinformation",
+                    "contact_information",
                 ],
             },
         ),
         (
             "Employment Information", {
                 "fields": [
-                    "employmentinformation",
+                    "employment_information",
                 ],
             },
         ),
     )
-
-    def formatted_basicinformation(self, obj):
-        if obj.basicinformation:
-            return obj.basicinformation
-
-    formatted_basicinformation.short_description = "Basic Information"
-
-    def formatted_contactinformation(self, obj):
-        if obj.contactinformation:
-            return obj.contactinformation
-
-    formatted_contactinformation.short_description = "Contact Information"
-
-    def formatted_employmentinformation(self, obj):
-        if obj.employmentinformation:
-            return obj.employmentinformation
-
-    formatted_employmentinformation.short_description = "Employment Information"
-
-    def get_profile_image(self, obj):
-        if obj.basicinformation.profile_image:
-            return obj.basicinformation.profile_image
-
-    get_profile_image.short_description = "Profile Image"
 
 
 @admin.register(ProfileImage)
