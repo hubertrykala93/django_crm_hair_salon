@@ -91,6 +91,7 @@ class AdminProfileContactInformationForm(forms.ModelForm):
     country = forms.CharField(help_text="Enter country.", label="Country", required=False)
     province = forms.CharField(help_text="Enter province.", label="Province", required=False)
     city = forms.CharField(help_text="Enter city.", label="City", required=False)
+    postalcode = forms.CharField(help_text="Enter postal code.", label="Postal Code", required=False)
     street = forms.CharField(help_text="Enter street.", label="Street", required=False)
     housenumber = forms.CharField(help_text="Enter house number.", label="House Number", required=False)
     apartmentnumber = forms.CharField(help_text="Enter apartment number.", label="Apartment Number", required=False)
@@ -520,9 +521,7 @@ class UpdateProfileImageForm(forms.Form):
 
 class UpdateUserForm(forms.Form):
     email = forms.CharField(
-        error_messages={
-            "required": "Email is required.",
-        },
+        required=False,
     )
     password = forms.CharField(
         widget=forms.PasswordInput,
@@ -537,34 +536,30 @@ class UpdateUserForm(forms.Form):
         self.instance = kwargs.pop("instance", None)
         super(UpdateUserForm, self).__init__(*args, **kwargs)
 
-    def clean(self):
-        password = self.cleaned_data.get("password")
-        repassword = self.cleaned_data.get("repassword")
-
-        if repassword and not password:
-            self.add_error(
-                field=None,
-                error="To make changes, you must also provide the password."
-            )
-
     def clean_email(self):
         email = self.cleaned_data.get("email")
 
-        if len(email) > 255:
-            raise ValidationError(
-                message="The e-mail address cannot be longer than 255 characters.",
-            )
-
-        if not re.match(pattern=r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)",
-                        string=email):
-            raise ValidationError(
-                message="The e-mail address format is invalid.",
-            )
-
-        if self.instance.email != email:
-            if User.objects.filter(email=email).exists():
+        if email != "":
+            if len(email) > 255:
                 raise ValidationError(
-                    message=f"The user with the e-mail address '{email}' already exists.",
+                    message="The e-mail address cannot be longer than 255 characters.",
+                )
+
+            if not re.match(pattern=r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)",
+                            string=email):
+                raise ValidationError(
+                    message="The e-mail address format is invalid.",
+                )
+
+            if self.instance.email != email:
+                if User.objects.filter(email=email).exists():
+                    raise ValidationError(
+                        message=f"The user with the e-mail address '{email}' already exists.",
+                    )
+
+            if self.instance.email == email:
+                raise ValidationError(
+                    message="The email address cannot be changed to the same one. Please enter a new email address.",
                 )
 
         return email
@@ -589,6 +584,11 @@ class UpdateUserForm(forms.Form):
                             "and one special character.",
                 )
 
+            if self.instance.check_password(raw_password=password):
+                raise ValidationError(
+                    message="The password cannot be changed to the same one. Please enter a new email address.",
+                )
+
         return password
 
     def clean_repassword(self):
@@ -604,6 +604,12 @@ class UpdateUserForm(forms.Form):
             if repassword != password:
                 raise ValidationError(
                     message="Confirm Password does not match.",
+                )
+
+        else:
+            if repassword:
+                raise ValidationError(
+                    message="You must also provide the password.",
                 )
 
         return repassword
@@ -648,6 +654,11 @@ class UpdateProfileForm(forms.Form):
             "required": "City is required.",
         }
     )
+    postalcode = forms.CharField(
+        error_messages={
+            "required": "Postal Code is required.",
+        }
+    )
     street = forms.CharField(
         error_messages={
             "required": "Street is required.",
@@ -661,6 +672,10 @@ class UpdateProfileForm(forms.Form):
     apartmentnumber = forms.CharField(
         required=False,
     )
+
+    def __init__(self, *args, **kwargs):
+        self.instance = kwargs.pop("instance", None)
+        super(UpdateProfileForm, self).__init__(*args, **kwargs)
 
     def clean_firstname(self):
         firstname = self.cleaned_data.get("firstname")
@@ -728,15 +743,16 @@ class UpdateProfileForm(forms.Form):
     def clean_biography(self):
         biography = self.cleaned_data.get("biography")
 
-        if len(biography) < 10:
-            raise ValidationError(
-                message="The biography should contain at least 10 characters.",
-            )
+        if biography:
+            if len(biography) < 10:
+                raise ValidationError(
+                    message="The biography should contain at least 10 characters.",
+                )
 
-        if len(biography) > 200:
-            raise ValidationError(
-                message="The biography should contain a maximum of 200 characters.",
-            )
+            if len(biography) > 200:
+                raise ValidationError(
+                    message="The biography should contain a maximum of 200 characters.",
+                )
 
         return biography
 
@@ -787,6 +803,21 @@ class UpdateProfileForm(forms.Form):
             )
 
         return city
+
+    def clean_postalcode(self):
+        postalcode = self.cleaned_data.get("postalcode")
+
+        if len(postalcode) < 3:
+            raise ValidationError(
+                message="The postal code should contain at least 3 characters.",
+            )
+
+        if len(postalcode) > 10:
+            raise ValidationError(
+                message="The postal code should contain a maximum of 10 characters.",
+            )
+
+        return postalcode
 
     def clean_street(self):
         street = self.cleaned_data.get("street")

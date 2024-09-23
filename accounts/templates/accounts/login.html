@@ -10,14 +10,14 @@
             {% csrf_token %}
 
             <div class="form-row">
-                <label for="email">Email:</label>
+                <label for="email">Email *</label>
                 <input type="text" id="email" name="email" placeholder="E-mail Address" {% if form.email.value %}value="{{ form.email.value }}" {% endif %}>
                 {% if form.email.errors %}
                 <span class="form-error">{{ form.email.errors.0 }}</span>
                 {% endif %}
             </div>
             <div class="form-row">
-                <label for="password">Password:</label>
+                <label for="password">Password *</label>
                 <input type="password" id="password" name="password" placeholder="Password">
                 {% if form.password.errors %}
                 <span class="form-error">{{ form.password.errors.0 }}</span>

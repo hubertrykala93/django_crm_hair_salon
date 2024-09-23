@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<section class="user-authentication">
+    <div class="container">
+        <form method="post" novalidate>
+            <h2>Edit your Account</h2>
+            {% csrf_token %}
+
+            <div class="form-row">
+                <label for="email">Email:</label>
+                <input type="text" id="email" name="email" placeholder="E-mail Address" {% if form.email.value %}value="{{ form.email.value }}"{% endif %}>
+                {% if form.email.errors %}
+                <span class="form-error">{{ form.email.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-row">
+                <label for="password">New Password:</label>
+                <input type="password" id="password" name="password" placeholder="New Password">
+                {% if form.password.errors %}
+                <span class="form-error">{{ form.password.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-row">
+                <label for="repassword">Confirm Password:</label>
+                <input type="password" id="repassword" name="repassword" placeholder="Confirm Password">
+                {% if form.repassword.errors %}
+                <span class="form-error">{{ form.repassword.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <button class="btn form-submit-btn" type="submit">Save</button>
+            <div class="form-questions">
+                <span>Changed your mind? <a href="{% url 'profile' %}">Go Back</a></span>
+            </div>
+        </form>
+    </div>
+</section>
+
+{% endblock %}

@@ -190,6 +190,7 @@ class ProfileContactInformation(models.Model):
     country = models.CharField(max_length=100, null=True)
     province = models.CharField(max_length=100, null=True)
     city = models.CharField(max_length=100, null=True)
+    postalcode = models.CharField(max_length=100, null=True)
     street = models.CharField(max_length=100, null=True)
     housenumber = models.CharField(max_length=10, null=True)
     apartmentnumber = models.CharField(max_length=10, null=True, blank=True)
@@ -218,14 +219,35 @@ class ProfileEmploymentInformation(models.Model):
     )
     dateofemployment = models.DateField(null=True, blank=True)
     employmentstatus = models.CharField(
+        default="Inactive",
         max_length=50,
         choices=(
             ("Active", "Active"),
             ("On Leave", "On Leave"),
             ("Inactive", "Inactive"),
+
         ),
-        default="Active",
     )
+    contracttype = models.CharField(
+        default="Not Defined",
+        max_length=200,
+        choices=(
+            ("Employment Contract", "Employment Contract"),
+            ("Contract of Mandate", "Contract of Mandate"),
+            ("Contract for Specific Work", "Contract for Specific Work"),
+            ("B2B", "B2B"),
+            ("Agency Contract", "Agency Contract"),
+            ("Internship Contract", "Internship Contract"),
+            ("Temporary Employment Contract", "Temporary Employment Contract"),
+        )
+    )
+    contractstartdate = models.DateField(null=True, blank=True)
+    contractenddate = models.DateField(null=True, blank=True)
+    contractduration = models.DurationField(null=True, blank=True)
+    salary = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    work_hours_per_week = models.IntegerField(null=True, blank=True)
+
+    # benefits
 
     class Meta:
         verbose_name = "Profile Employment Information"

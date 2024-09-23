@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<section>
+    <div class="container">
+        <div class="profile-header">
+            <div class="profile-image-container">
+                <img class="profile-image" src="{{ request.user.profile.basicinformation.profileimage.image.url }}" alt="{{ request.user.profile.basicinformation.profileimage.alt }}">
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+
+                    <input type="file" id="profileimage" name="profileimage">
+
+                    {% if form.profileimage.errors %}
+                    <span class="form-error">{{ form.profileimage.errors.0 }}</span>
+                    {% endif %}
+
+                    <button class="btn form-submit-btn" type="submit">Upload</button>
+                </form>
+            </div>
+
+            <div class="profile-info">
+                {% if request.user.profile.basicinformation.firstname and request.user.profile.basicinformation.lastname %}
+                <h1>{{ request.user.profile.basicinformation.firstname }} {{ request.user.profile.basicinformation.lastname }}</h1>
+                {% endif %}
+                <p>Job Position: {{ request.user.profile.employmentinformation.usertype }}</p>
+                <p>Employment Status: {{ request.user.profile.employmentinformation.employmentstatus }}</p>
+                <p>Employment Date: {{ request.user.profile.employmentinformation.dateofemployment|date:'Y-m-d' }}</p>
+            </div>
+        </div>
+        <div class="profile-details">
+            <div class="user-info">
+                <h2>User Settings</h2>
+                <p>Identifier</p>
+                <p>{{ request.user.username }}</p>
+                <p>Date Joined</p>
+                <p>{{ request.user.date_joined|date:'Y-m-d H:i' }}</p>
+                <p>Email</p>
+                <p>{{ request.user.email }}</p>
+                <p>Last Login</p>
+                <p>{{ request.user.last_login|date:'Y-m-d H:i' }}</p>
+                <a href="{% url 'edit-user' %}"><button type="button" class="btn form-submit-btn">Edit</button></a>
+            </div>
+            <div class="profile-info">
+                <h2>Profile Basic Settings</h2>
+                <p>Firstname</p>
+                <p>{{ request.user.profile.basicinformation.firstname }}</p>
+                <p>Lastname</p>
+                <p>{{ request.user.profile.basicinformation.lastname }}</p>
+                <p>Date of Birth</p>
+                <p>{{ request.user.profile.basicinformation.dateofbirth|date:'Y-m-d' }}</p>
+                <p>Biography</p>
+                <p>{{ request.user.profile.basicinformation.biography }}</p>
+
+                <h2>Contact Basic Settings</h2>
+                <p>Phone Number</p>
+                <p>{{ request.user.profile.contactinformation.phonenumber }}</p>
+                <p>Country</p>
+                <p>{{ request.user.profile.contactinformation.country }}</p>
+                <p>Province</p>
+                <p>{{ request.user.profile.province.country }}</p>
+                <p>City</p>
+                <p>{{ request.user.profile.contactinformation.city }}</p>
+                <p>Postal Code</p>
+                <p>{{ request.user.profile.contactinformation.postalcode }}</p>
+                <p>Street</p>
+                <p>{{ request.user.profile.contactinformation.street }}</p>
+                <p>House Number</p>
+                <p>{{ request.user.profile.contactinformation.housenumber }}</p>
+
+                {% if request.user.profile.contactinformation.apartmentnumber %}
+                <p>Apartment Number</p>
+                <p>{{ request.user.profile.contactinformation.apartmentnumber }}</p>
+                {% endif %}
+
+                <a href="{% url 'edit-profile' %}"><button type="button" class="btn form-submit-btn">Edit</button></a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

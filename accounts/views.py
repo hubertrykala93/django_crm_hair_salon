@@ -353,128 +353,106 @@ def change_password(request):
 
 
 def profile(request):
+    form = UpdateProfileImageForm(files=request.FILES)
+
     if request.method == "POST":
-        profileimage_update_form = UpdateProfileImageForm(files=request.FILES, prefix="profileimage")
-        update_user_form = UpdateUserForm(data=request.POST, instance=request.user, prefix="user")
-        update_profile_form = UpdateProfileForm(data=request.POST, prefix="profile")
+        if form.is_valid():
+            profile_image_uploaded = request.FILES.get("profileimage", None)
 
-        if "update-profile-image" in request.POST:
-            if profileimage_update_form.is_valid():
-                profile_image_uploaded = request.FILES.get("profileimage", None)
-
-                if profile_image_uploaded is not None:
-                    profile_image = request.user.profile.basicinformation.profileimage
-                    profile_image.image = request.FILES["profileimage"]
-                    profile_image.save()
-
-                    messages.success(
-                        request=request,
-                        message="Profile picture has been successfully changed.",
-                    )
-
-        if "update-user" in request.POST:
-            if update_user_form.is_valid():
-                user = request.user
-                password = request.POST.get("password", None)
-
-                if password:
-                    if request.user.email == request.POST["email"]:
-                        user.set_password(raw_password=request.POST["password"])
-                        user.save()
-
-                    else:
-                        user.email = request.POST["email"]
-                        user.set_password(raw_password=request.POST["password"])
-                        user.save()
-
-                else:
-                    user.email = request.POST["email"]
-                    user.save()
-
-                update_session_auth_hash(request=request, user=user)
+            if profile_image_uploaded is not None:
+                profile_image = request.user.profile.basicinformation.profileimage
+                profile_image.image = request.FILES["profileimage"]
+                profile_image.save()
 
                 messages.success(
                     request=request,
-                    message="Account details have been successfully changed.",
+                    message="Profile picture has been successfully changed.",
                 )
-
-        if "update-profile" in request.POST:
-            if update_profile_form.is_valid():
-                profile = request.user.profile
-
-                original_firstname = profile.basicinformation.firstname
-                original_lastname = profile.basicinformation.lastname
-                original_dateofbirth = profile.basicinformation.dateofbirth
-                original_biography = profile.basicinformation.biography
-
-                original_phonenumber = profile.contactinformation.phonenumber
-                original_country = profile.contactinformation.country
-                original_province = profile.contactinformation.province
-                original_city = profile.contactinformation.city
-                original_street = profile.contactinformation.street
-                original_housenumber = profile.contactinformation.housenumber
-                original_apartmentnumber = profile.contactinformation.apartmentnumber
-
-                changed_fields = (
-                        original_firstname != request.POST["firstname"] or
-                        original_lastname != request.POST["lastname"] or
-                        original_dateofbirth.strftime("%Y-%m-%d") != request.POST["dateofbirth"] or
-                        original_biography != request.POST["biography"] or
-                        original_phonenumber != request.POST["phonenumber"] or
-                        original_country != request.POST["country"] or
-                        original_province != request.POST["province"] or
-                        original_city != request.POST["city"] or
-                        original_street != request.POST["street"] or
-                        original_housenumber != request.POST["housenumber"] or
-                        original_apartmentnumber != request.POST["apartmentnumber"]
-                )
-
-                if changed_fields:
-                    messages.success(
-                        request=request,
-                        message="Profile details have been successfully changed.",
-                    )
-
-                else:
-                    messages.info(
-                        request=request,
-                        message="No changes have been made.",
-                    )
-
-    else:
-        profileimage_update_form = UpdateProfileImageForm()
-        update_user_form = UpdateUserForm(instance=request.user)
-        update_profile_form = UpdateProfileForm()
 
     return render(
         request=request,
-        template_name="accounts/profile-page.html",
+        template_name="accounts/profile.html",
         context={
             "title": "Profile",
-            "profileimage_update_form": profileimage_update_form,
-            "update_user_form": update_user_form,
-            "update_profile_form": update_profile_form,
+            "form": form,
         }
     )
 
 
-def update_profile_form(request):
-    form = UpdateProfileForm(data=request.POST)
+def edit_user(request):
+    form = UpdateUserForm(data=request.POST or None, instance=request.user)
 
     if request.method == "POST":
+        user = request.user
+
         if form.is_valid():
-            messages.success(
-                request=request,
-                message="Profile details have been successfully changed.",
-            )
+            email = request.POST["email"]
+            password = request.POST["password"]
+
+            if not email and not password:
+                messages.info(
+                    request=request,
+                    message="No changes have been made.",
+                )
+
+            if password:
+                if email:
+                    user.email = email
+                    user.set_password(raw_password=password)
+                    user.save()
+
+                    messages.success(
+                        request=request,
+                        message="The account details have been successfully updated.",
+                    )
+
+                else:
+                    user.set_password(raw_password=password)
+                    user.save()
+
+                    messages.success(
+                        request=request,
+                        message="Password has been successfully updated.",
+                    )
+
+            else:
+                if email:
+                    user.email = email
+                    user.save()
+
+                    messages.success(
+                        request=request,
+                        message="Email has been successfully updated.",
+                    )
+
+            update_session_auth_hash(request=request, user=user)
 
             return redirect(to="profile")
 
     return render(
         request=request,
-        template_name="accounts/profile-page.html",
+        template_name="accounts/edit-user.html",
         context={
-            "update_profile_form": form,
+            "title": "Edit User",
+            "form": form,
+        }
+    )
+
+
+def edit_profile(request):
+    form = UpdateProfileForm(data=request.POST or None, instance=request.user.profile)
+    print(f"Request POST -> {request.POST}")
+
+    if request.method == "POST":
+        if form.is_valid():
+            pass
+
+    return render(
+        request=request,
+        template_name="accounts/edit-profile.html",
+        context={
+            "title": "Edit Profile",
+            "form": form,
         }
     )
 
@@ -525,7 +503,6 @@ def contact_us(request):
                 )
 
             except Exception as e:
-                print(e)
                 messages.error(
                     request=request,
                     message="Failed to send the email, please try again.",

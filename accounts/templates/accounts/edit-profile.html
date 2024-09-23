@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<section class="user-authentication">
+    <div class="container">
+        <form method="post" novalidate>
+            <h2>Edit your Profile</h2>
+            <h4>Basic Information</h4>
+            {% csrf_token %}
+
+            <div class="form-row">
+                <label for="firstname">Firstname*</label>
+                <input type="text" id="firstname" name="firstname" placeholder="Firstname" {% if form.firstname.value %}value="{{ form.firstname.value }}"{% endif %}>
+                {% if form.firstname.errors %}
+                <span class="form-error">{{ form.firstname.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-row">
+                <label for="lastname">Lastname*</label>
+                <input type="text" id="lastname" name="lastname" placeholder="Lastname" {% if form.lastname.value %}value="{{ form.lastname.value }}"{% endif %}>
+                {% if form.lastname.errors %}
+                <span class="form-error">{{ form.lastname.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-row">
+                <label for="dateofbirth">Date of Birth*</label>
+                <input type="text" id="dateofbirth" name="dateofbirth" placeholder="Date of Birth" {% if form.dateofbirth.value %}value="{{ form.dateofbirth.value }}"{% endif %}>
+                {% if form.dateofbirth.errors %}
+                <span class="form-error">{{ form.dateofbirth.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-row">
+                <label for="biography">Biography</label>
+                <textarea id="biography" name="biography" placeholder="Biography"></textarea>
+                {% if form.biography.errors %}
+                <span class="form-error">{{ form.biography.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <h4>Contact Information</h4>
+            <div class="form-row">
+                <label for="phonenumber">Phone Number*</label>
+                <input type="text" id="phonenumber" name="phonenumber" placeholder="Phone Number" {% if form.phonenumber.value %}value="{{ form.phonenumber.value }}"{% endif %}>
+                {% if form.phonenumber.errors %}
+                <span class="form-error">{{ form.phonenumber.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-row">
+                <label for="country">Country*</label>
+                <input type="text" id="country" name="country" placeholder="Country" {% if form.country.value %}value="{{ form.country.value }}"{% endif %}>
+                {% if form.country.errors %}
+                <span class="form-error">{{ form.country.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-row">
+                <label for="province">Province*</label>
+                <input type="text" id="province" name="province" placeholder="Province" {% if form.province.value %}value="{{ form.province.value }}"{% endif %}>
+                {% if form.province.errors %}
+                <span class="form-error">{{ form.province.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-row">
+                <label for="city">City*</label>
+                <input type="text" id="city" name="city" placeholder="City" {% if form.city.value %}value="{{ form.city.value }}"{% endif %}>
+                {% if form.city.errors %}
+                <span class="form-error">{{ form.city.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-row">
+                <label for="postalcode">Postal Code*</label>
+                <input type="text" id="postalcode" name="postalcode" placeholder="Postal Code" {% if form.postalcode.value %}value="{{ form.postalcode.value }}"{% endif %}>
+                {% if form.postalcode.errors %}
+                <span class="form-error">{{ form.postalcode.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-row">
+                <label for="street">Street*</label>
+                <input type="text" id="street" name="street" placeholder="Street" {% if form.street.value %}value="{{ form.street.value }}"{% endif %}>
+                {% if form.street.errors %}
+                <span class="form-error">{{ form.street.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-row">
+                <label for="housenumber">House Number*</label>
+                <input type="text" id="housenumber" name="housenumber" placeholder="House Number" {% if form.housenumber.value %}value="{{ form.housenumber.value }}"{% endif %}>
+                {% if form.housenumber.errors %}
+                <span class="form-error">{{ form.housenumber.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-row">
+                <label for="apartmentnumber">Apartment Number</label>
+                <input type="text" id="apartmentnumber" name="apartmentnumber" placeholder="Apartment Number" {% if form.apartmentnumber.value %}value="{{ form.apartmentnumber.value }}"{% endif %}>
+                {% if form.apartmentnumber.errors %}
+                <span class="form-error">{{ form.apartmentnumber.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <button class="btn form-submit-btn" type="submit">Save</button>
+            <div class="form-questions">
+                <span>Changed your mind? <a href="{% url 'profile' %}">Go Back</a></span>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
