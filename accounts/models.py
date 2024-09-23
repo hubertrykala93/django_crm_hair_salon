@@ -275,6 +275,12 @@ class Contract(models.Model):
     def __str__(self):
         return str(self.id)
 
+    def save(self, *args, **kwargs):
+        if self.start_date and self.end_date:
+            self.duration = self.end_date - self.start_date
+
+        super(Contract, self).save(*args, **kwargs)
+
 
 class ProfileEmploymentInformation(models.Model):
     job_position = models.OneToOneField(to=JobPosition, on_delete=models.CASCADE, null=True, blank=True)

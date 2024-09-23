@@ -28,9 +28,9 @@
 
             <div class="form-row">
                 <label for="dateofbirth">Date of Birth*</label>
-                <input type="text" id="dateofbirth" name="dateofbirth" placeholder="Date of Birth" {% if form.dateofbirth.value %}value="{{ form.dateofbirth.value }}"{% endif %}>
-                {% if form.dateofbirth.errors %}
-                <span class="form-error">{{ form.dateofbirth.errors.0 }}</span>
+                <input type="text" id="dateofbirth" name="date_of_birth" placeholder="Date of Birth" {% if form.date_of_birth.value %}value="{{ form.date_of_birth.value }}"{% endif %}>
+                {% if form.date_of_birth.errors %}
+                <span class="form-error">{{ form.date_of_birth.errors.0 }}</span>
                 {% endif %}
             </div>
 
@@ -45,9 +45,9 @@
             <h4>Contact Information</h4>
             <div class="form-row">
                 <label for="phonenumber">Phone Number*</label>
-                <input type="text" id="phonenumber" name="phonenumber" placeholder="Phone Number" {% if form.phonenumber.value %}value="{{ form.phonenumber.value }}"{% endif %}>
-                {% if form.phonenumber.errors %}
-                <span class="form-error">{{ form.phonenumber.errors.0 }}</span>
+                <input type="text" id="phonenumber" name="phone_number" placeholder="Phone Number" {% if form.phone_number.value %}value="{{ form.phone_number.value }}"{% endif %}>
+                {% if form.phone_number.errors %}
+                <span class="form-error">{{ form.phone_number.errors.0 }}</span>
                 {% endif %}
             </div>
 
@@ -77,9 +77,9 @@
 
             <div class="form-row">
                 <label for="postalcode">Postal Code*</label>
-                <input type="text" id="postalcode" name="postalcode" placeholder="Postal Code" {% if form.postalcode.value %}value="{{ form.postalcode.value }}"{% endif %}>
-                {% if form.postalcode.errors %}
-                <span class="form-error">{{ form.postalcode.errors.0 }}</span>
+                <input type="text" id="postalcode" name="postal_code" placeholder="Postal Code" {% if form.postal_code.value %}value="{{ form.postal_code.value }}"{% endif %}>
+                {% if form.postal_code.errors %}
+                <span class="form-error">{{ form.postal_code.errors.0 }}</span>
                 {% endif %}
             </div>
 
@@ -93,17 +93,17 @@
 
             <div class="form-row">
                 <label for="housenumber">House Number*</label>
-                <input type="text" id="housenumber" name="housenumber" placeholder="House Number" {% if form.housenumber.value %}value="{{ form.housenumber.value }}"{% endif %}>
-                {% if form.housenumber.errors %}
-                <span class="form-error">{{ form.housenumber.errors.0 }}</span>
+                <input type="text" id="housenumber" name="house_number" placeholder="House Number" {% if form.house_number.value %}value="{{ form.house_number.value }}"{% endif %}>
+                {% if form.house_number.errors %}
+                <span class="form-error">{{ form.house_number.errors.0 }}</span>
                 {% endif %}
             </div>
 
             <div class="form-row">
                 <label for="apartmentnumber">Apartment Number</label>
-                <input type="text" id="apartmentnumber" name="apartmentnumber" placeholder="Apartment Number" {% if form.apartmentnumber.value %}value="{{ form.apartmentnumber.value }}"{% endif %}>
-                {% if form.apartmentnumber.errors %}
-                <span class="form-error">{{ form.apartmentnumber.errors.0 }}</span>
+                <input type="text" id="apartmentnumber" name="apartment_number" placeholder="Apartment Number" {% if form.apartment_number.value %}value="{{ form.apartment_number.value }}"{% endif %}>
+                {% if form.apartment_number.errors %}
+                <span class="form-error">{{ form.apartment_number.errors.0 }}</span>
                 {% endif %}
             </div>
 

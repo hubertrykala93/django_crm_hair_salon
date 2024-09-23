@@ -226,9 +226,9 @@ class AdminContract(admin.ModelAdmin):
     list_display = [
         "id",
         "name",
-        "start_date",
-        "end_date",
-        "duration",
+        "formatted_start_date",
+        "formatted_end_date",
+        "formatted_duration",
         "salary",
         "work_hours_per_week",
     ]
@@ -264,6 +264,24 @@ class AdminContract(admin.ModelAdmin):
             },
         ),
     )
+
+    def formatted_start_date(self, obj):
+        if obj.start_date:
+            return obj.start_date.strftime("%Y-%m-%d")
+
+    formatted_start_date.short_description = "Start Date"
+
+    def formatted_end_date(self, obj):
+        if obj.end_date:
+            return obj.end_date.strftime("%Y-%m-%d")
+
+    formatted_end_date.short_description = "End Date"
+
+    def formatted_duration(self, obj):
+        if obj.duration:
+            return str(obj.duration.days) + " " + "days"
+
+    formatted_duration.short_description = "Duration"
 
 
 @admin.register(ProfileEmploymentInformation)

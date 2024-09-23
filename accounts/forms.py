@@ -512,27 +512,27 @@ class ChangePasswordForm(forms.ModelForm):
 
 
 class UpdateProfileImageForm(forms.Form):
-    profileimage = forms.ImageField(
+    profile_image = forms.ImageField(
         required=False,
     )
 
     def clean_profileimage(self):
-        profileimage = self.cleaned_data.get("profileimage")
+        profile_image = self.cleaned_data.get("profileimage")
         allowed_extensions = ["jpg", "jpeg", "png", "webp"]
 
-        if profileimage:
-            if profileimage.name.split(".")[-1] not in allowed_extensions:
+        if profile_image:
+            if profile_image.name.split(".")[-1] not in allowed_extensions:
                 raise ValidationError(
                     message="Invalid file format, allowed formats are 'jpg', 'jpeg', 'png', 'webp'.",
                 )
 
-            if profileimage.size > 1000000:
+            if profile_image.size > 1000000:
                 raise ValidationError(
                     message="File size too large, the maximum allowed size is 1MB.",
                 )
 
             try:
-                img = Image.open(fp=profileimage)
+                img = Image.open(fp=profile_image)
                 img.verify()
 
             except(IOError, SyntaxError):
@@ -540,7 +540,7 @@ class UpdateProfileImageForm(forms.Form):
                     message="The file is not a valid image.",
                 )
 
-        return profileimage
+        return profile_image
 
 
 class UpdateUserForm(forms.Form):
@@ -653,12 +653,12 @@ class UpdateProfileForm(forms.Form):
     biography = forms.CharField(
         required=False,
     )
-    dateofbirth = forms.CharField(
+    date_of_birth = forms.CharField(
         error_messages={
             "required": "Date of Birth is required.",
         }
     )
-    phonenumber = forms.CharField(
+    phone_number = forms.CharField(
         error_messages={
             "required": "Phone Number is required.",
         }
@@ -678,7 +678,7 @@ class UpdateProfileForm(forms.Form):
             "required": "City is required.",
         }
     )
-    postalcode = forms.CharField(
+    postal_code = forms.CharField(
         error_messages={
             "required": "Postal Code is required.",
         }
@@ -688,12 +688,12 @@ class UpdateProfileForm(forms.Form):
             "required": "Street is required.",
         }
     )
-    housenumber = forms.CharField(
+    house_number = forms.CharField(
         error_messages={
             "required": "House Number is required.",
         }
     )
-    apartmentnumber = forms.CharField(
+    apartment_number = forms.CharField(
         required=False,
     )
 
@@ -741,11 +741,11 @@ class UpdateProfileForm(forms.Form):
 
         return lastname
 
-    def clean_dateofbirth(self):
-        dateofbirth = self.cleaned_data.get("dateofbirth")
+    def clean_date_of_birth(self):
+        date_of_birth = self.cleaned_data.get("date_of_birth")
 
         try:
-            date_object = datetime.strptime(dateofbirth, "%Y-%m-%d").date()
+            date_object = datetime.strptime(date_of_birth, "%Y-%m-%d").date()
 
         except ValueError:
             raise ValidationError(
@@ -757,12 +757,12 @@ class UpdateProfileForm(forms.Form):
                 message="The date of birth cannot be greater than or equal to the current date.",
             )
 
-        if not re.match(pattern="^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$", string=dateofbirth):
+        if not re.match(pattern="^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$", string=date_of_birth):
             raise ValidationError(
                 message="Date must be in the format YYYY-MM-DD.",
             )
 
-        return dateofbirth
+        return date_of_birth
 
     def clean_biography(self):
         biography = self.cleaned_data.get("biography")
@@ -780,15 +780,20 @@ class UpdateProfileForm(forms.Form):
 
         return biography
 
-    def clean_phonenumber(self):
-        phonenumber = self.cleaned_data.get("phonenumber")
+    def clean_phone_number(self):
+        phone_number = self.cleaned_data.get("phone_number")
 
-        if not re.match(pattern="^\+?\d{0,3}?[-. (]?\d{3}[-. )]?\d{3}[-. ]?\d{3}$", string=phonenumber):
+        if not re.compile(r"^\d{8,15}$").match(phone_number):
             raise ValidationError(
-                message="Invalid phone number format.",
+                message="Invalid phone number format. Please enter a valid number with the country code (e.g., 11234567890 for the USA).",
             )
 
-        return phonenumber
+        # if not re.match(pattern="^\+?\d{0,3}?[-. (]?\d{3}[-. )]?\d{3}[-. ]?\d{3}$", string=phonenumber):
+        #     raise ValidationError(
+        #         message="Invalid phone number format.",
+        #     )
+
+        return phone_number
 
     def clean_country(self):
         country = self.cleaned_data.get("country")
@@ -828,20 +833,20 @@ class UpdateProfileForm(forms.Form):
 
         return city
 
-    def clean_postalcode(self):
-        postalcode = self.cleaned_data.get("postalcode")
+    def clean_postal_code(self):
+        postal_code = self.cleaned_data.get("postal_code")
 
-        if len(postalcode) < 3:
+        if len(postal_code) < 3:
             raise ValidationError(
                 message="The postal code should contain at least 3 characters.",
             )
 
-        if len(postalcode) > 10:
+        if len(postal_code) > 10:
             raise ValidationError(
                 message="The postal code should contain a maximum of 10 characters.",
             )
 
-        return postalcode
+        return postal_code
 
     def clean_street(self):
         street = self.cleaned_data.get("street")
@@ -853,25 +858,26 @@ class UpdateProfileForm(forms.Form):
 
         return street
 
-    def clean_housenumber(self):
-        housenumber = self.cleaned_data.get("housenumber")
+    def clean_house_number(self):
+        house_number = self.cleaned_data.get("house_number")
 
-        if len(housenumber) > 10:
+        if len(house_number) > 10:
             raise ValidationError(
                 message="The house number should contain a maximum of 10 characters.",
             )
 
-        return housenumber
+        return house_number
 
-    def clean_apartmentnumber(self):
-        apartmentnumber = self.cleaned_data.get("apartmentnumber")
+    def clean_apartment_number(self):
+        apartment_number = self.cleaned_data.get("apartment_number")
 
-        if len(apartmentnumber) > 10:
-            raise ValidationError(
-                message="The apartment number should contain a maximum of 10 characters.",
-            )
+        if apartment_number:
+            if len(apartment_number) > 10:
+                raise ValidationError(
+                    message="The apartment number should contain a maximum of 10 characters.",
+                )
 
-        return apartmentnumber
+        return apartment_number
 
 
 class ContactUsForm(forms.Form):

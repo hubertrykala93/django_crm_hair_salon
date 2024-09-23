@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect, reverse
 from .forms import RegisterForm, LoginForm, PasswordResetForm, OneTimePasswordForm, ChangePasswordForm, UpdateUserForm, \
     UpdateProfileImageForm, UpdateProfileForm, ContactUsForm
 from django.contrib import messages
-from .models import User, OneTimePassword
+from .models import User, OneTimePassword, ProfileBasicInformation, ProfileContactInformation
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import login, authenticate, logout, update_session_auth_hash
 from django.contrib.auth.decorators import user_passes_test, login_required
@@ -365,7 +365,7 @@ def profile(request):
             profile_image_uploaded = request.FILES.get("profileimage", None)
 
             if profile_image_uploaded is not None:
-                profile_image = request.user.profile.basicinformation.profileimage
+                profile_image = request.user.profile.basic_information.profile_image
                 profile_image.image = request.FILES["profileimage"]
                 profile_image.save()
 
@@ -453,7 +453,48 @@ def edit_profile(request):
 
     if request.method == "POST":
         if form.is_valid():
-            pass
+            basic_data = {
+                "firstname": request.POST["firstname"].strip(),
+                "lastname": request.POST["lastname"].strip(),
+                "date_of_birth": request.POST["date_of_birth"].strip(),
+            }
+
+            contact_data = {
+                "phone_number": request.POST["phone_number"].strip(),
+                "country": request.POST["country"].strip(),
+                "province": request.POST["province"].strip(),
+                "city": request.POST["city"].strip(),
+                "postal_code": request.POST["postal_code"].strip(),
+                "street": request.POST["street"].strip(),
+                "house_number": request.POST["house_number"].strip(),
+            }
+
+            if request.POST["biography"]:
+                basic_data.update(
+                    {
+                        "biography": request.POST["biography"].strip(),
+                    }
+                )
+
+            if request.POST["apartment_number"]:
+                contact_data.update(
+                    {
+                        "apartment_number": request.POST["apartment_number"].strip(),
+                    }
+                )
+
+            basic_information = ProfileBasicInformation.objects.filter(profile=request.user.profile)
+            contact_information = ProfileContactInformation.objects.filter(profile=request.user.profile)
+
+            basic_information.update(**basic_data)
+            contact_information.update(**contact_data)
+
+            messages.success(
+                request=request,
+                message="Profile details have been successfully updated.",
+            )
+
+            return redirect(to="profile")
 
     return render(
         request=request,
