@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect, reverse
 from .forms import RegisterForm, LoginForm, PasswordResetForm, OneTimePasswordForm, ChangePasswordForm, UpdateUserForm, \
     UpdateProfileImageForm, UpdateProfileForm, ContactUsForm
 from django.contrib import messages
-from .models import User, OneTimePassword, ProfileBasicInformation, ProfileContactInformation
+from .models import User, OneTimePassword, ProfileBasicInformation, ProfileContactInformation, PaymentFrequency
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import login, authenticate, logout, update_session_auth_hash
 from django.contrib.auth.decorators import user_passes_test, login_required
@@ -357,8 +357,9 @@ def change_password(request):
 
 
 @login_required(login_url="home")
-def profile(request):
+def settings(request):
     form = UpdateProfileImageForm(files=request.FILES)
+    print(request.POST)
 
     if request.method == "POST":
         if form.is_valid():
@@ -376,10 +377,11 @@ def profile(request):
 
     return render(
         request=request,
-        template_name="accounts/profile.html",
+        template_name="accounts/settings.html",
         context={
             "title": "Profile",
             "form": form,
+            "payment_frequencies": [choice[0] for choice in PaymentFrequency._meta.get_field("name")._choices],
         }
     )
 

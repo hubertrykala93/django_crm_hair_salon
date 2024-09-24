@@ -38,9 +38,9 @@ urlpatterns = [
         name="change-password"
     ),
     path(
-        route="profile",
-        view=accounts_views.profile,
-        name="profile"
+        route="settings",
+        view=accounts_views.settings,
+        name="settings"
     ),
     path(
         route="edit-user",

@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<section class="user-authentication">
+    <div class="container">
+        <div class="profile">
+            <div class="profile-header">
+                <img class="profile-image" src="{{ request.user.profile.basic_information.profile_image.image.url }}" alt="{{ request.user.profile.basic_information.profile_image.alt }}">
+                <div class="profile-text-container">
+                    <h1 class="profile-title">{% if request.user.profile.basic_information.firstname and request.user.profile.basic_information.lastname %}{{ request.user.profile.basic_information.firstname }} {{ request.user.profile.basic_information.lastname }}{% else %}{{ request.user.username }}{% endif %}</h1>
+                    <p class="profile-email">{{ request.user.email }}</p>
+                </div>
+            </div>
+            <div class="menu">
+                <a href="{% url 'settings' %}" class="menu-link {% if not request.GET %}active{% endif %}"><i class="fa-solid fa-circle-info"></i>General</a>
+                <a href="?change-password" class="menu-link {% if 'change-password' in request.GET %}active{% endif %}"><i class="fa-solid fa-gear"></i>Change Password</a>
+                <a href="?basic-information" class="menu-link {% if 'basic-information' in request.GET %}active{% endif %}"><i class="fa-solid fa-user"></i>Basic Information</a>
+                <a href="?contact-information" class="menu-link {% if 'contact-information' in request.GET %}active{% endif %}"><i class="fa-solid fa-phone"></i>Contact Information</a>
+                <a href="?payment-information" class="menu-link {% if 'payment-information' in request.GET %}active{% endif %}"><i class="fa-solid fa-credit-card"></i>Payment Information</a>
+                <a href="?invoices" class="menu-link {% if 'invoices' in request.GET %}active{% endif %}"><i class="fa-solid fa-file-invoice"></i>Invoices</a>
+            </div>
+        </div>
+
+        <div class="user-info">
+            {% if not request.GET %}
+            <div class="info-header">
+                <h1 class="info-title">Information</h1>
+            </div>
+            <div class="info-row">
+                <label class="info-label">Username:</label>
+                <p class="info-email">{{ request.user.username }}</p>
+            </div>
+            <div class="info-row">
+                <label class="info-label">Email:</label>
+                <p class="info-email">{{ request.user.email }}</p>
+            </div>
+            <div class="info-row">
+                <label class="info-label">Position:</label>
+                <p class="info-email">{{ request.user.profile.employment_information.job_position.name }}</p>
+            </div>
+            <div class="info-row">
+                <label class="info-label">Status:</label>
+                <p class="info-email">{{ request.user.profile.employment_information.employment_status.name }}</p>
+            </div>
+            <div class="info-row">
+                <label class="info-label">Contract:</label>
+                <p class="info-email">{{ request.user.profile.employment_information.contract.name }}</p>
+            </div>
+            <div class="info-row">
+                <label class="info-label">Start Date:</label>
+                <p class="info-email">{{ request.user.profile.employment_information.contract.start_date }}</p>
+            </div>
+            {% elif 'change-password' in request.GET %}
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="info-header">
+                    <h1 class="info-title">Change Password</h1>
+                </div>
+                <div class="form-row">
+                    <label class="info-label">New Password</label>
+                    <input type="password" name="password" placeholder="New Password">
+                </div>
+                <div class="form-row">
+                    <label class="info-label">Confirm Password</label>
+                    <input type="password" name="repassword" placeholder="Confirm Password">
+                </div>
+                <button class="btn form-submit-btn" type="submit">Save</button>
+            </form>
+            {% elif 'basic-information' in request.GET %}
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="info-header">
+                    <h1 class="info-title">Basic Information</h1>
+                </div>
+                <div class="form-row">
+                    <label class="info-label">Firstname</label>
+                    <input type="text" name="firstname" placeholder="Firstname">
+                </div>
+                <div class="form-row">
+                    <label class="info-label">Lastname</label>
+                    <input type="text" name="lastname" placeholder="Lastname">
+                </div>
+                <div class="form-row">
+                    <label class="info-label">Date of Birth</label>
+                    <input type="text" name="date_of_birth" placeholder="Date of Birth">
+                </div>
+                <div class="form-row">
+                    <label for="biography">Biography</label>
+                    <textarea id="biography" name="biography" placeholder="Biography"></textarea>
+                </div>
+                <button class="btn form-submit-btn" type="submit">Save</button>
+            </form>
+            {% elif 'contact-information' in request.GET %}
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="info-header">
+                    <h1 class="info-title">Contact Information</h1>
+                </div>
+                <div class="form-row">
+                    <label class="info-label">Phone Number</label>
+                    <input type="text" name="phone_number" placeholder="Phone Number">
+                </div>
+                <div class="form-row">
+                    <label class="info-label">Country</label>
+                    <input type="text" name="country" placeholder="Country">
+                </div>
+                <div class="form-row">
+                    <label class="info-label">Province</label>
+                    <input type="text" name="province" placeholder="Province">
+                </div>
+                <div class="form-row">
+                    <label class="info-label">City</label>
+                    <input type="text" name="city" placeholder="City">
+                </div>
+                <div class="form-row">
+                    <label class="info-label">Postal Code</label>
+                    <input type="text" name="postal_code" placeholder="Postal Code">
+                </div>
+                <div class="form-row">
+                    <label class="info-label">Street</label>
+                    <input type="text" name="street" placeholder="Street">
+                </div>
+                <div class="form-row">
+                    <label class="info-label">House Number</label>
+                    <input type="text" name="house_number" placeholder="House Number">
+                </div>
+                <div class="form-row">
+                    <label class="info-label">Apartment Number</label>
+                    <input type="text" name="apartment_number" placeholder="Apartment Number">
+                </div>
+                <button class="btn form-submit-btn" type="submit">Save</button>
+            </form>
+            {% elif 'payment-information' in request.GET %}
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="info-header">
+                    <h1 class="info-title">Payment Information</h1>
+                </div>
+                <div class="form-row">
+                    <label class="info-label">IBAN</label>
+                    <input type="text" name="iban" placeholder="IBAN">
+                </div>
+                <div class="form-row">
+                    <label class="info-label">Account Number</label>
+                    <input type="text" name="account_number" placeholder="Account Number">
+                </div>
+                <div class="form-row">
+                    <label class="info-label">Payment Frequency</label>
+                    <select class="form-select" name="payment_frequency">Select Payment Frequency
+                        {% for payment_frequency in payment_frequencies %}
+                        <option value="{{ payment_frequency }}" {% if payment_frequency == request.GET.payment_frequency %}selected{% endif %}>{{ payment_frequency }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button class="btn form-submit-btn" type="submit">Save</button>
+            </form>
+            {% elif 'invoices' in request.GET %}
+            <div class="info-header">
+                <h1 class="info-title">Invoices</h1>
+            </div>
+            <div class="info-row">
+                <label class="info-label">Username:</label>
+                <p class="info-email">{{ request.user.username }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -76,9 +76,12 @@ class User(AbstractBaseUser, PermissionsMixin):
                 basic_info = ProfileBasicInformation.objects.create()
                 contact_info = ProfileContactInformation.objects.create()
                 employment_info = ProfileEmploymentInformation.objects.create()
+
+                payment_info = ProfilePaymentInformation.objects.create()
                 job_position = JobPosition.objects.create()
                 employment_status = EmploymentStatus.objects.create()
                 contract = Contract.objects.create()
+                payment_frequency = PaymentFrequency.objects.create()
 
                 profile_image = ProfileImage.objects.create()
                 basic_info.profile_image = profile_image
@@ -87,10 +90,13 @@ class User(AbstractBaseUser, PermissionsMixin):
                 profile.basic_information = basic_info
                 profile.contact_information = contact_info
                 profile.employment_information = employment_info
+                profile.payment_information = payment_info
                 profile.employment_information.job_position = job_position
                 profile.employment_information.employment_status = employment_status
                 profile.employment_information.contract = contract
+                profile.payment_information.payment_frequency = payment_frequency
                 employment_info.save()
+                payment_info.save()
 
                 profile.save()
 
@@ -297,11 +303,42 @@ class ProfileEmploymentInformation(models.Model):
         return str(self.pk)
 
 
+class PaymentFrequency(models.Model):
+    name = models.CharField(
+        max_length=100,
+        choices=(
+            ("Monthly", "Monthly"),
+            ("Weekly", "Weekly"),
+        )
+    )
+
+    class Meta:
+        verbose_name = "Payment Frequency"
+        verbose_name_plural = "Payments Frequency"
+
+    def __str__(self):
+        return str(self.pk)
+
+
+class ProfilePaymentInformation(models.Model):
+    iban = models.CharField(max_length=10, null=True, blank=True)
+    account_number = models.CharField(max_length=50, null=True, blank=True)
+    payment_frequency = models.OneToOneField(to=PaymentFrequency, on_delete=models.CASCADE, null=True)
+
+    class Meta:
+        verbose_name = "Payment Information"
+        verbose_name_plural = "Payments Information"
+
+    def __str__(self):
+        return str(self.pk)
+
+
 class Profile(models.Model):
     user = models.OneToOneField(to=User, on_delete=models.CASCADE)
     basic_information = models.OneToOneField(to=ProfileBasicInformation, on_delete=models.CASCADE, null=True)
     contact_information = models.OneToOneField(to=ProfileContactInformation, on_delete=models.CASCADE, null=True)
     employment_information = models.OneToOneField(to=ProfileEmploymentInformation, on_delete=models.CASCADE, null=True)
+    payment_information = models.OneToOneField(to=ProfilePaymentInformation, on_delete=models.CASCADE, null=True)
 
     class Meta:
         verbose_name = "Profile"
@@ -351,5 +388,12 @@ def delete_profile(sender, instance, **kwargs):
                         profile.employment_information.contract.delete()
 
                     profile.employment_information.delete()
+
+            if hasattr(profile, "payment_information"):
+                if profile.payment_information:
+                    if hasattr(profile.payment_information, "payment_frequency"):
+                        profile.payment_information.payment_frequency.delete()
+
+                    profile.payment_information.delete()
 
         profile.delete()

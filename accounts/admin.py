@@ -1,10 +1,11 @@
 from django.contrib import admin
 from django.contrib.auth.models import Group
 from .models import User, Profile, ProfileImage, OneTimePassword, ProfileBasicInformation, ProfileContactInformation, \
-    ProfileEmploymentInformation, JobPosition, EmploymentStatus, Contract
+    ProfileEmploymentInformation, JobPosition, EmploymentStatus, Contract, ProfilePaymentInformation, PaymentFrequency
 from .forms import AdminRegisterForm, AdminProfileForm, AdminProfileImageForm, AdminOneTimePasswordForm, \
     AdminProfileBasicInformationForm, AdminProfileContactInformationForm, AdminProfileEmploymentInformationForm, \
-    AdminJobPositionForm, AdminEmploymentStatusForm, AdminContractForm
+    AdminJobPositionForm, AdminEmploymentStatusForm, AdminContractForm, AdminProfilePaymentInformationForm, \
+    AdminPaymentFrequencyForm
 from django.contrib.sessions.models import Session
 
 admin.site.unregister(Group)
@@ -318,6 +319,58 @@ class AdminProfileEmploymentInformation(admin.ModelAdmin):
     get_employment_status.short_description = "Employment Status"
 
 
+@admin.register(PaymentFrequency)
+class AdminPaymentFrequency(admin.ModelAdmin):
+    list_display = [
+        "id",
+        "name",
+    ]
+    form = AdminPaymentFrequencyForm
+    fieldsets = (
+        (
+            "Frequency Name", {
+                "fields": [
+                    "name",
+                ],
+            },
+        ),
+    )
+
+
+@admin.register(ProfilePaymentInformation)
+class AdminProfilePaymentInformation(admin.ModelAdmin):
+    list_display = [
+        "id",
+        "iban",
+        "account_number",
+        "payment_frequency",
+    ]
+    form = AdminProfilePaymentInformationForm
+    fieldsets = (
+        (
+            "International", {
+                "fields": [
+                    "iban",
+                ],
+            },
+        ),
+        (
+            "Account Number", {
+                "fields": [
+                    "account_number",
+                ],
+            },
+        ),
+        (
+            "Payment Frequency", {
+                "fields": [
+                    "payment_frequency",
+                ],
+            },
+        ),
+    )
+
+
 @admin.register(Profile)
 class AdminProfile(admin.ModelAdmin):
     list_display = [
@@ -326,6 +379,7 @@ class AdminProfile(admin.ModelAdmin):
         "basic_information",
         "contact_information",
         "employment_information",
+        "payment_information",
     ]
     form = AdminProfileForm
     fieldsets = (
@@ -354,6 +408,13 @@ class AdminProfile(admin.ModelAdmin):
             "Employment Information", {
                 "fields": [
                     "employment_information",
+                ],
+            },
+        ),
+        (
+            "Payment Information", {
+                "fields": [
+                    "payment_information",
                 ],
             },
         ),

@@ -1,6 +1,6 @@
 from django import forms
 from .models import User, Profile, ProfileImage, OneTimePassword, ProfileBasicInformation, ProfileContactInformation, \
-    ProfileEmploymentInformation, JobPosition, EmploymentStatus, Contract
+    ProfileEmploymentInformation, JobPosition, EmploymentStatus, Contract, ProfilePaymentInformation, PaymentFrequency
 from django.core.exceptions import ValidationError
 import re
 from django.contrib.auth.hashers import make_password
@@ -146,6 +146,28 @@ class AdminProfileEmploymentInformationForm(forms.ModelForm):
         self.fields["contract"].required = True
 
 
+class AdminPaymentFrequencyForm(forms.ModelForm):
+    class Meta:
+        model = PaymentFrequency
+        fields = "__all__"
+
+
+class AdminProfilePaymentInformationForm(forms.ModelForm):
+    iban = forms.CharField(help_text="Enter IBAN.", label="IBAN", required=True)
+    account_number = forms.CharField(help_text="Enter account number.", label="Account Number", required=True)
+
+    class Meta:
+        model = ProfilePaymentInformation
+        fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super(AdminProfilePaymentInformationForm, self).__init__(*args, **kwargs)
+
+        self.fields["payment_frequency"].help_text = "Select payment frequency."
+        self.fields["payment_frequency"].label = "Payment Frequency"
+        self.fields["payment_frequency"].required = True
+
+
 class AdminProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
@@ -169,6 +191,10 @@ class AdminProfileForm(forms.ModelForm):
         self.fields["employment_information"].help_text = "Select the employment information for this user."
         self.fields["employment_information"].label = "Employment Information"
         self.fields["employment_information"].required = True
+
+        self.fields["payment_information"].help_text = "Select the payment information for this user."
+        self.fields["payment_information"].label = "Payment Information"
+        self.fields["payment_information"].required = True
 
 
 class AdminProfileImageForm(forms.ModelForm):

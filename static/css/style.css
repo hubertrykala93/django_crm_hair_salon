@@ -156,6 +156,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .container {
+    display: flex;
     max-width: 1200px;
     padding: 0 30px;
     margin: 0 auto;
@@ -299,46 +300,103 @@ header nav li a.active {
 }
 
 /* Profile Page */
+.profile {
+    display: block;
+    background-color: var(--neutral-bg);
+    border-radius: var(--radius);
+    height: max-content;
+    width: 30%;
+}
+
 .profile-header {
     display: flex;
-    padding: 20px 0;
-    align-items: center;
-    background: var(--neutral-bg);
-    border-radius: var(--radius);
-    margin-top: 20px;
-}
-
-.profile-image-container {
-    display: flex;
-    flex-direction: column;
+    padding: 20px 20px;
     align-items: center;
 }
 
-.profile-details {
-    display: flex;
-    padding: 20px 0;
-    gap: 20px;
+.profile-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin: 10px;
 }
 
-.profile-details .user-info {
-    padding: 20px;
-    background: var(--neutral-bg);
-    border-radius: var(--radius);
+.profile-text-container {
+    line-height: 1;
 }
 
-.profile-details .profile-info {
-    padding: 20px;
-    width: 60%;
-    background: var(--neutral-bg);
-    border-radius: var(--radius);
+.profile-title {
+    margin: 10px;
+    font-size: 15px;
+    font-weight: 600;
 }
 
-.profile-details .user-info h2 {
+.profile-email, .profile-username {
+    margin: 10px;
+    font-size: small;
+}
+
+.menu {
+    margin-left: 20px;
     margin-bottom: 20px;
 }
 
-.profile-details .profile-info h2 {
+.menu-link {
+    display: block;
+    margin-bottom: 10px;
+    font-size: small;
+    font-weight: 400;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.menu i {
+    margin-right: 10px;
+}
+
+.menu-link.active {
+    background-color: var(--primary-color);
+    color: white;
+    width: 90%;
+}
+
+.user-info {
+    padding: 0 20px;
+    margin-left: 20px;
+    width: 70%;
+    background-color: var(--neutral-bg);
+    border-radius: var(--radius);
+    align-items: center;
+}
+
+.info-title {
+    padding: 20px 0px;
+}
+
+.info-label {
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.info-row {
     margin-bottom: 20px;
+}
+
+.info-email {
+    margin-top: 5px;
+    font-size: small;
+}
+
+.user-info form {
+    padding: 0;
+    margin: 0;
+    align-items: center;
+}
+
+.form-select {
+    width: 100%;
+    height: 35px;
+    padding: 0 15px;
 }
 
 /* Footer */
