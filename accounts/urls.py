@@ -42,16 +42,16 @@ urlpatterns = [
         view=accounts_views.settings,
         name="settings"
     ),
-    path(
-        route="edit-user",
-        view=accounts_views.edit_user,
-        name="edit-user"
-    ),
-    path(
-        route="edit-profile",
-        view=accounts_views.edit_profile,
-        name="edit-profile"
-    ),
+    # path(
+    #     route="edit-user",
+    #     view=accounts_views.edit_user,
+    #     name="edit-user"
+    # ),
+    # path(
+    #     route="edit-profile",
+    #     view=accounts_views.edit_profile,
+    #     name="edit-profile"
+    # ),
     path(
         route="logout",
         view=accounts_views.log_out,

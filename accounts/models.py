@@ -78,10 +78,8 @@ class User(AbstractBaseUser, PermissionsMixin):
                 employment_info = ProfileEmploymentInformation.objects.create()
 
                 payment_info = ProfilePaymentInformation.objects.create()
-                job_position = JobPosition.objects.create()
-                employment_status = EmploymentStatus.objects.create()
                 contract = Contract.objects.create()
-                payment_frequency = PaymentFrequency.objects.create()
+                benefits = Benefit.objects.create()
 
                 profile_image = ProfileImage.objects.create()
                 basic_info.profile_image = profile_image
@@ -91,12 +89,12 @@ class User(AbstractBaseUser, PermissionsMixin):
                 profile.contact_information = contact_info
                 profile.employment_information = employment_info
                 profile.payment_information = payment_info
-                profile.employment_information.job_position = job_position
-                profile.employment_information.employment_status = employment_status
                 profile.employment_information.contract = contract
-                profile.payment_information.payment_frequency = payment_frequency
+                profile.employment_information.contract.benefits = benefits
+
                 employment_info.save()
                 payment_info.save()
+                profile.employment_information.contract.save()
 
                 profile.save()
 
@@ -199,7 +197,7 @@ class ProfileBasicInformation(models.Model):
 
 
 class ProfileContactInformation(models.Model):
-    phone_number = models.CharField(max_length=20, null=True)
+    phone_number = models.CharField(max_length=20, null=True, unique=True)
     country = models.CharField(max_length=100, null=True)
     province = models.CharField(max_length=100, null=True)
     city = models.CharField(max_length=100, null=True)
@@ -217,83 +215,166 @@ class ProfileContactInformation(models.Model):
 
 
 class JobPosition(models.Model):
-    name = models.CharField(
-        max_length=200,
-        choices=(
-            ("Owner", "Owner"),
-            ("Manager", "Manager"),
-            ("Receptionist", "Receptionist"),
-            ("Hairstylist", "Hairstylist"),
-            ("Assistant", "Assistant"),
-            ("Barber", "Barber"),
-        )
-    )
+    name = models.CharField(max_length=200)
 
     class Meta:
         verbose_name = "Job Position"
         verbose_name_plural = "Job Positions"
 
     def __str__(self):
-        return str(self.id)
+        return self.name
 
 
 class EmploymentStatus(models.Model):
-    name = models.CharField(
-        max_length=100,
-        choices=(
-            ("Active", "Active"),
-            ("Inactive", "Inactive"),
-            ("On Leave", "On Leave"),
-        )
-    )
+    name = models.CharField(max_length=100)
 
     class Meta:
         verbose_name = "Employment Status"
         verbose_name_plural = "Employment Statuses"
 
     def __str__(self):
-        return str(self.id)
+        return self.name
+
+
+class Currency(models.Model):
+    name = models.CharField(max_length=50, null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Currency"
+        verbose_name_plural = "Currencies"
+
+    def __str__(self):
+        return self.name
+
+
+class ContractType(models.Model):
+    name = models.CharField(max_length=100)
+
+    class Meta:
+        verbose_name = "Contract Type"
+        verbose_name_plural = "Contract Types"
+
+    def __str__(self):
+        return self.name
+
+
+class JobType(models.Model):
+    name = models.CharField(max_length=100, null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Job Type"
+        verbose_name_plural = "Job Types"
+
+    def __str__(self):
+        return self.name
+
+
+class SalaryPeriod(models.Model):
+    name = models.CharField(max_length=100)
+
+    class Meta:
+        verbose_name = "Salary Period"
+        verbose_name_plural = "Salary Periods"
+
+    def __str__(self):
+        return str(self.pk)
+
+
+class SalaryBenefit(models.Model):
+    date_of_award = models.DateField(null=True, blank=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    period = models.ForeignKey(to=SalaryPeriod, on_delete=models.SET_NULL, null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Salary Benefit"
+        verbose_name_plural = "Salary Benefits"
+
+    def __str__(self):
+        return str(self.pk)
+
+
+class SportBenefit(models.Model):
+    name = models.CharField(max_length=100, null=True)
+
+    class Meta:
+        verbose_name = "Sport Benefit"
+        verbose_name_plural = "Sport Benefits"
+
+    def __str__(self):
+        return self.name
+
+
+class HealthBenefit(models.Model):
+    name = models.CharField(max_length=100, null=True)
+
+    class Meta:
+        verbose_name = "Health Benefit"
+        verbose_name_plural = "Health Benefits"
+
+    def __str__(self):
+        return self.name
+
+
+class InsuranceBenefit(models.Model):
+    name = models.CharField(max_length=100, null=True)
+
+    class Meta:
+        verbose_name = "Insurance Benefit"
+        verbose_name_plural = "Insurance Benefits"
+
+    def __str__(self):
+        return self.name
+
+
+class DevelopmentBenefit(models.Model):
+    name = models.CharField(max_length=100, null=True)
+
+    class Meta:
+        verbose_name = "Development Benefit"
+        verbose_name_plural = "Development Benefits"
+
+    def __str__(self):
+        return self.name
+
+
+class Benefit(models.Model):
+    job_type = models.ForeignKey(to=JobType, on_delete=models.SET_NULL, null=True, blank=True)
+    salary_benefits = models.ManyToManyField(to=SalaryBenefit)
+    sport_benefits = models.ManyToManyField(to=SportBenefit)
+    health_benefits = models.ManyToManyField(to=HealthBenefit)
+    insurance_benefits = models.ManyToManyField(to=InsuranceBenefit)
+    development_benefits = models.ManyToManyField(to=DevelopmentBenefit)
+
+    class Meta:
+        verbose_name = "Benefit"
+        verbose_name_plural = "Benefits"
+
+    def __str__(self):
+        return str(self.pk)
 
 
 class Contract(models.Model):
-    name = models.CharField(
-        max_length=100,
-        choices=(
-            ("Employment Contract", "Employment Contract"),
-            ("Contract of Mandate", "Contract of Mandate"),
-            ("Contract for Specific Work", "Contract for Specific Work"),
-            ("B2B", "B2B"),
-            ("Agency Contract", "Agency Contract"),
-            ("Internship Contract", "Internship Contract"),
-            ("Temporary Employment Contract", "Temporary Employment Contract"),
-        )
-    )
+    contract_type = models.ForeignKey(to=ContractType, on_delete=models.SET_NULL, null=True, blank=True)
+    job_type = models.ForeignKey(to=JobType, on_delete=models.SET_NULL, null=True, blank=True)
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
-    duration = models.DurationField(null=True, blank=True)
     salary = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    currency = models.ForeignKey(to=Currency, on_delete=models.SET_NULL, null=True, blank=True)
     work_hours_per_week = models.IntegerField(null=True, blank=True)
+    benefits = models.OneToOneField(to=Benefit, on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:
         verbose_name = "Contract"
         verbose_name_plural = "Contracts"
 
     def __str__(self):
-        return str(self.id)
-
-    def save(self, *args, **kwargs):
-        if self.start_date and self.end_date:
-            self.duration = self.end_date - self.start_date
-
-        super(Contract, self).save(*args, **kwargs)
+        return str(self.pk)
 
 
 class ProfileEmploymentInformation(models.Model):
-    job_position = models.OneToOneField(to=JobPosition, on_delete=models.CASCADE, null=True, blank=True)
-    employment_status = models.OneToOneField(to=EmploymentStatus, on_delete=models.CASCADE, null=True, blank=True)
+    job_position = models.ForeignKey(to=JobPosition, on_delete=models.SET_NULL, null=True, blank=True)
+    employment_status = models.ForeignKey(to=EmploymentStatus, on_delete=models.SET_NULL, null=True, blank=True)
     contract = models.OneToOneField(to=Contract, on_delete=models.CASCADE, null=True, blank=True)
-
-    # benefits
 
     class Meta:
         verbose_name = "Profile Employment Information"
@@ -304,13 +385,7 @@ class ProfileEmploymentInformation(models.Model):
 
 
 class PaymentFrequency(models.Model):
-    name = models.CharField(
-        max_length=100,
-        choices=(
-            ("Monthly", "Monthly"),
-            ("Weekly", "Weekly"),
-        )
-    )
+    name = models.CharField(max_length=100)
 
     class Meta:
         verbose_name = "Payment Frequency"
@@ -322,8 +397,8 @@ class PaymentFrequency(models.Model):
 
 class ProfilePaymentInformation(models.Model):
     iban = models.CharField(max_length=10, null=True, blank=True)
-    account_number = models.CharField(max_length=50, null=True, blank=True)
-    payment_frequency = models.OneToOneField(to=PaymentFrequency, on_delete=models.CASCADE, null=True)
+    account_number = models.CharField(max_length=50, null=True, blank=True, unique=True)
+    payment_frequency = models.ForeignKey(to=PaymentFrequency, on_delete=models.SET_NULL, null=True)
 
     class Meta:
         verbose_name = "Payment Information"
@@ -378,22 +453,16 @@ def delete_profile(sender, instance, **kwargs):
 
             if hasattr(profile, "employment_information"):
                 if profile.employment_information:
-                    if hasattr(profile.employment_information, "job_position"):
-                        profile.employment_information.job_position.delete()
-
-                    if hasattr(profile.employment_information, "employment_status"):
-                        profile.employment_information.employment_status.delete()
-
                     if hasattr(profile.employment_information, "contract"):
                         profile.employment_information.contract.delete()
 
-                    profile.employment_information.delete()
+                        if hasattr(profile.employment_information.contract, "benefits"):
+                            profile.employment_information.contract.benefits.delete()
+
+                profile.employment_information.delete()
 
             if hasattr(profile, "payment_information"):
                 if profile.payment_information:
-                    if hasattr(profile.payment_information, "payment_frequency"):
-                        profile.payment_information.payment_frequency.delete()
-
                     profile.payment_information.delete()
 
         profile.delete()

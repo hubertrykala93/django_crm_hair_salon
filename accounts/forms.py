@@ -1,6 +1,8 @@
 from django import forms
 from .models import User, Profile, ProfileImage, OneTimePassword, ProfileBasicInformation, ProfileContactInformation, \
-    ProfileEmploymentInformation, JobPosition, EmploymentStatus, Contract, ProfilePaymentInformation, PaymentFrequency
+    ProfileEmploymentInformation, JobPosition, EmploymentStatus, Contract, ProfilePaymentInformation, PaymentFrequency, \
+    Currency, ContractType, JobType, Benefit, SalaryPeriod, SalaryBenefit, SportBenefit, HealthBenefit, \
+    InsuranceBenefit, DevelopmentBenefit
 from django.core.exceptions import ValidationError
 import re
 from django.contrib.auth.hashers import make_password
@@ -40,7 +42,7 @@ class AdminRegisterForm(forms.ModelForm):
         model = User
         exclude = [
             "groups",
-            "user_permissions",
+            # "user_permissions",
         ]
 
     def save(self, commit=True):
@@ -69,10 +71,10 @@ class AdminOneTimePasswordForm(forms.ModelForm):
 
 
 class AdminProfileBasicInformationForm(forms.ModelForm):
-    firstname = forms.CharField(help_text="Enter first name.", label="First Name", required=False)
-    lastname = forms.CharField(help_text="Enter last name.", label="Last Name", required=False)
-    date_of_birth = forms.DateField(help_text="Enter date of birth.", label="Date of Birth", required=False)
-    biography = forms.CharField(help_text="Enter biography.", label="Biography", required=False, widget=forms.Textarea)
+    firstname = forms.CharField(help_text="Enter your first name.", label="First Name", required=True)
+    lastname = forms.CharField(help_text="Enter your last name.", label="Last Name", required=True)
+    date_of_birth = forms.DateField(help_text="Enter your date of birth.", label="Date of Birth", required=True)
+    biography = forms.CharField(help_text="Write a short biography.", label="Biography", required=False, widget=forms.Textarea)
 
     class Meta:
         model = ProfileBasicInformation
@@ -83,18 +85,18 @@ class AdminProfileBasicInformationForm(forms.ModelForm):
 
         self.fields["profile_image"].help_text = "Select the profile image."
         self.fields["profile_image"].label = "Profile Image"
-        self.fields["profile_image"].required = False
+        self.fields["profile_image"].required = True
 
 
 class AdminProfileContactInformationForm(forms.ModelForm):
-    phone_number = forms.CharField(help_text="Enter phone number.", label="Phone Number", required=False)
-    country = forms.CharField(help_text="Enter country.", label="Country", required=False)
-    province = forms.CharField(help_text="Enter province.", label="Province", required=False)
-    city = forms.CharField(help_text="Enter city.", label="City", required=False)
-    postal_code = forms.CharField(help_text="Enter postal code.", label="Postal Code", required=False)
-    street = forms.CharField(help_text="Enter street.", label="Street", required=False)
-    house_number = forms.CharField(help_text="Enter house number.", label="House Number", required=False)
-    apartment_number = forms.CharField(help_text="Enter apartment number.", label="Apartment Number", required=False)
+    phone_number = forms.CharField(help_text="Enter your phone number.", label="Phone Number", required=True)
+    country = forms.CharField(help_text="Enter your country.", label="Country", required=True)
+    province = forms.CharField(help_text="Enter your province.", label="Province", required=True)
+    city = forms.CharField(help_text="Enter your city.", label="City", required=True)
+    postal_code = forms.CharField(help_text="Enter your postal code.", label="Postal Code", required=True)
+    street = forms.CharField(help_text="Enter your street.", label="Street", required=True)
+    house_number = forms.CharField(help_text="Enter your house number.", label="House Number", required=True)
+    apartment_number = forms.CharField(help_text="Enter your apartment number.", label="Apartment Number", required=False)
 
     class Meta:
         model = ProfileContactInformation
@@ -102,15 +104,125 @@ class AdminProfileContactInformationForm(forms.ModelForm):
 
 
 class AdminJobPositionForm(forms.ModelForm):
+    name = forms.CharField(help_text="Enter the name of job position.", label="Job Position", required=True)
+
     class Meta:
         model = JobPosition
         fields = "__all__"
 
 
 class AdminEmploymentStatusForm(forms.ModelForm):
+    name = forms.CharField(help_text="Enter the name of employment status.", label="Status", required=True)
+
     class Meta:
         model = EmploymentStatus
         fields = "__all__"
+
+
+class AdminContractTypeForm(forms.ModelForm):
+    name = forms.CharField(help_text="Enter the name of the contract type.", label="Contract Name", required=True)
+
+    class Meta:
+        model = ContractType
+        fields = "__all__"
+
+
+class AdminJobTypeForm(forms.ModelForm):
+    name = forms.CharField(help_text="Enter the name of job type.", label="Job Type", required=True)
+
+    class Meta:
+        model = JobType
+        fields = "__all__"
+
+
+class AdminSalaryPeriodForm(forms.ModelForm):
+    name = forms.CharField(help_text="Select the salary period.", label="Period Name", required=True)
+
+    class Meta:
+        model = SalaryPeriod
+        fields = "__all__"
+
+
+class AdminSalaryBenefitForm(forms.ModelForm):
+    date_of_award = forms.DateField(help_text="Enter date of awarded bonus.", label="Date of Award", required=True)
+    amount = forms.DecimalField(help_text="Enter the amount of the salary benefit.", label="Amount", required=True)
+
+    class Meta:
+        model = SalaryBenefit
+        fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super(AdminSalaryBenefitForm, self).__init__(*args, **kwargs)
+
+        self.fields["period"].help_text = "Select the period of the salary benefit."
+        self.fields["period"].label = "Period"
+        self.fields["period"].required = True
+
+
+class AdminSportBenefitForm(forms.ModelForm):
+    name = forms.CharField(help_text="Enter the name of sport benefit.", label="Sport Benefit", required=True)
+
+    class Meta:
+        model = SportBenefit
+        fields = "__all__"
+
+
+class AdminHealthBenefitForm(forms.ModelForm):
+    name = forms.CharField(help_text="Enter the name of health benefit.", label="Benefit Name", required=True)
+
+    class Meta:
+        model = HealthBenefit
+        fields = "__all__"
+
+
+class AdminInsuranceBenefitForm(forms.ModelForm):
+    name = forms.CharField(help_text="Enter the name of insurance benefit.", label="Benefit Name", required=True)
+
+    class Meta:
+        model = InsuranceBenefit
+        fields = "__all__"
+
+
+class AdminDevelopmentBenefitForm(forms.ModelForm):
+    name = forms.CharField(help_text="Enter the name of development benefit.", label="Benefit Name",
+                           required=True)
+
+    class Meta:
+        model = DevelopmentBenefit
+        fields = "__all__"
+
+
+class AdminBenefitForm(forms.ModelForm):
+    class Meta:
+        model = Benefit
+        fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super(AdminBenefitForm, self).__init__(*args, **kwargs)
+
+        self.fields["job_type"].help_text = "Select the type of work."
+        self.fields["job_type"].label = "Job Type"
+        self.fields["job_type"].required = True
+
+        self.fields["salary_benefits"].help_text = "Select bonus benefits."
+        self.fields["salary_benefits"].label = "Bonus Benefits"
+        self.fields["salary_benefits"].required = False
+
+        self.fields["sport_benefits"].help_text = "Select sports benefits."
+        self.fields["sport_benefits"].label = "Sport Benefits"
+        self.fields["sport_benefits"].required = False
+
+        self.fields["health_benefits"].help_text = "Select health benefits."
+        self.fields["health_benefits"].label = "Health Benefits"
+        self.fields["health_benefits"].required = False
+
+        self.fields["insurance_benefits"].help_text = "Select insurance benefits."
+        self.fields["insurance_benefits"].label = "Insurance Benefits"
+        self.fields["insurance_benefits"].required = False
+
+        self.fields["development_benefits"].help_text = "Select development benefits."
+        self.fields["development_benefits"].label = "Development Benefits"
+        self.fields["development_benefits"].required = False
 
 
 class AdminContractForm(forms.ModelForm):
@@ -122,7 +234,22 @@ class AdminContractForm(forms.ModelForm):
 
     class Meta:
         model = Contract
-        exclude = ["duration"]
+        fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super(AdminContractForm, self).__init__(*args, **kwargs)
+
+        self.fields["contract_type"].help_text = "Select the type of contract."
+        self.fields["contract_type"].label = "Contract Type"
+        self.fields["contract_type"].required = True
+
+        self.fields["currency"].help_text = "Select the currency."
+        self.fields["currency"].label = "Currency"
+        self.fields["currency"].required = True
+
+        self.fields["benefits"].help_text = "Select benefits."
+        self.fields["benefits"].label = "Benefits"
+        self.fields["benefits"].required = False
 
 
 class AdminProfileEmploymentInformationForm(forms.ModelForm):
@@ -133,9 +260,9 @@ class AdminProfileEmploymentInformationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(AdminProfileEmploymentInformationForm, self).__init__(*args, **kwargs)
 
-        self.fields["job_position"].help_text = "Select job position."
-        self.fields["employment_status"].help_text = "Select employment status."
-        self.fields["contract"].help_text = "Select contract."
+        self.fields["job_position"].help_text = "Select the job position."
+        self.fields["employment_status"].help_text = "Select the employment status."
+        self.fields["contract"].help_text = "Select the contract."
 
         self.fields["job_position"].label = "Job Position"
         self.fields["employment_status"].label = "Employment Status"
@@ -146,15 +273,25 @@ class AdminProfileEmploymentInformationForm(forms.ModelForm):
         self.fields["contract"].required = True
 
 
+class AdminCurrencyForm(forms.ModelForm):
+    name = forms.CharField(help_text="Enter the name of currency", label="Currency Name", required=True)
+
+    class Meta:
+        model = Currency
+        fields = "__all__"
+
+
 class AdminPaymentFrequencyForm(forms.ModelForm):
+    name = forms.CharField(help_text="Enter the name of payment frequency.", label="Payment Frequency", required=True)
+
     class Meta:
         model = PaymentFrequency
         fields = "__all__"
 
 
 class AdminProfilePaymentInformationForm(forms.ModelForm):
-    iban = forms.CharField(help_text="Enter IBAN.", label="IBAN", required=True)
-    account_number = forms.CharField(help_text="Enter account number.", label="Account Number", required=True)
+    iban = forms.CharField(help_text="Enter the IBAN.", label="IBAN", required=True)
+    account_number = forms.CharField(help_text="Enter the bank account number.", label="Account Number", required=True)
 
     class Meta:
         model = ProfilePaymentInformation
@@ -163,7 +300,7 @@ class AdminProfilePaymentInformationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(AdminProfilePaymentInformationForm, self).__init__(*args, **kwargs)
 
-        self.fields["payment_frequency"].help_text = "Select payment frequency."
+        self.fields["payment_frequency"].help_text = "Select the payment frequency."
         self.fields["payment_frequency"].label = "Payment Frequency"
         self.fields["payment_frequency"].required = True
 
@@ -537,6 +674,59 @@ class ChangePasswordForm(forms.ModelForm):
         return repassword
 
 
+class UpdatePasswordForm(forms.Form):
+    password = forms.CharField(
+        required=False,
+    )
+    repassword = forms.CharField(
+        required=False,
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.instance = kwargs.pop("instance", None)
+
+        super(UpdatePasswordForm, self).__init__(*args, **kwargs)
+
+    def clean_password(self):
+        password = self.cleaned_data.get("password")
+
+        if password:
+            if len(password) < 8:
+                raise ValidationError(
+                    message="The password should consist of at least 8 characters.",
+                )
+
+            if len(password) > 255:
+                raise ValidationError(
+                    message="The password cannot be longer than 255 characters.",
+                )
+
+            if not re.match(pattern="^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$", string=password):
+                raise ValidationError(
+                    message="The password should contain at least one uppercase letter, one lowercase letter, one number, "
+                            "and one special character.",
+                )
+
+        return password
+
+    def clean_repassword(self):
+        password = self.cleaned_data.get("password")
+        repassword = self.cleaned_data.get("repassword")
+
+        if password:
+            if not repassword:
+                raise ValidationError(
+                    message="Confirm Password is required.",
+                )
+
+            if repassword != password:
+                raise ValidationError(
+                    message="Confirm Password does not match.",
+                )
+
+        return repassword
+
+
 class UpdateProfileImageForm(forms.Form):
     profile_image = forms.ImageField(
         required=False,
@@ -569,100 +759,108 @@ class UpdateProfileImageForm(forms.Form):
         return profile_image
 
 
-class UpdateUserForm(forms.Form):
-    email = forms.CharField(
+class UpdateBasicInformationForm(forms.Form):
+    firstname = forms.CharField(
+        error_messages={
+            "required": "Firstname is required.",
+        },
+    )
+    lastname = forms.CharField(
+        error_messages={
+            "required": "Lastname is required.",
+        },
+    )
+    date_of_birth = forms.CharField(
+        error_messages={
+            "required": "Date of Birth is required.",
+        }
+    )
+    biography = forms.CharField(
         required=False,
-    )
-    password = forms.CharField(
-        widget=forms.PasswordInput,
-        required=False
-    )
-    repassword = forms.CharField(
-        widget=forms.PasswordInput,
-        required=False
     )
 
     def __init__(self, *args, **kwargs):
         self.instance = kwargs.pop("instance", None)
-        super(UpdateUserForm, self).__init__(*args, **kwargs)
+        super(UpdateBasicInformationForm, self).__init__(*args, **kwargs)
 
-    def clean_email(self):
-        email = self.cleaned_data.get("email")
+    def clean_firstname(self):
+        firstname = self.cleaned_data.get("firstname")
 
-        if email != "":
-            if len(email) > 255:
+        if len(firstname) < 2:
+            raise ValidationError(
+                message="The firstname should contain at least 2 characters.",
+            )
+
+        if len(firstname) > 50:
+            raise ValidationError(
+                message="The firstname should contain a maximum of 50 characters.",
+            )
+
+        if not firstname.isalpha():
+            raise ValidationError(
+                message="The firstname should consist of letters only.",
+            )
+
+        return firstname
+
+    def clean_lastname(self):
+        lastname = self.cleaned_data.get("lastname")
+
+        if len(lastname) < 2:
+            raise ValidationError(
+                message="The lastname should contain at least 2 characters."
+            )
+
+        if len(lastname) > 100:
+            raise ValidationError(
+                message="The lastname should contain a maximum of 100 characters.",
+            )
+
+        if not lastname.isalpha():
+            raise ValidationError(
+                message="The lastname should consist of letters only.",
+            )
+
+        return lastname
+
+    def clean_date_of_birth(self):
+        date_of_birth = self.cleaned_data.get("date_of_birth")
+
+        try:
+            date_object = datetime.strptime(date_of_birth, "%Y-%m-%d").date()
+
+        except ValueError:
+            raise ValidationError(
+                message="Date must be in the format YYYY-MM-DD.",
+            )
+
+        if date_object >= date.today():
+            raise ValidationError(
+                message="The date of birth cannot be greater than or equal to the current date.",
+            )
+
+        if not re.match(pattern="^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$", string=date_of_birth):
+            raise ValidationError(
+                message="Date must be in the format YYYY-MM-DD.",
+            )
+
+        return date_of_birth
+
+    def clean_biography(self):
+        biography = self.cleaned_data.get("biography")
+
+        if biography:
+            if len(biography) < 10:
                 raise ValidationError(
-                    message="The e-mail address cannot be longer than 255 characters.",
+                    message="The biography should contain at least 10 characters.",
                 )
 
-            if not re.match(pattern=r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)",
-                            string=email):
+            if len(biography) > 200:
                 raise ValidationError(
-                    message="The e-mail address format is invalid.",
+                    message="The biography should contain a maximum of 200 characters.",
                 )
 
-            if self.instance.email != email:
-                if User.objects.filter(email=email).exists():
-                    raise ValidationError(
-                        message=f"The user with the e-mail address '{email}' already exists.",
-                    )
-
-            if self.instance.email == email:
-                raise ValidationError(
-                    message="The email address cannot be changed to the same one. Please enter a new email address.",
-                )
-
-        return email
-
-    def clean_password(self):
-        password = self.cleaned_data.get("password")
-
-        if password:
-            if len(password) < 8:
-                raise ValidationError(
-                    message="The password should consist of at least 8 characters.",
-                )
-
-            if len(password) > 255:
-                raise ValidationError(
-                    message="The password cannot be longer than 255 characters.",
-                )
-
-            if not re.match(pattern="^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$", string=password):
-                raise ValidationError(
-                    message="The password should contain at least one uppercase letter, one lowercase letter, one number, "
-                            "and one special character.",
-                )
-
-            if self.instance.check_password(raw_password=password):
-                raise ValidationError(
-                    message="The password cannot be changed to the same one. Please enter a new email address.",
-                )
-
-        return password
-
-    def clean_repassword(self):
-        password = self.cleaned_data.get("password")
-        repassword = self.cleaned_data.get("repassword")
-
-        if password:
-            if not repassword:
-                raise ValidationError(
-                    message="Confirm Password is required.",
-                )
-
-            if repassword != password:
-                raise ValidationError(
-                    message="Confirm Password does not match.",
-                )
-
-        else:
-            if repassword:
-                raise ValidationError(
-                    message="You must also provide the password.",
-                )
-
-        return repassword
+        return biography
 
 
 class UpdateProfileForm(forms.Form):

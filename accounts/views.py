@@ -1,8 +1,8 @@
 import os
 
 from django.shortcuts import render, redirect, reverse
-from .forms import RegisterForm, LoginForm, PasswordResetForm, OneTimePasswordForm, ChangePasswordForm, UpdateUserForm, \
-    UpdateProfileImageForm, UpdateProfileForm, ContactUsForm
+from .forms import RegisterForm, LoginForm, PasswordResetForm, OneTimePasswordForm, ChangePasswordForm, \
+    UpdateProfileImageForm, UpdateProfileForm, ContactUsForm, UpdatePasswordForm, UpdateBasicInformationForm
 from django.contrib import messages
 from .models import User, OneTimePassword, ProfileBasicInformation, ProfileContactInformation, PaymentFrequency
 from django.contrib.auth.hashers import make_password
@@ -358,154 +358,206 @@ def change_password(request):
 
 @login_required(login_url="home")
 def settings(request):
-    form = UpdateProfileImageForm(files=request.FILES)
-    print(request.POST)
+    update_password_form = UpdatePasswordForm()
+    update_basic_information_form = UpdateBasicInformationForm()
+    from datetime import date, timedelta
 
     if request.method == "POST":
-        if form.is_valid():
-            profile_image_uploaded = request.FILES.get("profileimage", None)
+        if "change-password" in request.POST:
+            print("Change Password in request POST.")
+            update_password_form = UpdatePasswordForm(data=request.POST, instance=request.user)
 
-            if profile_image_uploaded is not None:
-                profile_image = request.user.profile.basic_information.profile_image
-                profile_image.image = request.FILES["profileimage"]
-                profile_image.save()
+            if update_password_form.is_valid():
+                password = request.POST["password"]
+
+                if password:
+                    user = request.user
+
+                    if user.check_password(raw_password=password):
+                        messages.info(
+                            request=request,
+                            message="You cannot change to the previous password; please create a new one.",
+                        )
+                    else:
+                        user.set_password(raw_password=password)
+                        user.save()
+
+                        update_session_auth_hash(
+                            request=request,
+                            user=user
+                        )
+
+                        messages.success(
+                            request=request,
+                            message="The password has been successfully changed.",
+                        )
+
+                else:
+                    messages.info(
+                        request=request,
+                        message="No changes have been made.",
+                    )
+
+        if "basic-information" in request.POST:
+            print("Basic Information in request POST.")
+            update_basic_information_form = UpdateBasicInformationForm(
+                data=request.POST,
+                instance=request.user.profile
+            )
+
+            if update_basic_information_form.is_valid():
+                basic_information = request.user.profile.basic_information
+
+                if request.POST["biography"]:
+                    basic_information.biography = request.POST["biography"]
+
+                basic_information.firstname = request.POST["firstname"]
+                basic_information.lastname = request.POST["lastname"]
+                basic_information.date_of_birth = request.POST["date_of_birth"]
+
+                basic_information.save()
 
                 messages.success(
                     request=request,
-                    message="Profile picture has been successfully changed.",
+                    message="Your basic information has been successfully updated.",
                 )
+
+    time_remaining = None
+
+    if request.user.profile.employment_information.contract.end_date:
+        time_remaining = request.user.profile.employment_information.contract.end_date - date.today()
 
     return render(
         request=request,
         template_name="accounts/settings.html",
         context={
             "title": "Profile",
-            "form": form,
             "payment_frequencies": [choice[0] for choice in PaymentFrequency._meta.get_field("name")._choices],
+            "time_remaining": time_remaining,
+            "update_password_form": update_password_form,
+            "update_basic_information_form": update_basic_information_form,
         }
     )
 
 
-login_required(login_url="home")
-
-
-def edit_user(request):
-    form = UpdateUserForm(data=request.POST or None, instance=request.user)
-
-    if request.method == "POST":
-        user = request.user
-
-        if form.is_valid():
-            email = request.POST["email"]
-            password = request.POST["password"]
-
-            if not email and not password:
-                messages.info(
-                    request=request,
-                    message="No changes have been made.",
-                )
-
-            if password:
-                if email:
-                    user.email = email
-                    user.set_password(raw_password=password)
-                    user.save()
-
-                    messages.success(
-                        request=request,
-                        message="The account details have been successfully updated.",
-                    )
-
-                else:
-                    user.set_password(raw_password=password)
-                    user.save()
-
-                    messages.success(
-                        request=request,
-                        message="Password has been successfully updated.",
-                    )
-
-            else:
-                if email:
-                    user.email = email
-                    user.save()
-
-                    messages.success(
-                        request=request,
-                        message="Email has been successfully updated.",
-                    )
-
-            update_session_auth_hash(request=request, user=user)
-
-            return redirect(to="profile")
-
-    return render(
-        request=request,
-        template_name="accounts/edit-user.html",
-        context={
-            "title": "Edit User",
-            "form": form,
-        }
-    )
-
-
-@login_required(login_url="home")
-def edit_profile(request):
-    form = UpdateProfileForm(data=request.POST or None, instance=request.user.profile)
-
-    if request.method == "POST":
-        if form.is_valid():
-            basic_data = {
-                "firstname": request.POST["firstname"].strip(),
-                "lastname": request.POST["lastname"].strip(),
-                "date_of_birth": request.POST["date_of_birth"].strip(),
-            }
-
-            contact_data = {
-                "phone_number": request.POST["phone_number"].strip(),
-                "country": request.POST["country"].strip(),
-                "province": request.POST["province"].strip(),
-                "city": request.POST["city"].strip(),
-                "postal_code": request.POST["postal_code"].strip(),
-                "street": request.POST["street"].strip(),
-                "house_number": request.POST["house_number"].strip(),
-            }
-
-            if request.POST["biography"]:
-                basic_data.update(
-                    {
-                        "biography": request.POST["biography"].strip(),
-                    }
-                )
-
-            if request.POST["apartment_number"]:
-                contact_data.update(
-                    {
-                        "apartment_number": request.POST["apartment_number"].strip(),
-                    }
-                )
-
-            basic_information = ProfileBasicInformation.objects.filter(profile=request.user.profile)
-            contact_information = ProfileContactInformation.objects.filter(profile=request.user.profile)
-
-            basic_information.update(**basic_data)
-            contact_information.update(**contact_data)
-
-            messages.success(
-                request=request,
-                message="Profile details have been successfully updated.",
-            )
-
-            return redirect(to="profile")
-
-    return render(
-        request=request,
-        template_name="accounts/edit-profile.html",
-        context={
-            "title": "Edit Profile",
-            "form": form,
-        }
-    )
+# @login_required(login_url="home")
+# def edit_user(request):
+#     form = UpdateUserForm(data=request.POST or None, instance=request.user)
+#
+#     if request.method == "POST":
+#         user = request.user
+#
+#         if form.is_valid():
+#             email = request.POST["email"]
+#             password = request.POST["password"]
+#
+#             if not email and not password:
+#                 messages.info(
+#                     request=request,
+#                     message="No changes have been made.",
+#                 )
+#
+#             if password:
+#                 if email:
+#                     user.email = email
+#                     user.set_password(raw_password=password)
+#                     user.save()
+#
+#                     messages.success(
+#                         request=request,
+#                         message="The account details have been successfully updated.",
+#                     )
+#
+#                 else:
+#                     user.set_password(raw_password=password)
+#                     user.save()
+#
+#                     messages.success(
+#                         request=request,
+#                         message="Password has been successfully updated.",
+#                     )
+#
+#             else:
+#                 if email:
+#                     user.email = email
+#                     user.save()
+#
+#                     messages.success(
+#                         request=request,
+#                         message="Email has been successfully updated.",
+#                     )
+#
+#             update_session_auth_hash(request=request, user=user)
+#
+#             return redirect(to="profile")
+#
+#     return render(
+#         request=request,
+#         template_name="accounts/edit-user.html",
+#         context={
+#             "title": "Edit User",
+#             "form": form,
+#         }
+#     )
+#
+#
+# @login_required(login_url="home")
+# def edit_profile(request):
+#     form = UpdateProfileForm(data=request.POST or None, instance=request.user.profile)
+#
+#     if request.method == "POST":
+#         if form.is_valid():
+#             basic_data = {
+#                 "firstname": request.POST["firstname"].strip(),
+#                 "lastname": request.POST["lastname"].strip(),
+#                 "date_of_birth": request.POST["date_of_birth"].strip(),
+#             }
+#
+#             contact_data = {
+#                 "phone_number": request.POST["phone_number"].strip(),
+#                 "country": request.POST["country"].strip(),
+#                 "province": request.POST["province"].strip(),
+#                 "city": request.POST["city"].strip(),
+#                 "postal_code": request.POST["postal_code"].strip(),
+#                 "street": request.POST["street"].strip(),
+#                 "house_number": request.POST["house_number"].strip(),
+#             }
+#
+#             if request.POST["biography"]:
+#                 basic_data.update(
+#                     {
+#                         "biography": request.POST["biography"].strip(),
+#                     }
+#                 )
+#
+#             if request.POST["apartment_number"]:
+#                 contact_data.update(
+#                     {
+#                         "apartment_number": request.POST["apartment_number"].strip(),
+#                     }
+#                 )
+#
+#             basic_information = ProfileBasicInformation.objects.filter(profile=request.user.profile)
+#             contact_information = ProfileContactInformation.objects.filter(profile=request.user.profile)
+#
+#             basic_information.update(**basic_data)
+#             contact_information.update(**contact_data)
+#
+#             messages.success(
+#                 request=request,
+#                 message="Profile details have been successfully updated.",
+#             )
+#
+#             return redirect(to="profile")
+#
+#     return render(
+#         request=request,
+#         template_name="accounts/edit-profile.html",
+#         context={
+#             "title": "Edit Profile",
+#             "form": form,
+#         }
+#     )
 
 
 @login_required(login_url="home")
