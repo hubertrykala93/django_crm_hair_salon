@@ -1,8 +1,6 @@
 from django import forms
 from .models import User, Profile, ProfileImage, OneTimePassword, ProfileBasicInformation, ProfileContactInformation, \
-    ProfileEmploymentInformation, JobPosition, EmploymentStatus, Contract, ProfilePaymentInformation, PaymentFrequency, \
-    Currency, ContractType, JobType, Benefit, SalaryPeriod, SalaryBenefit, SportBenefit, HealthBenefit, \
-    InsuranceBenefit, DevelopmentBenefit
+    ProfileEmploymentInformation, ProfilePaymentInformation
 from django.core.exceptions import ValidationError
 import re
 from django.contrib.auth.hashers import make_password
@@ -74,7 +72,8 @@ class AdminProfileBasicInformationForm(forms.ModelForm):
     firstname = forms.CharField(help_text="Enter your first name.", label="First Name", required=True)
     lastname = forms.CharField(help_text="Enter your last name.", label="Last Name", required=True)
     date_of_birth = forms.DateField(help_text="Enter your date of birth.", label="Date of Birth", required=True)
-    biography = forms.CharField(help_text="Write a short biography.", label="Biography", required=False, widget=forms.Textarea)
+    biography = forms.CharField(help_text="Write a short biography.", label="Biography", required=False,
+                                widget=forms.Textarea)
 
     class Meta:
         model = ProfileBasicInformation
@@ -96,160 +95,12 @@ class AdminProfileContactInformationForm(forms.ModelForm):
     postal_code = forms.CharField(help_text="Enter your postal code.", label="Postal Code", required=True)
     street = forms.CharField(help_text="Enter your street.", label="Street", required=True)
     house_number = forms.CharField(help_text="Enter your house number.", label="House Number", required=True)
-    apartment_number = forms.CharField(help_text="Enter your apartment number.", label="Apartment Number", required=False)
+    apartment_number = forms.CharField(help_text="Enter your apartment number.", label="Apartment Number",
+                                       required=False)
 
     class Meta:
         model = ProfileContactInformation
         fields = "__all__"
-
-
-class AdminJobPositionForm(forms.ModelForm):
-    name = forms.CharField(help_text="Enter the name of job position.", label="Job Position", required=True)
-
-    class Meta:
-        model = JobPosition
-        fields = "__all__"
-
-
-class AdminEmploymentStatusForm(forms.ModelForm):
-    name = forms.CharField(help_text="Enter the name of employment status.", label="Status", required=True)
-
-    class Meta:
-        model = EmploymentStatus
-        fields = "__all__"
-
-
-class AdminContractTypeForm(forms.ModelForm):
-    name = forms.CharField(help_text="Enter the name of the contract type.", label="Contract Name", required=True)
-
-    class Meta:
-        model = ContractType
-        fields = "__all__"
-
-
-class AdminJobTypeForm(forms.ModelForm):
-    name = forms.CharField(help_text="Enter the name of job type.", label="Job Type", required=True)
-
-    class Meta:
-        model = JobType
-        fields = "__all__"
-
-
-class AdminSalaryPeriodForm(forms.ModelForm):
-    name = forms.CharField(help_text="Select the salary period.", label="Period Name", required=True)
-
-    class Meta:
-        model = SalaryPeriod
-        fields = "__all__"
-
-
-class AdminSalaryBenefitForm(forms.ModelForm):
-    date_of_award = forms.DateField(help_text="Enter date of awarded bonus.", label="Date of Award", required=True)
-    amount = forms.DecimalField(help_text="Enter the amount of the salary benefit.", label="Amount", required=True)
-
-    class Meta:
-        model = SalaryBenefit
-        fields = "__all__"
-
-    def __init__(self, *args, **kwargs):
-        super(AdminSalaryBenefitForm, self).__init__(*args, **kwargs)
-
-        self.fields["period"].help_text = "Select the period of the salary benefit."
-        self.fields["period"].label = "Period"
-        self.fields["period"].required = True
-
-
-class AdminSportBenefitForm(forms.ModelForm):
-    name = forms.CharField(help_text="Enter the name of sport benefit.", label="Sport Benefit", required=True)
-
-    class Meta:
-        model = SportBenefit
-        fields = "__all__"
-
-
-class AdminHealthBenefitForm(forms.ModelForm):
-    name = forms.CharField(help_text="Enter the name of health benefit.", label="Benefit Name", required=True)
-
-    class Meta:
-        model = HealthBenefit
-        fields = "__all__"
-
-
-class AdminInsuranceBenefitForm(forms.ModelForm):
-    name = forms.CharField(help_text="Enter the name of insurance benefit.", label="Benefit Name", required=True)
-
-    class Meta:
-        model = InsuranceBenefit
-        fields = "__all__"
-
-
-class AdminDevelopmentBenefitForm(forms.ModelForm):
-    name = forms.CharField(help_text="Enter the name of development benefit.", label="Benefit Name",
-                           required=True)
-
-    class Meta:
-        model = DevelopmentBenefit
-        fields = "__all__"
-
-
-class AdminBenefitForm(forms.ModelForm):
-    class Meta:
-        model = Benefit
-        fields = "__all__"
-
-    def __init__(self, *args, **kwargs):
-        super(AdminBenefitForm, self).__init__(*args, **kwargs)
-
-        self.fields["job_type"].help_text = "Select the type of work."
-        self.fields["job_type"].label = "Job Type"
-        self.fields["job_type"].required = True
-
-        self.fields["salary_benefits"].help_text = "Select bonus benefits."
-        self.fields["salary_benefits"].label = "Bonus Benefits"
-        self.fields["salary_benefits"].required = False
-
-        self.fields["sport_benefits"].help_text = "Select sports benefits."
-        self.fields["sport_benefits"].label = "Sport Benefits"
-        self.fields["sport_benefits"].required = False
-
-        self.fields["health_benefits"].help_text = "Select health benefits."
-        self.fields["health_benefits"].label = "Health Benefits"
-        self.fields["health_benefits"].required = False
-
-        self.fields["insurance_benefits"].help_text = "Select insurance benefits."
-        self.fields["insurance_benefits"].label = "Insurance Benefits"
-        self.fields["insurance_benefits"].required = False
-
-        self.fields["development_benefits"].help_text = "Select development benefits."
-        self.fields["development_benefits"].label = "Development Benefits"
-        self.fields["development_benefits"].required = False
-
-
-class AdminContractForm(forms.ModelForm):
-    start_date = forms.DateField(help_text="Enter the start of the contract.", label="Start Date", required=True)
-    end_date = forms.DateField(help_text="Enter the end of the contract.", label="End Date", required=False)
-    salary = forms.DecimalField(help_text="Enter the salary.", label="Contract Salary", required=True)
-    work_hours_per_week = forms.IntegerField(help_text="Enter the number of working hours per week.",
-                                             label="Working Hours", required=False)
-
-    class Meta:
-        model = Contract
-        fields = "__all__"
-
-    def __init__(self, *args, **kwargs):
-        super(AdminContractForm, self).__init__(*args, **kwargs)
-
-        self.fields["contract_type"].help_text = "Select the type of contract."
-        self.fields["contract_type"].label = "Contract Type"
-        self.fields["contract_type"].required = True
-
-        self.fields["currency"].help_text = "Select the currency."
-        self.fields["currency"].label = "Currency"
-        self.fields["currency"].required = True
-
-        self.fields["benefits"].help_text = "Select benefits."
-        self.fields["benefits"].label = "Benefits"
-        self.fields["benefits"].required = False
 
 
 class AdminProfileEmploymentInformationForm(forms.ModelForm):
@@ -273,22 +124,6 @@ class AdminProfileEmploymentInformationForm(forms.ModelForm):
         self.fields["contract"].required = True
 
 
-class AdminCurrencyForm(forms.ModelForm):
-    name = forms.CharField(help_text="Enter the name of currency", label="Currency Name", required=True)
-
-    class Meta:
-        model = Currency
-        fields = "__all__"
-
-
-class AdminPaymentFrequencyForm(forms.ModelForm):
-    name = forms.CharField(help_text="Enter the name of payment frequency.", label="Payment Frequency", required=True)
-
-    class Meta:
-        model = PaymentFrequency
-        fields = "__all__"
-
-
 class AdminProfilePaymentInformationForm(forms.ModelForm):
     iban = forms.CharField(help_text="Enter the IBAN.", label="IBAN", required=True)
     account_number = forms.CharField(help_text="Enter the bank account number.", label="Account Number", required=True)
@@ -296,13 +131,6 @@ class AdminProfilePaymentInformationForm(forms.ModelForm):
     class Meta:
         model = ProfilePaymentInformation
         fields = "__all__"
-
-    def __init__(self, *args, **kwargs):
-        super(AdminProfilePaymentInformationForm, self).__init__(*args, **kwargs)
-
-        self.fields["payment_frequency"].help_text = "Select the payment frequency."
-        self.fields["payment_frequency"].label = "Payment Frequency"
-        self.fields["payment_frequency"].required = True
 
 
 class AdminProfileForm(forms.ModelForm):
@@ -450,58 +278,6 @@ class RegisterForm(forms.ModelForm):
                 )
 
         return repassword
-
-
-class LoginForm(forms.Form):
-    email = forms.CharField(
-        error_messages={
-            "required": "Email is required.",
-        },
-    )
-    password = forms.CharField(
-        error_messages={
-            "required": "Password is required.",
-        },
-        widget=forms.PasswordInput,
-    )
-    remember = forms.BooleanField(
-        required=False,
-    )
-
-    def clean_email(self):
-        email = self.cleaned_data.get("email")
-
-        if len(email) > 255:
-            raise ValidationError(
-                message="The e-mail address cannot be longer than 255 characters.",
-            )
-
-        if not re.match(pattern=r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)",
-                        string=email):
-            raise ValidationError(
-                message="The e-mail address format is invalid.",
-            )
-
-        if not User.objects.filter(email=email).exists():
-            raise ValidationError(
-                message=f"A user with the email address '{email}' does not exist.",
-            )
-
-        return email
-
-    def clean_password(self):
-        email = self.cleaned_data.get("email")
-        password = self.cleaned_data.get("password")
-
-        if User.objects.filter(email=email).exists():
-            user = User.objects.get(email=email)
-
-            if not user.check_password(raw_password=password):
-                raise ValidationError(
-                    message=f"Incorrect password for the account '{email}'.",
-                )
-
-        return password
 
 
 class PasswordResetForm(forms.Form):
@@ -773,15 +549,11 @@ class UpdateBasicInformationForm(forms.Form):
     date_of_birth = forms.CharField(
         error_messages={
             "required": "Date of Birth is required.",
-        }
+        },
     )
     biography = forms.CharField(
         required=False,
     )
-
-    def __init__(self, *args, **kwargs):
-        self.instance = kwargs.pop("instance", None)
-        super(UpdateBasicInformationForm, self).__init__(*args, **kwargs)
 
     def clean_firstname(self):
         firstname = self.cleaned_data.get("firstname")
@@ -827,11 +599,11 @@ class UpdateBasicInformationForm(forms.Form):
         date_of_birth = self.cleaned_data.get("date_of_birth")
 
         try:
-            date_object = datetime.strptime(date_of_birth, "%Y-%m-%d").date()
+            date_object = datetime.strptime(date_of_birth, '%Y-%m-%d').date()
 
         except ValueError:
             raise ValidationError(
-                message="Date must be in the format YYYY-MM-DD.",
+                message="Date must be in the format DD-MM-YYYY.",
             )
 
         if date_object >= date.today():
@@ -863,25 +635,7 @@ class UpdateBasicInformationForm(forms.Form):
         return biography
 
 
-class UpdateProfileForm(forms.Form):
-    firstname = forms.CharField(
-        error_messages={
-            "required": "Firstname is required.",
-        },
-    )
-    lastname = forms.CharField(
-        error_messages={
-            "required": "Lastname is required.",
-        },
-    )
-    biography = forms.CharField(
-        required=False,
-    )
-    date_of_birth = forms.CharField(
-        error_messages={
-            "required": "Date of Birth is required.",
-        }
-    )
+class UpdateContactInformationForm(forms.Form):
     phone_number = forms.CharField(
         error_messages={
             "required": "Phone Number is required.",
@@ -921,89 +675,6 @@ class UpdateProfileForm(forms.Form):
         required=False,
     )
 
-    def __init__(self, *args, **kwargs):
-        self.instance = kwargs.pop("instance", None)
-        super(UpdateProfileForm, self).__init__(*args, **kwargs)
-
-    def clean_firstname(self):
-        firstname = self.cleaned_data.get("firstname")
-
-        if len(firstname) < 2:
-            raise ValidationError(
-                message="The firstname should contain at least 2 characters.",
-            )
-
-        if len(firstname) > 50:
-            raise ValidationError(
-                message="The firstname should contain a maximum of 50 characters.",
-            )
-
-        if not firstname.isalpha():
-            raise ValidationError(
-                message="The firstname should consist of letters only.",
-            )
-
-        return firstname
-
-    def clean_lastname(self):
-        lastname = self.cleaned_data.get("lastname")
-
-        if len(lastname) < 2:
-            raise ValidationError(
-                message="The lastname should contain at least 2 characters."
-            )
-
-        if len(lastname) > 100:
-            raise ValidationError(
-                message="The lastname should contain a maximum of 100 characters.",
-            )
-
-        if not lastname.isalpha():
-            raise ValidationError(
-                message="The lastname should consist of letters only.",
-            )
-
-        return lastname
-
-    def clean_date_of_birth(self):
-        date_of_birth = self.cleaned_data.get("date_of_birth")
-
-        try:
-            date_object = datetime.strptime(date_of_birth, "%Y-%m-%d").date()
-
-        except ValueError:
-            raise ValidationError(
-                message="Date must be in the format YYYY-MM-DD.",
-            )
-
-        if date_object >= date.today():
-            raise ValidationError(
-                message="The date of birth cannot be greater than or equal to the current date.",
-            )
-
-        if not re.match(pattern="^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$", string=date_of_birth):
-            raise ValidationError(
-                message="Date must be in the format YYYY-MM-DD.",
-            )
-
-        return date_of_birth
-
-    def clean_biography(self):
-        biography = self.cleaned_data.get("biography")
-
-        if biography:
-            if len(biography) < 10:
-                raise ValidationError(
-                    message="The biography should contain at least 10 characters.",
-                )
-
-            if len(biography) > 200:
-                raise ValidationError(
-                    message="The biography should contain a maximum of 200 characters.",
-                )
-
-        return biography
-
     def clean_phone_number(self):
         phone_number = self.cleaned_data.get("phone_number")
 
@@ -1011,11 +682,6 @@ class UpdateProfileForm(forms.Form):
             raise ValidationError(
                 message="Invalid phone number format. Please enter a valid number with the country code (e.g., 11234567890 for the USA).",
             )
-
-        # if not re.match(pattern="^\+?\d{0,3}?[-. (]?\d{3}[-. )]?\d{3}[-. ]?\d{3}$", string=phonenumber):
-        #     raise ValidationError(
-        #         message="Invalid phone number format.",
-        #     )
 
         return phone_number
 
@@ -1104,99 +770,60 @@ class UpdateProfileForm(forms.Form):
         return apartment_number
 
 
-class ContactUsForm(forms.Form):
-    firstname = forms.CharField(
+class UpdatePaymentInformationForm(forms.Form):
+    iban = forms.CharField(
         error_messages={
-            "required": "Firstname is required.",
+            "required": "IBAN is required.",
         }
     )
-    lastname = forms.CharField(
+    account_number = forms.CharField(
         error_messages={
-            "required": "Lastname is required.",
-        }
-    )
-    email = forms.CharField(
-        error_messages={
-            "required": "Email is required.",
-        }
-    )
-    subject = forms.CharField(
-        error_messages={
-            "required": "Subject is required.",
-        }
-    )
-    message = forms.CharField(
-        error_messages={
-            "required": "Message is required.",
+            "required": "Account Number is required.",
         }
     )
 
-    def clean_firstname(self):
-        firstname = self.cleaned_data.get("firstname")
+    def __init__(self, *args, **kwargs):
+        self.instance = kwargs.pop("instance", None)
 
-        if len(firstname) < 2:
+        super(UpdatePaymentInformationForm, self).__init__(*args, **kwargs)
+
+    def clean_iban(self):
+        iban = self.cleaned_data.get("iban")
+
+        if len(iban) > 5:
             raise ValidationError(
-                message="The firstname should contain at least 2 characters.",
+                message="The IBAN should contain a maximum of 10 characters.",
             )
 
-        if len(firstname) > 50:
+        if not iban.isalpha():
             raise ValidationError(
-                message="The firstname should contain a maximum of 50 characters.",
+                message="The IBAN must consist of letters only.",
             )
 
-        if not firstname.isalpha():
+        return iban
+
+    def clean_account_number(self):
+        account_number = self.cleaned_data.get("account_number").replace(" ", "")
+
+        if len(account_number) < 8:
             raise ValidationError(
-                message="The firstname should consist of letters only.",
+                message="The account number should contain at least 8 characters.",
             )
 
-        return firstname
-
-    def clean_lastname(self):
-        lastname = self.cleaned_data.get("lastname")
-
-        if len(lastname) < 2:
+        if len(account_number) > 30:
             raise ValidationError(
-                message="The lastname should contain at least 2 characters."
+                message="The account number should contain a maximum of 30 characters.",
             )
 
-        if len(lastname) > 100:
+        if not account_number.isdigit():
             raise ValidationError(
-                message="The lastname should contain a maximum of 100 characters.",
+                message="The IBAN must consist of digits only.",
             )
 
-        if not lastname.isalpha():
-            raise ValidationError(
-                message="The lastname should consist of letters only.",
-            )
+        if self.instance.account_number != account_number:
+            if ProfilePaymentInformation.objects.filter(account_number=account_number).exists():
+                raise ValidationError(
+                    message="This account number already exists; please provide another one.",
+                )
 
-        return lastname
-
-    def clean_subject(self):
-        subject = self.cleaned_data.get("subject")
-
-        if len(subject) < 10:
-            raise ValidationError(
-                message="The subject should contain at least 10 characters.",
-            )
-
-        if len(subject) > 50:
-            raise ValidationError(
-                message="The lastname should contain a maximum of 50 characters.",
-            )
-
-        return subject
-
-    def clean_message(self):
-        message = self.cleaned_data.get("message")
-
-        if len(message) < 20:
-            raise ValidationError(
-                message="The message should contain at least 20 characters.",
-            )
-
-        if len(message) > 500:
-            raise ValidationError(
-                message="The message should contain a maximum of 500 characters.",
-            )
-
-        return message
+        return account_number

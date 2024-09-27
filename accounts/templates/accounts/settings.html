@@ -12,6 +12,9 @@
                 <div class="profile-text-container">
                     <h1 class="profile-title">{% if request.user.profile.basic_information.firstname and request.user.profile.basic_information.lastname %}{{ request.user.profile.basic_information.firstname }} {{ request.user.profile.basic_information.lastname }}{% else %}{{ request.user.username }}{% endif %}</h1>
                     <p class="profile-email">{{ request.user.email }}</p>
+                    {% if request.user.profile.employment_information.contract.benefits.job_type %}
+                    <p class="profile-email">{{ request.user.profile.employment_information.contract.benefits.job_type }}</p>
+                    {% endif %}
                 </div>
             </div>
             <div class="menu">
@@ -20,7 +23,9 @@
                 <a href="?basic-information" class="menu-link {% if 'basic-information' in request.GET %}active{% endif %}"><i class="fa-solid fa-user"></i>Basic Information</a>
                 <a href="?contact-information" class="menu-link {% if 'contact-information' in request.GET %}active{% endif %}"><i class="fa-solid fa-phone"></i>Contact Information</a>
                 <a href="?payment-information" class="menu-link {% if 'payment-information' in request.GET %}active{% endif %}"><i class="fa-solid fa-credit-card"></i>Payment Information</a>
-                <a href="?benefits" class="menu-link {% if 'benefits' in request.GET %}active{% endif %}"><i class="fa-solid fa-credit-card"></i>Benefits</a>
+                {% if benefits.salary_benefits.all or benefits.sport_benefits.all or benefits.health_benefits.all or benefits.insurance_benefits.all or development_benefits.all %}
+                <a href="?benefits" class="menu-link {% if 'benefits' in request.GET %}active{% endif %}"><i class="fa-solid fa-briefcase"></i>Benefits</a>
+                {% endif %}
                 <a href="?invoices" class="menu-link {% if 'invoices' in request.GET %}active{% endif %}"><i class="fa-solid fa-file-invoice"></i>Invoices</a>
             </div>
         </div>
@@ -124,8 +129,8 @@
                     <h1 class="info-title">Basic Information</h1>
                 </div>
                 <div class="form-row">
-                    <label for="firstname" class="info-label">Firstname</label>
-                    <input type="text" id="firstname" name="firstname" value="{% if request.user.profile.basic_information.firstname %}{{ request.user.profile.basic_information.firstname }}{% endif %}" placeholder="Firstname">
+                    <label for="firstname" class="info-label">Firstname *</label>
+                    <input type="text" id="firstname" name="firstname" value="{% if update_basic_information_form.firstname.value %}{{ update_basic_information_form.firstname.value }}{% else %}{{ request.user.profile.basic_information.firstname }}{% endif %}" placeholder="Firstname">
                     {% if update_basic_information_form.firstname.errors %}
                     {% for error in update_basic_information_form.firstname.errors %}
                     <span class="form-error">{{ error }}</span>
@@ -133,8 +138,8 @@
                     {% endif %}
                 </div>
                 <div class="form-row">
-                    <label for="lastname" class="info-label">Lastname</label>
-                    <input type="text" id="lastname" name="lastname" value="{% if request.user.profile.basic_information.lastname %}{{ request.user.profile.basic_information.lastname }}{% endif %}" placeholder="Lastname">
+                    <label for="lastname" class="info-label">Lastname *</label>
+                    <input type="text" id="lastname" name="lastname" value="{% if update_basic_information_form.lastname.value %}{{ update_basic_information_form.lastname.value }}{% else %}{{ request.user.profile.basic_information.lastname }}{% endif %}" placeholder="Lastname">
                     {% if update_basic_information_form.lastname.errors %}
                     {% for error in update_basic_information_form.lastname.errors %}
                     <span class="form-error">{{ error }}</span>
@@ -142,8 +147,8 @@
                     {% endif %}
                 </div>
                 <div class="form-row">
-                    <label for="date_of_birth" class="info-label">Date of Birth</label>
-                    <input type="text" id="date_of_birth" name="date_of_birth" value="{% if request.user.profile.basic_information.date_of_birth %}{{ request.user.profile.basic_information.date_of_birth|date:'Y-m-d' }}{% endif %}" placeholder="Date of Birth">
+                    <label for="date_of_birth" class="info-label">Date of Birth *</label>
+                    <input type="text" id="date_of_birth" name="date_of_birth" value="{% if update_basic_information_form.date_of_birth.value %}{% if update_basic_information_form.date_of_birth.value != None %}{{ update_basic_information_form.date_of_birth.value }}{% endif %}{% else %}{% if request.user.profile.basic_information.date_of_birth != None %}{{ request.user.profile.basic_information.date_of_birth }}{% endif %}{% endif %}" placeholder="Date of Birth">
                     {% if update_basic_information_form.date_of_birth.errors %}
                     {% for error in update_basic_information_form.date_of_birth.errors %}
                     <span class="form-error">{{ error }}</span>
@@ -152,7 +157,7 @@
                 </div>
                 <div class="form-row">
                     <label for="biography">Biography</label>
-                    <textarea id="biography" name="biography" placeholder="Biography">{% if request.user.profile.basic_information.biography %}{{ request.user.profile.basic_information.biography }}{% endif %}</textarea>
+                    <textarea id="biography" name="biography" placeholder="Biography">{% if update_basic_information_form.biography.value %}{% if update_basic_information_form.biography.value != None %}{{ update_basic_information_form.biography.value }}{% endif %}{% else %}{% if request.user.profile.basic_information.biography != None %}{{ request.user.profile.basic_information.biography }}{% endif %}{% endif %}</textarea>
                     {% if update_basic_information_form.biography.errors %}
                     {% for error in update_basic_information_form.biography.errors %}
                     <span class="form-error">{{ error }}</span>
@@ -169,38 +174,78 @@
                     <h1 class="info-title">Contact Information</h1>
                 </div>
                 <div class="form-row">
-                    <label for="phone_number" class="info-label">Phone Number</label>
-                    <input type="text" id="phone_number" name="phone_number" value="{% if request.user.profile.contact_information.phone_number %}{{ request.user.profile.contact_information.phone_number }}{% endif %}" placeholder="Phone Number">
+                    <label for="phone_number" class="info-label">Phone Number *</label>
+                    <input type="text" id="phone_number" name="phone_number" value="{% if update_contact_information_form.phone_number.value %}{% if update_contact_information_form.phone_number.value != None %}{{ update_contact_information_form.phone_number.value }}{% endif %}{% else %}{% if request.user.profile.contact_information.phone_number != None %}{{ request.user.profile.contact_information.phone_number }}{% endif %}{% endif %}" placeholder="Phone Number">
+                    {% if update_contact_information_form.phone_number.errors %}
+                    {% for error in update_contact_information_form.phone_number.errors %}
+                    <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    {% endif %}
                 </div>
                 <div class="form-row">
-                    <label for="country" class="info-label">Country</label>
-                    <input type="text" id="country" name="country" value="{% if request.user.profile.contact_information.country %}{{ request.user.profile.contact_information.country }}{% endif %}" placeholder="Country">
+                    <label for="country" class="info-label">Country *</label>
+                    <input type="text" id="country" name="country" value="{% if update_contact_information_form.country.value %}{% if update_contact_information_form.country.value != None %}{{ update_contact_information_form.country.value }}{% endif %}{% else %}{% if request.user.profile.contact_information.country != None %}{{ request.user.profile.contact_information.country }}{% endif %}{% endif %}" placeholder="Country">
+                    {% if update_contact_information_form.country.errors %}
+                    {% for error in update_contact_information_form.country.errors %}
+                    <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    {% endif %}
                 </div>
                 <div class="form-row">
-                    <label for="province" class="info-label">Province</label>
-                    <input type="text" id="province" name="province" value="{% if request.user.profile.contact_information.province %}{{ request.user.profile.contact_information.province }}{% endif %}" placeholder="Province">
+                    <label for="province" class="info-label">Province *</label>
+                    <input type="text" id="province" name="province" value="{% if update_contact_information_form.province.value %}{% if update_contact_information_form.province.value != None %}{{ update_contact_information_form.province.value }}{% endif %}{% else %}{% if request.user.profile.contact_information.province != None %}{{ request.user.profile.contact_information.province }}{% endif %}{% endif %}" placeholder="Province">
+                    {% if update_contact_information_form.province.errors %}
+                    {% for error in update_contact_information_form.province.errors %}
+                    <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    {% endif %}
                 </div>
                 <div class="form-row">
-                    <label for="city" class="info-label">City</label>
-                    <input type="text" id="city" name="city" value="{% if request.user.profile.contact_information.city %}{{ request.user.profile.contact_information.city }}{% endif %}" placeholder="City">
+                    <label for="city" class="info-label">City *</label>
+                    <input type="text" id="city" name="city" value="{% if update_contact_information_form.city.value %}{% if update_contact_information_form.city.value != None %}{{ update_contact_information_form.city.value }}{% endif %}{% else %}{% if request.user.profile.contact_information.city != None %}{{ request.user.profile.contact_information.city }}{% endif %}{% endif %}" placeholder="City">
+                    {% if update_contact_information_form.city.errors %}
+                    {% for error in update_contact_information_form.city.errors %}
+                    <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    {% endif %}
                 </div>
                 <div class="form-row">
-                    <label for="postal_code" class="info-label">Postal Code</label>
-                    <input type="text" id="postal_code" name="postal_code" value="{% if request.user.profile.contact_information.postal_code %}{{ request.user.profile.contact_information.postal_code }}{% endif %}" placeholder="Postal Code">
+                    <label for="postal_code" class="info-label">Postal Code *</label>
+                    <input type="text" id="postal_code" name="postal_code" value="{% if update_contact_information_form.postal_code.value %}{% if update_contact_information_form.postal_code.value != None %}{{ update_contact_information_form.postal_code.value }}{% endif %}{% else %}{% if request.user.profile.contact_information.postal_code != None %}{{ request.user.profile.contact_information.postal_code }}{% endif %}{% endif %}" placeholder="Postal Code">
+                    {% if update_contact_information_form.postal_code.errors %}
+                    {% for error in update_contact_information_form.postal_code.errors %}
+                    <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    {% endif %}
                 </div>
                 <div class="form-row">
-                    <label for="street" class="info-label">Street</label>
-                    <input type="text" id="street" name="street" value="{% if request.user.profile.contact_information.street %}{{ request.user.profile.contact_information.street }}{% endif %}" placeholder="Street">
+                    <label for="street" class="info-label">Street *</label>
+                    <input type="text" id="street" name="street" value="{% if update_contact_information_form.street.value %}{% if update_contact_information_form.street.value != None %}{{ update_contact_information_form.street.value }}{% endif %}{% else %}{% if request.user.profile.contact_information.street != None %}{{ request.user.profile.contact_information.street }}{% endif %}{% endif %}" placeholder="Street">
+                    {% if update_contact_information_form.street.errors %}
+                    {% for error in update_contact_information_form.street.errors %}
+                    <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    {% endif %}
                 </div>
                 <div class="form-row">
-                    <label for="house_number" class="info-label">House Number</label>
-                    <input type="text" id="house_number" name="house_number" value="{% if request.user.profile.contact_information.house_number %}{{ request.user.profile.contact_information.house_number }}{% endif %}" placeholder="House Number">
+                    <label for="house_number" class="info-label">House Number *</label>
+                    <input type="text" id="house_number" name="house_number" value="{% if update_contact_information_form.house_number.value %}{% if update_contact_information_form.house_number.value != None %}{{ update_contact_information_form.house_number.value }}{% endif %}{% else %}{% if request.user.profile.contact_information.house_number != None %}{{ request.user.profile.contact_information.house_number }}{% endif %}{% endif %}" placeholder="House Number">
+                    {% if update_contact_information_form.house_number.errors %}
+                    {% for error in update_contact_information_form.house_number.errors %}
+                    <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    {% endif %}
                 </div>
                 <div class="form-row">
                     <label for="apartment_number" class="info-label">Apartment Number</label>
-                    <input type="text" id="apartment_number" name="apartment_number" value="{% if request.user.profile.contact_information.apartment_number %}{{ request.user.profile.contact_information.apartment_number }}{% endif %}" placeholder="Apartment Number">
+                    <input type="text" id="apartment_number" name="apartment_number" value="{% if update_contact_information_form.apartment_number.value %}{% if update_contact_information_form.apartment_number.value != None %}{{ update_contact_information_form.apartment_number.value }}{% endif %}{% else %}{% if request.user.profile.contact_information.apartment_number != None %}{{ request.user.profile.contact_information.apartment_number }}{% endif %}{% endif %}" placeholder="Apartment Number">
+                    {% if update_contact_information_form.apartment_number.errors %}
+                    {% for error in update_contact_information_form.apartment_number.errors %}
+                    <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    {% endif %}
                 </div>
-                <button class="btn form-submit-btn" type="submit">Save</button>
+                <button class="btn form-submit-btn" type="submit" name="contact-information">Save</button>
             </form>
             {% elif 'payment-information' in request.GET %}
             <form method="post">
@@ -211,30 +256,75 @@
                 </div>
                 <div class="form-row">
                     <label for="iban" class="info-label">IBAN</label>
-                    <input type="text" id="iban" name="iban" value="{% if request.user.profile.payment_information.iban %}{{ request.user.profile.payment_information.iban }}{% endif %}" placeholder="IBAN">
+                    <input type="text" id="iban" name="iban" value="{% if update_payment_information_form.iban.value %}{{ update_payment_information_form.iban.value }}{% else %}{% if request.user.profile.payment_information.iban != None %}{{ request.user.profile.payment_information.iban }}{% endif %}{% endif %}" placeholder="IBAN">
+                    {% if update_payment_information_form.iban.errors %}
+                    {% for error in update_payment_information_form.iban.errors %}
+                    <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    {% endif %}
                 </div>
                 <div class="form-row">
                     <label for="account_number" class="info-label">Account Number</label>
-                    <input type="text" id="account_number" name="account_number" value="{% if request.user.profile.payment_information.account_number %}{{ request.user.profile.payment_information.account_number }}{% endif %}" placeholder="Account Number">
+                    <input type="text" id="account_number" name="account_number" value="{% if update_payment_information_form.account_number.value %}{{ update_payment_information_form.account_number.value }}{% else %}{% if request.user.profile.payment_information.account_number != None %}{{ request.user.profile.payment_information.account_number }}{% endif %}{% endif %}" placeholder="Account Number">
+                    {% if update_payment_information_form.account_number.errors %}
+                    {% for error in update_payment_information_form.account_number.errors %}
+                    <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    {% endif %}
                 </div>
-                <div class="form-row">
-                    <label for="payment_frequency" class="info-label">Payment Frequency</label>
-                    <select class="form-select" id="payment_frequency" name="payment_frequency">Select Payment Frequency
-                        {% for payment_frequency in payment_frequencies %}
-                        <option value="{{ payment_frequency }}" {% if payment_frequency == request.GET.payment_frequency %}selected{% endif %}>{{ payment_frequency }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <button class="btn form-submit-btn" type="submit">Save</button>
+                <button class="btn form-submit-btn" type="submit" name="payment-information">Save</button>
             </form>
             {% elif 'benefits' in request.GET %}
             <div class="info-header">
                 <h1 class="info-title">Benefits</h1>
             </div>
+            {% if benefits.salary_benefits.all %}
             <div class="info-row">
-                <label class="info-label">Username:</label>
-                <p class="info-email">{{ request.user.username }}</p>
+                <label class="info-label">Salary Benefits:</label>
+                {% for benefit in benefits.salary_benefits.all %}
+                <p class="info-email">Awarded: {{ benefit.date_of_award|date:'Y-m-d' }}</p>
+                <p class="info-email">Amount: {{ benefit.amount|floatformat:1 }} {{ request.user.profile.employment_information.contract.currency.name }}</p>
+                <p class="info-email">Period: {{ benefit.period.name }}</p>
+                {% endfor %}
             </div>
+            {% endif %}
+
+            {% if benefits.sport_benefits.all %}
+            <div class="info-row">
+                <label class="info-label">Sport Benefits:</label>
+                {% for benefit in benefits.sport_benefits.all %}
+                <p class="info-email">{{ benefit.name }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if benefits.health_benefits.all %}
+            <div class="info-row">
+                <label class="info-label">Health Benefits:</label>
+                {% for benefit in benefits.health_benefits.all %}
+                <p class="info-email">{{ benefit.name }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if benefits.insurance_benefits.all %}
+            <div class="info-row">
+                <label class="info-label">Insurance Benefits:</label>
+                {% for benefit in benefits.insurance_benefits.all %}
+                <p class="info-email">{{ benefit.name }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if benefits.development_benefits.all %}
+            <div class="info-row">
+                <label class="info-label">Development Benefits:</label>
+                {% for benefit in benefits.development_benefits.all %}
+                <p class="info-email">{{ benefit.name }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+
             {% elif 'invoices' in request.GET %}
             <div class="info-header">
                 <h1 class="info-title">Invoices</h1>

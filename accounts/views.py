@@ -1,12 +1,12 @@
-import os
-
 from django.shortcuts import render, redirect, reverse
-from .forms import RegisterForm, LoginForm, PasswordResetForm, OneTimePasswordForm, ChangePasswordForm, \
-    UpdateProfileImageForm, UpdateProfileForm, ContactUsForm, UpdatePasswordForm, UpdateBasicInformationForm
+from .forms import RegisterForm, PasswordResetForm, OneTimePasswordForm, ChangePasswordForm, \
+    UpdateContactInformationForm, UpdatePasswordForm, UpdateBasicInformationForm, \
+    UpdatePaymentInformationForm
 from django.contrib import messages
-from .models import User, OneTimePassword, ProfileBasicInformation, ProfileContactInformation, PaymentFrequency
+from .models import User, OneTimePassword
+from contracts.models import PaymentFrequency
 from django.contrib.auth.hashers import make_password
-from django.contrib.auth import login, authenticate, logout, update_session_auth_hash
+from django.contrib.auth import logout, update_session_auth_hash
 from django.contrib.auth.decorators import user_passes_test, login_required
 from django.core.mail import EmailMultiAlternatives
 from django.contrib.sites.shortcuts import get_current_site
@@ -15,55 +15,7 @@ from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from .tokens import token_generator
-
-
-@user_passes_test(test_func=lambda user: not user.is_authenticated, login_url="dashboard")
-def index(request):
-    if request.method == "POST":
-        form = LoginForm(data=request.POST)
-
-        if form.is_valid():
-            user = authenticate(
-                username=User.objects.get(email=request.POST["email"]).username,
-                password=request.POST["password"],
-            )
-
-            if user.is_verified:
-                if user is not None:
-                    if "remember" in request.POST:
-                        request.session["user_id"] = user.id
-                        request.session.set_expiry(value=1000000)
-                        request.session.modified = True
-
-                    login(
-                        request=request,
-                        user=user,
-                    )
-
-                    messages.success(
-                        request=request,
-                        message="You have been logged in successfully.",
-                    )
-
-                    return redirect(to="dashboard")
-
-            else:
-                messages.info(
-                    request=request,
-                    message="Your account has not been activated yet. Please activate your account to log in.",
-                )
-
-    else:
-        form = LoginForm()
-
-    return render(
-        request=request,
-        template_name="accounts/login.html",
-        context={
-            "title": "Login",
-            "form": form,
-        }
-    )
+from datetime import date, datetime
 
 
 @user_passes_test(test_func=lambda user: not user.is_authenticated, login_url="dashboard")
@@ -359,12 +311,15 @@ def change_password(request):
 @login_required(login_url="home")
 def settings(request):
     update_password_form = UpdatePasswordForm()
-    update_basic_information_form = UpdateBasicInformationForm()
-    from datetime import date, timedelta
+    update_basic_information_form = UpdateBasicInformationForm(initial={
+        "date_of_birth": request.user.profile.basic_information.date_of_birth.strftime(
+            "%Y-%m-%d") if request.user.profile.basic_information.date_of_birth else "",
+    })
+    update_contact_information_form = UpdateContactInformationForm()
+    update_payment_information_form = UpdatePaymentInformationForm()
 
     if request.method == "POST":
         if "change-password" in request.POST:
-            print("Change Password in request POST.")
             update_password_form = UpdatePasswordForm(data=request.POST, instance=request.user)
 
             if update_password_form.is_valid():
@@ -399,28 +354,181 @@ def settings(request):
                     )
 
         if "basic-information" in request.POST:
-            print("Basic Information in request POST.")
-            update_basic_information_form = UpdateBasicInformationForm(
-                data=request.POST,
-                instance=request.user.profile
-            )
+            update_basic_information_form = UpdateBasicInformationForm(data=request.POST)
 
             if update_basic_information_form.is_valid():
+                changes = {}
+
                 basic_information = request.user.profile.basic_information
 
+                if basic_information.firstname != request.POST["firstname"]:
+                    changes.update(
+                        {
+                            "firstname": request.POST["firstname"],
+                        },
+                    )
+
+                if basic_information.lastname != request.POST["lastname"]:
+                    changes.update(
+                        {
+                            "lastname": request.POST["lastname"],
+                        },
+                    )
+
+                if basic_information.date_of_birth != datetime.strptime(request.POST["date_of_birth"],
+                                                                        "%Y-%m-%d").date():
+                    changes.update(
+                        {
+                            "date_of_birth": request.POST["date_of_birth"],
+                        },
+                    )
+
                 if request.POST["biography"]:
-                    basic_information.biography = request.POST["biography"]
+                    if basic_information.biography != request.POST["biography"]:
+                        changes.update(
+                            {
+                                "biography": request.POST["biography"],
+                            },
+                        )
 
-                basic_information.firstname = request.POST["firstname"]
-                basic_information.lastname = request.POST["lastname"]
-                basic_information.date_of_birth = request.POST["date_of_birth"]
+                if changes:
+                    for name, value in changes.items():
+                        setattr(basic_information, name, value.strip() if isinstance(value, str) else value)
 
-                basic_information.save()
+                    basic_information.save()
 
-                messages.success(
-                    request=request,
-                    message="Your basic information has been successfully updated.",
-                )
+                    messages.success(
+                        request=request,
+                        message="Basic Information has been successfully updated."
+                    )
+
+                else:
+                    messages.info(
+                        request=request,
+                        message="No changes have been made."
+                    )
+
+        if "contact-information" in request.POST:
+            update_contact_information_form = UpdateContactInformationForm(data=request.POST)
+
+            if update_contact_information_form.is_valid():
+                changes = {}
+                contact_information = request.user.profile.contact_information
+
+                if contact_information.phone_number != request.POST["phone_number"]:
+                    changes.update(
+                        {
+                            "phone_number": request.POST["phone_number"],
+                        },
+                    )
+
+                if contact_information.country != request.POST["country"]:
+                    changes.update(
+                        {
+                            "country": request.POST["country"],
+                        },
+                    )
+
+                if contact_information.province != request.POST["province"]:
+                    changes.update(
+                        {
+                            "province": request.POST["province"],
+                        },
+                    )
+
+                if contact_information.city != request.POST["city"]:
+                    changes.update(
+                        {
+                            "city": request.POST["city"],
+                        },
+                    )
+
+                if contact_information.postal_code != request.POST["postal_code"]:
+                    changes.update(
+                        {
+                            "postal_code": request.POST["postal_code"],
+                        },
+                    )
+
+                if contact_information.street != request.POST["street"]:
+                    changes.update(
+                        {
+                            "street": request.POST["street"],
+                        },
+                    )
+
+                if contact_information.house_number != request.POST["house_number"]:
+                    changes.update(
+                        {
+                            "house_number": request.POST["house_number"],
+                        },
+                    )
+
+                if request.POST["apartment_number"]:
+                    if contact_information.apartment_number != request.POST["apartment_number"]:
+                        changes.update(
+                            {
+                                "apartment_number": request.POST["apartment_number"],
+                            },
+                        )
+
+                if changes:
+                    for name, value in changes.items():
+                        setattr(contact_information, name, value.strip() if isinstance(value, str) else value)
+
+                    contact_information.save()
+
+                    messages.success(
+                        request=request,
+                        message="Contact Information has been successfully updated.",
+                    )
+
+                else:
+                    messages.info(
+                        request=request,
+                        message="No changes have been made.",
+                    )
+
+        if "payment-information" in request.POST:
+            update_payment_information_form = UpdatePaymentInformationForm(
+                data=request.POST,
+                instance=request.user.profile.payment_information
+            )
+
+            if update_payment_information_form.is_valid():
+                changes = {}
+                payment_information = request.user.profile.payment_information
+
+                if payment_information.iban != request.POST["iban"]:
+                    changes.update(
+                        {
+                            "iban": request.POST["iban"],
+                        },
+                    )
+
+                if payment_information.account_number != request.POST["account_number"]:
+                    changes.update(
+                        {
+                            "account_number": request.POST["account_number"],
+                        },
+                    )
+
+                if changes:
+                    for name, value in changes.items():
+                        setattr(payment_information, name, value.strip() if isinstance(value, str) else value)
+
+                    payment_information.save()
+
+                    messages.success(
+                        request=request,
+                        message="Payment Information has been successfully updated.",
+                    )
+
+                else:
+                    messages.info(
+                        request=request,
+                        message="No changes have been made.",
+                    )
 
     time_remaining = None
 
@@ -432,132 +540,14 @@ def settings(request):
         template_name="accounts/settings.html",
         context={
             "title": "Profile",
-            "payment_frequencies": [choice[0] for choice in PaymentFrequency._meta.get_field("name")._choices],
+            "benefits": request.user.profile.employment_information.contract.benefits,
             "time_remaining": time_remaining,
             "update_password_form": update_password_form,
             "update_basic_information_form": update_basic_information_form,
+            "update_contact_information_form": update_contact_information_form,
+            "update_payment_information_form": update_payment_information_form,
         }
     )
-
-
-# @login_required(login_url="home")
-# def edit_user(request):
-#     form = UpdateUserForm(data=request.POST or None, instance=request.user)
-#
-#     if request.method == "POST":
-#         user = request.user
-#
-#         if form.is_valid():
-#             email = request.POST["email"]
-#             password = request.POST["password"]
-#
-#             if not email and not password:
-#                 messages.info(
-#                     request=request,
-#                     message="No changes have been made.",
-#                 )
-#
-#             if password:
-#                 if email:
-#                     user.email = email
-#                     user.set_password(raw_password=password)
-#                     user.save()
-#
-#                     messages.success(
-#                         request=request,
-#                         message="The account details have been successfully updated.",
-#                     )
-#
-#                 else:
-#                     user.set_password(raw_password=password)
-#                     user.save()
-#
-#                     messages.success(
-#                         request=request,
-#                         message="Password has been successfully updated.",
-#                     )
-#
-#             else:
-#                 if email:
-#                     user.email = email
-#                     user.save()
-#
-#                     messages.success(
-#                         request=request,
-#                         message="Email has been successfully updated.",
-#                     )
-#
-#             update_session_auth_hash(request=request, user=user)
-#
-#             return redirect(to="profile")
-#
-#     return render(
-#         request=request,
-#         template_name="accounts/edit-user.html",
-#         context={
-#             "title": "Edit User",
-#             "form": form,
-#         }
-#     )
-#
-#
-# @login_required(login_url="home")
-# def edit_profile(request):
-#     form = UpdateProfileForm(data=request.POST or None, instance=request.user.profile)
-#
-#     if request.method == "POST":
-#         if form.is_valid():
-#             basic_data = {
-#                 "firstname": request.POST["firstname"].strip(),
-#                 "lastname": request.POST["lastname"].strip(),
-#                 "date_of_birth": request.POST["date_of_birth"].strip(),
-#             }
-#
-#             contact_data = {
-#                 "phone_number": request.POST["phone_number"].strip(),
-#                 "country": request.POST["country"].strip(),
-#                 "province": request.POST["province"].strip(),
-#                 "city": request.POST["city"].strip(),
-#                 "postal_code": request.POST["postal_code"].strip(),
-#                 "street": request.POST["street"].strip(),
-#                 "house_number": request.POST["house_number"].strip(),
-#             }
-#
-#             if request.POST["biography"]:
-#                 basic_data.update(
-#                     {
-#                         "biography": request.POST["biography"].strip(),
-#                     }
-#                 )
-#
-#             if request.POST["apartment_number"]:
-#                 contact_data.update(
-#                     {
-#                         "apartment_number": request.POST["apartment_number"].strip(),
-#                     }
-#                 )
-#
-#             basic_information = ProfileBasicInformation.objects.filter(profile=request.user.profile)
-#             contact_information = ProfileContactInformation.objects.filter(profile=request.user.profile)
-#
-#             basic_information.update(**basic_data)
-#             contact_information.update(**contact_data)
-#
-#             messages.success(
-#                 request=request,
-#                 message="Profile details have been successfully updated.",
-#             )
-#
-#             return redirect(to="profile")
-#
-#     return render(
-#         request=request,
-#         template_name="accounts/edit-profile.html",
-#         context={
-#             "title": "Edit Profile",
-#             "form": form,
-#         }
-#     )
 
 
 @login_required(login_url="home")
@@ -565,59 +555,3 @@ def log_out(request):
     logout(request=request)
 
     return redirect(to="home")
-
-
-@user_passes_test(test_func=lambda user: not user.is_authenticated, login_url="dashboard")
-def contact_us(request):
-    form = ContactUsForm(data=request.POST or None)
-
-    if request.method == "POST":
-        if form.is_valid():
-            firstname, lastname, email, subject, message = [
-                request.POST["firstname"].strip(),
-                request.POST["lastname"].strip(),
-                request.POST["email"].strip(),
-                request.POST["subject"].strip(),
-                request.POST["message"].strip()
-            ]
-
-            try:
-                html_message = render_to_string(
-                    template_name="contact-us-mail.html",
-                    context={
-                        "firstname": firstname,
-                        "lastname": lastname,
-                        "email": email,
-                        "subject": subject,
-                        "message": message,
-                    }
-                )
-
-                message = EmailMultiAlternatives(
-                    subject=subject,
-                    body=html_message,
-                    from_email=os.environ.get("EMAIL_FROM"),
-                    to=[os.environ.get("EMAIL_HOST_USER")],
-                )
-
-                message.send()
-
-                messages.success(
-                    request=request,
-                    message="The message has been sent, we will respond to you shortly.",
-                )
-
-            except Exception as e:
-                messages.error(
-                    request=request,
-                    message="Failed to send the email, please try again.",
-                )
-
-    return render(
-        request=request,
-        template_name="contact-us.html",
-        context={
-            "title": "Contact Us",
-            "form": form,
-        }
-    )
