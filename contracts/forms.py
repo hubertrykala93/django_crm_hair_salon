@@ -168,5 +168,5 @@ class AdminContractForm(forms.ModelForm):
         self.fields["benefits"].required = False
 
         self.fields["payment_frequency"].help_text = "Select payment frequency."
-        self.fields["benefits"].label = "Payment Frequency"
-        self.fields["benefits"].required = True
+        self.fields["payment_frequency"].label = "Payment Frequency"
+        self.fields["payment_frequency"].required = True

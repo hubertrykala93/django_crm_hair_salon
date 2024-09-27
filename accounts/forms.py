@@ -1,6 +1,6 @@
 from django import forms
 from .models import User, Profile, ProfileImage, OneTimePassword, ProfileBasicInformation, ProfileContactInformation, \
-    ProfileEmploymentInformation, ProfilePaymentInformation
+    ProfileEmploymentInformation
 from django.core.exceptions import ValidationError
 import re
 from django.contrib.auth.hashers import make_password
@@ -124,15 +124,6 @@ class AdminProfileEmploymentInformationForm(forms.ModelForm):
         self.fields["contract"].required = True
 
 
-class AdminProfilePaymentInformationForm(forms.ModelForm):
-    iban = forms.CharField(help_text="Enter the IBAN.", label="IBAN", required=True)
-    account_number = forms.CharField(help_text="Enter the bank account number.", label="Account Number", required=True)
-
-    class Meta:
-        model = ProfilePaymentInformation
-        fields = "__all__"
-
-
 class AdminProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
@@ -156,10 +147,6 @@ class AdminProfileForm(forms.ModelForm):
         self.fields["employment_information"].help_text = "Select the employment information for this user."
         self.fields["employment_information"].label = "Employment Information"
         self.fields["employment_information"].required = True
-
-        self.fields["payment_information"].help_text = "Select the payment information for this user."
-        self.fields["payment_information"].label = "Payment Information"
-        self.fields["payment_information"].required = True
 
 
 class AdminProfileImageForm(forms.ModelForm):
@@ -768,62 +755,3 @@ class UpdateContactInformationForm(forms.Form):
                 )
 
         return apartment_number
-
-
-class UpdatePaymentInformationForm(forms.Form):
-    iban = forms.CharField(
-        error_messages={
-            "required": "IBAN is required.",
-        }
-    )
-    account_number = forms.CharField(
-        error_messages={
-            "required": "Account Number is required.",
-        }
-    )
-
-    def __init__(self, *args, **kwargs):
-        self.instance = kwargs.pop("instance", None)
-
-        super(UpdatePaymentInformationForm, self).__init__(*args, **kwargs)
-
-    def clean_iban(self):
-        iban = self.cleaned_data.get("iban")
-
-        if len(iban) > 5:
-            raise ValidationError(
-                message="The IBAN should contain a maximum of 10 characters.",
-            )
-
-        if not iban.isalpha():
-            raise ValidationError(
-                message="The IBAN must consist of letters only.",
-            )
-
-        return iban
-
-    def clean_account_number(self):
-        account_number = self.cleaned_data.get("account_number").replace(" ", "")
-
-        if len(account_number) < 8:
-            raise ValidationError(
-                message="The account number should contain at least 8 characters.",
-            )
-
-        if len(account_number) > 30:
-            raise ValidationError(
-                message="The account number should contain a maximum of 30 characters.",
-            )
-
-        if not account_number.isdigit():
-            raise ValidationError(
-                message="The IBAN must consist of digits only.",
-            )
-
-        if self.instance.account_number != account_number:
-            if ProfilePaymentInformation.objects.filter(account_number=account_number).exists():
-                raise ValidationError(
-                    message="This account number already exists; please provide another one.",
-                )
-
-        return account_number

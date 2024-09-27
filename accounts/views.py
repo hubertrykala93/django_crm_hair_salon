@@ -1,10 +1,8 @@
 from django.shortcuts import render, redirect, reverse
 from .forms import RegisterForm, PasswordResetForm, OneTimePasswordForm, ChangePasswordForm, \
-    UpdateContactInformationForm, UpdatePasswordForm, UpdateBasicInformationForm, \
-    UpdatePaymentInformationForm
+    UpdateContactInformationForm, UpdatePasswordForm, UpdateBasicInformationForm
 from django.contrib import messages
 from .models import User, OneTimePassword
-from contracts.models import PaymentFrequency
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import logout, update_session_auth_hash
 from django.contrib.auth.decorators import user_passes_test, login_required
@@ -316,7 +314,6 @@ def settings(request):
             "%Y-%m-%d") if request.user.profile.basic_information.date_of_birth else "",
     })
     update_contact_information_form = UpdateContactInformationForm()
-    update_payment_information_form = UpdatePaymentInformationForm()
 
     if request.method == "POST":
         if "change-password" in request.POST:
@@ -490,45 +487,7 @@ def settings(request):
                     )
 
         if "payment-information" in request.POST:
-            update_payment_information_form = UpdatePaymentInformationForm(
-                data=request.POST,
-                instance=request.user.profile.payment_information
-            )
-
-            if update_payment_information_form.is_valid():
-                changes = {}
-                payment_information = request.user.profile.payment_information
-
-                if payment_information.iban != request.POST["iban"]:
-                    changes.update(
-                        {
-                            "iban": request.POST["iban"],
-                        },
-                    )
-
-                if payment_information.account_number != request.POST["account_number"]:
-                    changes.update(
-                        {
-                            "account_number": request.POST["account_number"],
-                        },
-                    )
-
-                if changes:
-                    for name, value in changes.items():
-                        setattr(payment_information, name, value.strip() if isinstance(value, str) else value)
-
-                    payment_information.save()
-
-                    messages.success(
-                        request=request,
-                        message="Payment Information has been successfully updated.",
-                    )
-
-                else:
-                    messages.info(
-                        request=request,
-                        message="No changes have been made.",
-                    )
+            pass
 
     time_remaining = None
 

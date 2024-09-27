@@ -78,7 +78,6 @@ class User(AbstractBaseUser, PermissionsMixin):
                 contact_info = ProfileContactInformation.objects.create()
                 employment_info = ProfileEmploymentInformation.objects.create()
 
-                payment_info = ProfilePaymentInformation.objects.create()
                 contract = Contract.objects.create()
                 benefits = Benefit.objects.create()
 
@@ -89,12 +88,10 @@ class User(AbstractBaseUser, PermissionsMixin):
                 profile.basic_information = basic_info
                 profile.contact_information = contact_info
                 profile.employment_information = employment_info
-                profile.payment_information = payment_info
                 profile.employment_information.contract = contract
                 profile.employment_information.contract.benefits = benefits
 
                 employment_info.save()
-                payment_info.save()
                 profile.employment_information.contract.save()
 
                 profile.save()
@@ -228,24 +225,11 @@ class ProfileEmploymentInformation(models.Model):
         return str(self.pk)
 
 
-class ProfilePaymentInformation(models.Model):
-    iban = models.CharField(max_length=10, null=True, blank=True)
-    account_number = models.CharField(max_length=50, null=True, blank=True, unique=True)
-
-    class Meta:
-        verbose_name = "Payment Information"
-        verbose_name_plural = "Payments Information"
-
-    def __str__(self):
-        return str(self.pk)
-
-
 class Profile(models.Model):
     user = models.OneToOneField(to=User, on_delete=models.CASCADE)
     basic_information = models.OneToOneField(to=ProfileBasicInformation, on_delete=models.CASCADE, null=True)
     contact_information = models.OneToOneField(to=ProfileContactInformation, on_delete=models.CASCADE, null=True)
     employment_information = models.OneToOneField(to=ProfileEmploymentInformation, on_delete=models.CASCADE, null=True)
-    payment_information = models.OneToOneField(to=ProfilePaymentInformation, on_delete=models.CASCADE, null=True)
 
     class Meta:
         verbose_name = "Profile"
@@ -292,9 +276,5 @@ def delete_profile(sender, instance, **kwargs):
                             profile.employment_information.contract.benefits.delete()
 
                 profile.employment_information.delete()
-
-            if hasattr(profile, "payment_information"):
-                if profile.payment_information:
-                    profile.payment_information.delete()
 
         profile.delete()

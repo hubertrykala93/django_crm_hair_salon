@@ -2,36 +2,11 @@ from django.db import models
 from django.utils.timezone import now
 from core.models import Company
 from accounts.models import Profile
-
-
-class PaymentMethod(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-
-    choices = [
-        "account_transfer",
-        "cash",
-        "paypal",
-        "crypto",
-        "company_shares",
-    ]
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = "Payment Method"
-        verbose_name_plural = "Payment Methods"
+from payments.models import PaymentMethod
 
 
 class VatRate(models.Model):
     rate = models.IntegerField(unique=True)
-
-    # choices = [
-    #     0,
-    #     5,
-    #     8,
-    #     23,
-    # ]
 
     class Meta:
         verbose_name = "Vat Rate"
@@ -39,17 +14,6 @@ class VatRate(models.Model):
 
     def __str__(self):
         return str(self.rate)
-
-
-class PaymentTerms(models.Model):
-    name = models.CharField(max_length=500, unique=True)
-
-    class Meta:
-        verbose_name = "Payment Term"
-        verbose_name_plural = "Payment Terms"
-
-    def __str__(self):
-        return str(self.pk)
 
 
 class InvoiceDetails(models.Model):
@@ -65,8 +29,8 @@ class InvoiceDetails(models.Model):
     vat_amount = models.DecimalField(max_digits=10, decimal_places=2)
     gross_amount = models.DecimalField(max_digits=10, decimal_places=2)
     payment_due_date = models.DateField()
-    payment_method = models.ForeignKey(to=PaymentMethod, on_delete=models.CASCADE)
-    payment_terms = models.ManyToManyField(to=PaymentTerms)
+
+    # payment_method = models.ForeignKey(to=PaymentMethod, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = "Invoice"

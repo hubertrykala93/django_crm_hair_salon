@@ -1,10 +1,9 @@
 from django.contrib import admin
 from django.contrib.auth.models import Group
 from .models import User, Profile, ProfileImage, OneTimePassword, ProfileBasicInformation, ProfileContactInformation, \
-    ProfileEmploymentInformation, ProfilePaymentInformation
+    ProfileEmploymentInformation
 from .forms import AdminRegisterForm, AdminProfileForm, AdminProfileImageForm, AdminOneTimePasswordForm, \
-    AdminProfileBasicInformationForm, AdminProfileContactInformationForm, AdminProfileEmploymentInformationForm, \
-    AdminProfilePaymentInformationForm
+    AdminProfileBasicInformationForm, AdminProfileContactInformationForm, AdminProfileEmploymentInformationForm
 from django.contrib.sessions.models import Session
 
 admin.site.unregister(Group)
@@ -238,32 +237,6 @@ class AdminProfileEmploymentInformation(admin.ModelAdmin):
     get_employment_status.short_description = "Employment Status"
 
 
-@admin.register(ProfilePaymentInformation)
-class AdminProfilePaymentInformation(admin.ModelAdmin):
-    list_display = [
-        "id",
-        "iban",
-        "account_number",
-    ]
-    form = AdminProfilePaymentInformationForm
-    fieldsets = (
-        (
-            "International", {
-                "fields": [
-                    "iban",
-                ],
-            },
-        ),
-        (
-            "Account Number", {
-                "fields": [
-                    "account_number",
-                ],
-            },
-        ),
-    )
-
-
 @admin.register(Profile)
 class AdminProfile(admin.ModelAdmin):
     list_display = [
@@ -272,7 +245,6 @@ class AdminProfile(admin.ModelAdmin):
         "basic_information",
         "contact_information",
         "employment_information",
-        "payment_information",
     ]
     form = AdminProfileForm
     fieldsets = (
@@ -301,13 +273,6 @@ class AdminProfile(admin.ModelAdmin):
             "Employment Information", {
                 "fields": [
                     "employment_information",
-                ],
-            },
-        ),
-        (
-            "Payment Information", {
-                "fields": [
-                    "payment_information",
                 ],
             },
         ),
