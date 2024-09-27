@@ -504,7 +504,6 @@ def settings(request):
             "update_password_form": update_password_form,
             "update_basic_information_form": update_basic_information_form,
             "update_contact_information_form": update_contact_information_form,
-            "update_payment_information_form": update_payment_information_form,
         }
     )
 

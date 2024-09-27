@@ -331,6 +331,7 @@ class AdminContract(admin.ModelAdmin):
         "salary",
         "currency",
         "payment_frequency",
+        "payment_method",
         "work_hours_per_week",
         "benefits",
     ]
@@ -357,6 +358,7 @@ class AdminContract(admin.ModelAdmin):
                     "salary",
                     "currency",
                     "payment_frequency",
+                    "payment_method",
                 ],
             },
         ),

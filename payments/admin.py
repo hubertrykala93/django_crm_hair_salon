@@ -4,14 +4,40 @@ from .forms import AdminBankTransferForm, AdminCryptoTransferForm, AdminPrepaidT
     AdminPaymentMethodForm
 
 
+@admin.register(PaymentMethod)
+class AdminPaymentMethod(admin.ModelAdmin):
+    list_display = [
+        "id",
+        "name",
+    ]
+    form = AdminPaymentMethodForm
+    fieldsets = (
+        (
+            "Payment Method", {
+                "fields": [
+                    "name",
+                ],
+            },
+        ),
+    )
+
+
 @admin.register(PrepaidTransfer)
 class AdminPrepaidTransfer(admin.ModelAdmin):
     list_display = [
         "id",
+        "name",
         "card_number",
     ]
     form = AdminPrepaidTransferForm
     fieldsets = (
+        (
+            "Individual Payment Method Name", {
+                "fields": [
+                    "name",
+                ],
+            },
+        ),
         (
             "Card Information", {
                 "fields": [
@@ -26,12 +52,20 @@ class AdminPrepaidTransfer(admin.ModelAdmin):
 class AdminBankTransfer(admin.ModelAdmin):
     list_display = [
         "id",
+        "name",
         "bank_name",
         "iban",
         "account_number",
     ]
     form = AdminBankTransferForm
     fieldsets = (
+        (
+            "Individual Payment Method Name", {
+                "fields": [
+                    "name",
+                ],
+            },
+        ),
         (
             "Bank Information", {
                 "fields": [
@@ -54,10 +88,18 @@ class AdminBankTransfer(admin.ModelAdmin):
 class AdminCryptoTransfer(admin.ModelAdmin):
     list_display = [
         "id",
+        "name",
         "wallet_address",
     ]
     form = AdminCryptoTransferForm
     fieldsets = (
+        (
+            "Individual Payment Method Name", {
+                "fields": [
+                    "name",
+                ],
+            },
+        ),
         (
             "Wallet Information", {
                 "fields": [
@@ -72,10 +114,18 @@ class AdminCryptoTransfer(admin.ModelAdmin):
 class AdminPayPalTransfer(admin.ModelAdmin):
     list_display = [
         "id",
+        "name",
         "paypal_email",
     ]
     form = AdminPayPalTransferForm
     fieldsets = (
+        (
+            "Individual Payment Method Name", {
+                "fields": [
+                    "name",
+                ],
+            },
+        ),
         (
             "PayPal Information", {
                 "fields": [

@@ -1,6 +1,7 @@
 from django import forms
 from .models import ContractType, Contract, Benefit, SalaryPeriod, SalaryBenefit, SportBenefit, HealthBenefit, \
     InsuranceBenefit, DevelopmentBenefit, JobType, EmploymentStatus, JobPosition, Currency, PaymentFrequency
+from payments.models import PaymentMethod
 
 
 class AdminCurrencyForm(forms.ModelForm):
@@ -170,3 +171,8 @@ class AdminContractForm(forms.ModelForm):
         self.fields["payment_frequency"].help_text = "Select payment frequency."
         self.fields["payment_frequency"].label = "Payment Frequency"
         self.fields["payment_frequency"].required = True
+
+        self.fields["payment_method"].queryset = PaymentMethod.objects.all()
+        self.fields["payment_method"].help_text = "Select payment method."
+        self.fields["payment_method"].label = "Payment Method"
+        self.fields["payment_method"].required = True

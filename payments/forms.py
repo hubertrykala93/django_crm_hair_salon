@@ -2,7 +2,24 @@ from django import forms
 from .models import CryptoTransfer, PayPalTransfer, BankTransfer, PrepaidTransfer, PaymentMethod
 
 
+class AdminPaymentMethodForm(forms.ModelForm):
+    name = forms.CharField(
+        help_text="Enter the name of the payment method.",
+        label="Payment Method",
+        required=True,
+    )
+
+    class Meta:
+        model = PaymentMethod
+        fields = "__all__"
+
+
 class AdminCryptoTransferForm(forms.ModelForm):
+    name = forms.CharField(
+        help_text="Enter your Crypto Transfer name.",
+        label="Transfer Name",
+        required=True,
+    )
     wallet_address = forms.CharField(
         help_text="Enter the wallet address for cryptocurrency payments.",
         label="Wallet Address",
@@ -57,16 +74,4 @@ class AdminPrepaidTransferForm(forms.ModelForm):
 
     class Meta:
         model = PrepaidTransfer
-        fields = "__all__"
-
-
-class AdminPaymentMethodForm(forms.ModelForm):
-    name = forms.CharField(
-        help_text="Enter the name of the payment method.",
-        label="Payment Method",
-        required=True,
-    )
-
-    class Meta:
-        model = PaymentMethod
         fields = "__all__"
