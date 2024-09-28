@@ -8,6 +8,7 @@ from django.dispatch import receiver
 from django.db.models.signals import pre_delete
 import random as rnd
 from contracts.models import Contract, Benefit, JobPosition, EmploymentStatus
+from payments.models import BankTransfer, PrepaidTransfer, PayPalTransfer, CryptoTransfer
 
 
 class CustomUserManager(UserManager):
@@ -74,26 +75,40 @@ class User(AbstractBaseUser, PermissionsMixin):
             profile, created = Profile.objects.get_or_create(user=self)
 
             if created:
+                # Creating Basic Information for Profile
                 basic_info = ProfileBasicInformation.objects.create()
+                profile.basic_information = basic_info
+
+                # Creating Contact Information for Profile
                 contact_info = ProfileContactInformation.objects.create()
+                profile.contact_information = contact_info
+
+                # Creating Employment Information for Profile
                 employment_info = ProfileEmploymentInformation.objects.create()
+                profile.employment_information = employment_info
 
-                contract = Contract.objects.create()
-                benefits = Benefit.objects.create()
-
+                # Creating Profile Image for Basic Information
                 profile_image = ProfileImage.objects.create()
                 basic_info.profile_image = profile_image
+
+                # Saving Basic Information with Profile Image
                 basic_info.save()
 
-                profile.basic_information = basic_info
-                profile.contact_information = contact_info
-                profile.employment_information = employment_info
-                profile.employment_information.contract = contract
-                profile.employment_information.contract.benefits = benefits
+                # Creating and Saving Employment Status for Employment Information
+                employment_status = EmploymentStatus.objects.get(name="Active")
+                employment_info.employment_status = employment_status
 
+                # Creating and Saving Contract for Employment Information
+                contract = Contract.objects.create()
+                employment_info.contract = contract
                 employment_info.save()
-                profile.employment_information.contract.save()
 
+                # Creating and Saving Benefits for Contract
+                benefits = Benefit.objects.create()
+                contract.benefits = benefits
+                contract.save()
+
+                # Saving Profile with Basic Information, Contact Information, Employment Information
                 profile.save()
 
 
@@ -240,41 +255,36 @@ class Profile(models.Model):
 
 
 @receiver(signal=pre_delete, sender=User)
-def delete_profile(sender, instance, **kwargs):
+def delete_instances(sender, instance, **kwargs):
     try:
         profile = instance.profile
 
     except Profile.DoesNotExist:
         pass
 
-    if instance.profile:
-        profile = instance.profile
+    if hasattr(instance, "profile"):
+        if hasattr(instance.profile, "basic_information"):
+            if hasattr(instance.profile.basic_information, "profile_image"):
+                image_path = instance.profile.basic_information.profile_image.image.path
 
-        if hasattr(profile, "basic_information"):
-            if hasattr(profile.basic_information, "profile_image"):
-                if profile.basic_information.profile_image:
-                    image_path = profile.basic_information.profile_image.image.path
+                if "default_profile_image" not in image_path:
+                    if os.path.isfile(path=image_path):
+                        os.remove(path=image_path)
 
-                    if "default_profile_image.png" not in image_path:
-                        if os.path.isfile(path=image_path):
-                            os.remove(path=image_path)
+                instance.profile.basic_information.profile_image.delete()
 
-                    profile.basic_information.profile_image.delete()
+            instance.profile.basic_information.delete()
 
-                profile.basic_information.delete()
+        if hasattr(instance.profile, "contact_information"):
+            instance.profile.contact_information.delete()
 
-            if hasattr(profile, "contact_information"):
-                if profile.contact_information:
-                    profile.contact_information.delete()
+        if hasattr(instance.profile, "employment_information"):
+            if hasattr(instance.profile.employment_information, "contract"):
+                if hasattr(instance.profile.employment_information.contract, "benefits"):
+                    instance.profile.employment_information.contract.benefits.delete()
 
-            if hasattr(profile, "employment_information"):
-                if profile.employment_information:
-                    if hasattr(profile.employment_information, "contract"):
-                        profile.employment_information.contract.delete()
+                instance.profile.employment_information.contract.delete()
 
-                        if hasattr(profile.employment_information.contract, "benefits"):
-                            profile.employment_information.contract.benefits.delete()
+            instance.profile.employment_information.delete()
 
-                profile.employment_information.delete()
-
-        profile.delete()
+        instance.profile.delete()

@@ -662,6 +662,11 @@ class UpdateContactInformationForm(forms.Form):
         required=False,
     )
 
+    def __init__(self, *args, **kwargs):
+        self.instance = kwargs.pop("instance", None)
+
+        super(UpdateContactInformationForm, self).__init__(*args, **kwargs)
+
     def clean_phone_number(self):
         phone_number = self.cleaned_data.get("phone_number")
 
@@ -669,6 +674,12 @@ class UpdateContactInformationForm(forms.Form):
             raise ValidationError(
                 message="Invalid phone number format. Please enter a valid number with the country code (e.g., 11234567890 for the USA).",
             )
+
+        if self.instance.phone_number != phone_number:
+            if ProfileContactInformation.objects.filter(phone_number=phone_number).exists():
+                raise ValidationError(
+                    message="This phone number is already in use; please enter a different one.",
+                )
 
         return phone_number
 

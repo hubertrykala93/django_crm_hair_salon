@@ -19,6 +19,13 @@ class AdminPaymentMethod(admin.ModelAdmin):
                 ],
             },
         ),
+        (
+            "Additional", {
+                "fields": [
+                    "active",
+                ],
+            },
+        ),
     )
 
 

@@ -175,4 +175,4 @@ class AdminContractForm(forms.ModelForm):
         self.fields["payment_method"].queryset = PaymentMethod.objects.all()
         self.fields["payment_method"].help_text = "Select payment method."
         self.fields["payment_method"].label = "Payment Method"
-        self.fields["payment_method"].required = True
+        self.fields["payment_method"].required = False

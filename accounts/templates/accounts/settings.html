@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load settings_filters %}
 
 {% block title %}{{ title }}{% endblock %}
 
@@ -22,7 +23,17 @@
                 <a href="?change-password" class="menu-link {% if 'change-password' in request.GET %}active{% endif %}"><i class="fa-solid fa-gear"></i>Change Password</a>
                 <a href="?basic-information" class="menu-link {% if 'basic-information' in request.GET %}active{% endif %}"><i class="fa-solid fa-user"></i>Basic Information</a>
                 <a href="?contact-information" class="menu-link {% if 'contact-information' in request.GET %}active{% endif %}"><i class="fa-solid fa-phone"></i>Contact Information</a>
-                <a href="?payment-information" class="menu-link {% if 'payment-information' in request.GET %}active{% endif %}"><i class="fa-solid fa-credit-card"></i>Payment Information</a>
+                <div class="menu-item-dropdown">
+                    <span class="menu-link dropdown-toggle {% if 'payment-information' in request.GET %}active{% endif %}">
+                        <i class="fa-solid fa-credit-card"></i>Payment Information
+                    </span>
+                    <div class="dropdown-menu">
+                        <a href="?payment-information&bank-transfer" class="menu-link">Bank Transfer</a>
+                        <a href="?payment-information&prepaid-transfer" class="menu-link">Prepaid Transfer</a>
+                        <a href="?payment-information&paypal-transfer" class="menu-link">PayPal Transfer</a>
+                        <a href="?payment-information&crypto-transfer" class="menu-link">Crypto Transfer</a>
+                    </div>
+                </div>
                 {% if benefits.salary_benefits.all or benefits.sport_benefits.all or benefits.health_benefits.all or benefits.insurance_benefits.all or development_benefits.all %}
                 <a href="?benefits" class="menu-link {% if 'benefits' in request.GET %}active{% endif %}"><i class="fa-solid fa-briefcase"></i>Benefits</a>
                 {% endif %}
@@ -93,6 +104,31 @@
                 <p class="info-email">{{ time_remaining.days }}</p>
             </div>
             {% endif %}
+
+            <div class="info-row">
+                <label class="info-label">Withdrawal Method:</label>
+                {% if request.user.profile.employment_information.contract.payment_method %}
+                <p class="info-email">{{ request.user.profile.employment_information.contract.payment_method.name|cut_withdrawal_method }}</p>
+                {% else %}
+                <div class="withdrawal-information">
+                    <p class="info-email">Set one of the most convenient payment methods for you. Otherwise, <strong>transfers to you will be suspended</strong>.</p>
+                </div>
+                <ul>
+                    <li>
+                        <a href="?payment-information&bank-transfer"><p class="info-withdrawal">Bank Transfer</p></a>
+                    </li>
+                    <li>
+                        <a href="?payment-information&prepaid-transfer"><p class="info-withdrawal">Prepaid Transfer</p></a>
+                    </li>
+                    <li>
+                        <a href="?payment-information&paypal-transfer"><p class="info-withdrawal">PayPal Transfer</p></a>
+                    </li>
+                    <li>
+                        <a href="?payment-information&crypto-transfer"><p class="info-withdrawal">Crypto Transfer</p></a>
+                    </li>
+                </ul>
+                {% endif %}
+            </div>
 
             {% elif 'change-password' in request.GET %}
             <form method="post">
@@ -248,32 +284,125 @@
                 <button class="btn form-submit-btn" type="submit" name="contact-information">Save</button>
             </form>
             {% elif 'payment-information' in request.GET %}
+            {% if 'bank-transfer' in request.GET %}
             <form method="post">
                 {% csrf_token %}
 
+                <input type="hidden" name="payment-method" value="bank-transfer">
+
                 <div class="info-header">
-                    <h1 class="info-title">Payment Information</h1>
+                    <h1 class="info-title">Bank Transfer</h1>
                 </div>
                 <div class="form-row">
-                    <label for="iban" class="info-label">IBAN</label>
-                    <input type="text" id="iban" name="iban" value="{% if update_payment_information_form.iban.value %}{{ update_payment_information_form.iban.value }}{% else %}{% if request.user.profile.payment_information.iban != None %}{{ request.user.profile.payment_information.iban }}{% endif %}{% endif %}" placeholder="IBAN">
-                    {% if update_payment_information_form.iban.errors %}
-                    {% for error in update_payment_information_form.iban.errors %}
+                    <label for="bank_name" class="info-label">Bank Name *</label>
+<!--                    <input type="text" id="bank_name" name="bank_name" placeholder="Bank Name" value="{% if update_bank_transfer_form.bank_name.value %}{{ update_bank_transfer_form.bank_name.value }}{% else %}{{ request.user.profile.employment_information.contract.payment_method.banktransfer.bank_name }}{% endif %}">-->
+                    <input type="text" id="bank_name" name="bank_name" placeholder="Bank Name" value="{% if update_bank_transfer_form.bank_name.value %}{{ update_bank_transfer_form.bank_name.value }}{% else %}{% if request.user.profile.employment_information.contract.payment_method.banktransfer.bank_name %}{{ request.user.profile.employment_information.contract.payment_method.banktransfer.bank_name }}{% else %}{{ bank_transfer.0.bank_name }}{% endif %}{% endif %}">
+                    {% if update_bank_transfer_form.bank_name.errors %}
+                    {% for error in update_bank_transfer_form.bank_name.errors %}
                     <span class="form-error">{{ error }}</span>
                     {% endfor %}
                     {% endif %}
                 </div>
                 <div class="form-row">
-                    <label for="account_number" class="info-label">Account Number</label>
-                    <input type="text" id="account_number" name="account_number" value="{% if update_payment_information_form.account_number.value %}{{ update_payment_information_form.account_number.value }}{% else %}{% if request.user.profile.payment_information.account_number != None %}{{ request.user.profile.payment_information.account_number }}{% endif %}{% endif %}" placeholder="Account Number">
-                    {% if update_payment_information_form.account_number.errors %}
-                    {% for error in update_payment_information_form.account_number.errors %}
+                    <label for="iban" class="info-label">IBAN *</label>
+<!--                    <input type="text" id="iban" name="iban" placeholder="IBAN" value="{% if update_bank_transfer_form.iban.value %}{{ update_bank_transfer_form.iban.value }}{% else %}{{ request.user.profile.employment_information.contract.payment_method.banktransfer.iban }}{% endif %}">-->
+                    <input type="text" id="iban" name="iban" placeholder="IBAN" value="{% if update_bank_transfer_form.iban.value %}{{ update_bank_transfer_form.iban.value }}{% else %}{% if request.user.profile.employment_information.contract.payment_method.banktransfer.iban %}{{ request.user.profile.employment_information.contract.payment_method.banktransfer.iban }}{% else %}{{ bank_transfer.0.iban }}{% endif %}{% endif %}">
+                    {% if update_bank_transfer_form.iban.errors %}
+                    {% for error in update_bank_transfer_form.iban.errors %}
                     <span class="form-error">{{ error }}</span>
                     {% endfor %}
                     {% endif %}
+                </div>
+                <div class="form-row">
+                    <label for="account_number" class="info-label">Account Number *</label>
+<!--                    <input type="text" id="account_number" name="account_number" placeholder="Account Number" value="{% if update_bank_transfer_form.account_number.value %}{{ update_bank_transfer_form.account_number.value }}{% else %}{{ request.user.profile.employment_information.contract.payment_method.banktransfer.account_number }}{% endif %}">-->
+                    <input type="text" id="account_number" name="account_number" placeholder="Account Number" value="{% if update_bank_transfer_form.account_number.value %}{{ update_bank_transfer_form.account_number.value }}{% else %}{% if request.user.profile.employment_information.contract.payment_method.banktransfer.account_number %}{{ request.user.profile.employment_information.contract.payment_method.banktransfer.account_number }}{% else %}{{ bank_transfer.0.account_number }}{% endif %}{% endif %}">
+                    {% if update_bank_transfer_form.account_number.errors %}
+                    {% for error in update_bank_transfer_form.account_number.errors %}
+                    <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+                <div class="form-row">
+                    <label for="save_method" style="display: flex;">
+                        <input type="checkbox" id="save_method" name="save_method" {% if request.user.profile.employment_information.contract.payment_method.banktransfer %}checked{% endif %}>
+                        <div class="checkbox-info">
+                            <span class="checkbox-text">Save this payment method as new.</span>
+                        </div>
+                    </label>
                 </div>
                 <button class="btn form-submit-btn" type="submit" name="payment-information">Save</button>
             </form>
+            {% elif 'prepaid-transfer' in request.GET %}
+            <form method="post">
+                {% csrf_token %}
+
+                <input type="hidden" name="payment-method" value="prepaid-transfer">
+
+                <div class="info-header">
+                    <h1 class="info-title">Prepaid Transfer</h1>
+                </div>
+                <div class="form-row">
+                    <label for="card_number" class="info-label">Card Number *</label>
+                    <input type="text" id="card_number" name="card_number" placeholder="Card Number">
+                </div>
+                <div class="form-row">
+                    <label for="save_method" style="display: flex;">
+                        <input type="checkbox" id="save_method" name="save_method">
+                        <div class="checkbox-info">
+                            <span class="checkbox-text">Save this payment method as new.</span>
+                        </div>
+                    </label>
+                </div>
+                <button class="btn form-submit-btn" type="submit" name="payment-information">Save</button>
+            </form>
+            {% elif 'paypal-transfer' in request.GET %}
+            <form method="post">
+                {% csrf_token %}
+
+                <input type="hidden" name="payment-method" value="paypal-transfer">
+
+                <div class="info-header">
+                    <h1 class="info-title">PayPal Transfer</h1>
+                </div>
+                <div class="form-row">
+                    <label for="paypal_email" class="info-label">Email *</label>
+                    <input type="text" id="paypal_email" name="paypal_email" placeholder="E-mail Address">
+                </div>
+                <div class="form-row">
+                    <label for="save_method" style="display: flex;">
+                        <input type="checkbox" id="save_method" name="save_method">
+                        <div class="checkbox-info">
+                            <span class="checkbox-text">Save this payment method as new.</span>
+                        </div>
+                    </label>
+                </div>
+                <button class="btn form-submit-btn" type="submit" name="payment-information">Save</button>
+            </form>
+            {% else %}
+            <form method="post">
+                {% csrf_token %}
+
+                <input type="hidden" name="payment-method" value="crypto-transfer">
+
+                <div class="info-header">
+                    <h1 class="info-title">Crypto Transfer</h1>
+                </div>
+                <div class="form-row">
+                    <label for="wallet_address" class="info-label">Wallet Address *</label>
+                    <input type="text" id="wallet_address" name="wallet_address" placeholder="Wallet Address">
+                </div>
+                <div class="form-row">
+                    <label for="save_method" style="display: flex;">
+                        <input type="checkbox" id="save_method" name="save_method">
+                        <div class="checkbox-info">
+                            <span class="checkbox-text">Save this payment method as new.</span>
+                        </div>
+                    </label>
+                </div>
+                <button class="btn form-submit-btn" type="submit" name="payment-information">Save</button>
+            </form>
+            {% endif %}
             {% elif 'benefits' in request.GET %}
             <div class="info-header">
                 <h1 class="info-title">Benefits</h1>

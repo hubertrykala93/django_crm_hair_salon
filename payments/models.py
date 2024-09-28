@@ -1,8 +1,10 @@
 from django.db import models
+from django.apps import apps
 
 
 class PaymentMethod(models.Model):
     name = models.CharField(max_length=50)
+    active = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = "Payment Method"
@@ -10,28 +12,6 @@ class PaymentMethod(models.Model):
 
     def __str__(self):
         return self.name
-
-
-class CryptoTransfer(PaymentMethod):
-    wallet_address = models.CharField(max_length=255, unique=True)
-
-    class Meta:
-        verbose_name = "Crypto Transfer"
-        verbose_name_plural = "Crypto Transfers"
-
-    def __str__(self):
-        return self.wallet_address
-
-
-class PayPalTransfer(PaymentMethod):
-    paypal_email = models.EmailField(max_length=255, unique=True)
-
-    class Meta:
-        verbose_name = "PayPal Transfer"
-        verbose_name_plural = "PayPal Transfers"
-
-    def __str__(self):
-        return self.paypal_email
 
 
 class BankTransfer(PaymentMethod):
@@ -56,3 +36,25 @@ class PrepaidTransfer(PaymentMethod):
 
     def __str__(self):
         return self.card_number
+
+
+class PayPalTransfer(PaymentMethod):
+    paypal_email = models.EmailField(max_length=255, unique=True)
+
+    class Meta:
+        verbose_name = "PayPal Transfer"
+        verbose_name_plural = "PayPal Transfers"
+
+    def __str__(self):
+        return self.paypal_email
+
+
+class CryptoTransfer(PaymentMethod):
+    wallet_address = models.CharField(max_length=255, unique=True)
+
+    class Meta:
+        verbose_name = "Crypto Transfer"
+        verbose_name_plural = "Crypto Transfers"
+
+    def __str__(self):
+        return self.wallet_address
