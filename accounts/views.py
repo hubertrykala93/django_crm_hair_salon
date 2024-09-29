@@ -309,6 +309,44 @@ def change_password(request):
     )
 
 
+# Update Password
+def handle_update_password(request):
+    password = request.POST["password"]
+
+    if password:
+        user = request.user
+
+        if user.check_password(raw_password=password):
+            messages.info(
+                request=request,
+                message="You cannot change to the previous password; please create a new one.",
+            )
+        else:
+            user.set_password(raw_password=password)
+            user.save()
+
+            update_session_auth_hash(
+                request=request,
+                user=user
+            )
+
+            messages.success(
+                request=request,
+                message="The password has been successfully changed.",
+            )
+
+    else:
+        messages.info(
+            request=request,
+            message="No changes have been made.",
+        )
+
+
+# Update Basic Information
+def handle_update_basic_information(request):
+    pass
+
+
 @login_required(login_url="home")
 def settings(request):
     update_password_form = UpdatePasswordForm()
@@ -324,38 +362,13 @@ def settings(request):
 
     if request.method == "POST":
         if "change-password" in request.POST:
-            update_password_form = UpdatePasswordForm(data=request.POST, instance=request.user)
+            update_password_form = UpdatePasswordForm(
+                data=request.POST,
+                instance=request.user,
+            )
 
             if update_password_form.is_valid():
-                password = request.POST["password"]
-
-                if password:
-                    user = request.user
-
-                    if user.check_password(raw_password=password):
-                        messages.info(
-                            request=request,
-                            message="You cannot change to the previous password; please create a new one.",
-                        )
-                    else:
-                        user.set_password(raw_password=password)
-                        user.save()
-
-                        update_session_auth_hash(
-                            request=request,
-                            user=user
-                        )
-
-                        messages.success(
-                            request=request,
-                            message="The password has been successfully changed.",
-                        )
-
-                else:
-                    messages.info(
-                        request=request,
-                        message="No changes have been made.",
-                    )
+                handle_update_password(request=request)
 
         if "basic-information" in request.POST:
             update_basic_information_form = UpdateBasicInformationForm(data=request.POST)
@@ -512,22 +525,29 @@ def settings(request):
                         save_method = request.POST.get("save_method", None)
 
                         if not payment_method:
-                            print("Contract has no Payment Method.")
-
                             if save_method:
-                                print("Contract has not Payment Method and User check save method.")
                                 try:
-                                    print("Trying to catch banktransfer.")
                                     bank_transfer = BankTransfer.objects.get(name=payment_method_name)
-                                    print(bank_transfer)
 
                                 except BankTransfer.DoesNotExist:
-                                    messages.error(
+                                    banktransfer = BankTransfer(
+                                        name=payment_method_name,
+                                        bank_name=request.POST["bank_name"],
+                                        iban=request.POST["iban"],
+                                        account_number=request.POST["account_number"],
+                                    )
+                                    banktransfer.save()
+
+                                    contract.payment_method = banktransfer
+                                    contract.payment_method.save()
+                                    contract.save()
+
+                                    messages.success(
                                         request=request,
-                                        message="Bank account information does not exist; please create a new one.",
+                                        message="The payment method via bank transfer has been successfully updated and set.",
                                     )
 
-                                print("Banktransfer catched!")
+                                bank_transfer = BankTransfer.objects.get(name=payment_method_name)
                                 if bank_transfer:
                                     changes = {}
 
@@ -548,16 +568,34 @@ def settings(request):
 
                                         messages.success(
                                             request=request,
-                                            message="Bank account updated!",
+                                            message="The payment method via bank transfer has been successfully updated and set.",
                                         )
 
+                                        if save_method:
+                                            contract.payment_method = bank_transfer
+                                            contract.save()
+
+                                        else:
+
+                                            contract.payment_method = None
+                                            contract.save()
+
+                                            messages.error(request=request, message="Kurwa")
+
                                     else:
-                                        print("Is Banktransfer.")
                                         contract.payment_method = bank_transfer
                                         contract.save()
 
-                                else:
-                                    print("Is not banktransfer, creating first Payment Method and save to current.")
+                                        messages.success(
+                                            request=request,
+                                            message="The payment method via bank transfer has been successfully set.",
+                                        )
+
+                            else:
+                                try:
+                                    bank_transfer = BankTransfer.objects.get(name=payment_method_name)
+
+                                except BankTransfer.DoesNotExist:
                                     banktransfer = BankTransfer(
                                         name=payment_method_name,
                                         bank_name=request.POST["bank_name"],
@@ -566,32 +604,14 @@ def settings(request):
                                     )
                                     banktransfer.save()
 
-                                    contract.payment_method = banktransfer
-                                    contract.payment_method.save()
-                                    contract.save()
-
                                     messages.success(
                                         request=request,
-                                        message="The payment method has been set to Bank Transfer.",
+                                        message="The payment method via bank transfer has been successfully updated.",
                                     )
 
-                            else:
-                                print("Contract has no Payment Method and user do not want to save that.")
-                                try:
-                                    print("Trying to catch bank transfer.")
-                                    bank_transfer = BankTransfer.objects.get(name=payment_method_name)
+                                    return redirect(
+                                        to=reverse(viewname="settings") + "?payment-information&bank-transfer")
 
-                                except BankTransfer.DoesNotExist:
-                                    messages.error(
-                                        request=request,
-                                        message="Bank account information does not exist; please create a new one.",
-                                    )
-
-                                    return redirect(to=reverse(viewname="settings") + "?payment-information&bank-transfer")
-
-                                # bank_transfer = BankTransfer.objects.get(name=payment_method_name)
-
-                                print("Bank Transfer catched!")
                                 if bank_transfer:
                                     changes = {}
 
@@ -604,9 +624,8 @@ def settings(request):
                                     if bank_transfer.account_number != request.POST["account_number"]:
                                         changes["account_number"] = request.POST["account_number"]
 
-                                    print(changes)
                                     if changes:
-                                        for name, value in changes:
+                                        for name, value in changes.items():
                                             setattr(bank_transfer, name, value)
 
                                         bank_transfer.save()
@@ -622,22 +641,7 @@ def settings(request):
                                             message="No changes have been made.",
                                         )
 
-                                else:
-                                    banktransfer = BankTransfer(
-                                        name=payment_method_name,
-                                        bank_name=request.POST["bank_name"],
-                                        iban=request.POST["iban"],
-                                        account_number=request.POST["account_number"],
-                                    )
-                                    banktransfer.save()
-
-                                    messages.success(
-                                        request=request,
-                                        message="The payment method has been successfully updated.",
-                                    )
-
                         else:
-                            print("Contract has Payment Method.")
                             changes = {}
 
                             if payment_method.banktransfer.bank_name != request.POST["bank_name"]:
@@ -650,9 +654,7 @@ def settings(request):
                                 changes["account_number"] = request.POST["account_number"]
 
                             if save_method:
-                                print("Save Method.")
                                 if changes:
-                                    print("Changes")
                                     for name, value in changes.items():
                                         setattr(
                                             payment_method.banktransfer,
@@ -662,35 +664,51 @@ def settings(request):
 
                                     messages.success(
                                         request=request,
-                                        message="The payment method has been successfully updated.",
+                                        message="The payment method via bank transfer has been successfully updated.",
                                     )
 
+                                    if save_method:
+                                        payment_method.banktransfer.save()
+                                        contract.payment_method = payment_method.banktransfer
+                                        contract.save()
+
+                                    else:
+                                        payment_method.banktransfer.save()
+                                        contract.payment_method = None
+                                        contract.save()
+
                                 else:
-                                    print("No Changes")
                                     messages.info(
                                         request=request,
                                         message="No changes have been made.",
                                     )
 
                             else:
-                                print("No Save Method.")
+                                for name, value in changes.items():
+                                    setattr(payment_method.banktransfer, name, value)
+
+                                payment_method.banktransfer.save()
                                 contract.payment_method = None
                                 contract.save()
 
+                                messages.success(
+                                    request=request,
+                                    message="The payment method via bank transfer has been successfully updated.",
+                                )
 
-
+                                messages.info(
+                                    request=request,
+                                    message="The payment method via bank transfer has been removed. To receive a transfer, please set one of the payment methods.",
+                                )
 
                 elif request.POST["payment-method"] == "prepaid-transfer":
                     print("Prepaid Transfer")
-                    print(request.POST)
 
                 elif request.POST["payment-method"] == "paypal-transfer":
                     print("PayPal Transfer")
-                    print(request.POST)
 
                 else:
                     print("Crypto Transfer")
-                    print(request.POST)
 
     time_remaining = None
 
