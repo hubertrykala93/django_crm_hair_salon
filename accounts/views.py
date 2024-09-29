@@ -342,9 +342,45 @@ def handle_update_password(request):
         )
 
 
+def update_fields(instance, changes):
+    updated_fields = []
+
+    for field, value in changes.items():
+        current_value = getattr(instance, field)
+
+        if current_value != value:
+            setattr(instance, field, value)
+            updated_fields.append(field)
+
+    instance.save()
+
+    return updated_fields
+
+
 # Update Basic Information
 def handle_update_basic_information(request):
-    pass
+    changes = {
+        "firstname": request.POST["firstname"],
+        "lastname": request.POST["lastname"],
+        "date_of_birth": datetime.strptime(request.POST["date_of_birth"], '%Y-%m-%d').date(),
+        "biography": request.POST["biography"],
+    }
+
+    instance = request.user.profile.basic_information
+
+    updated_fields = update_fields(instance=instance, changes=changes)
+
+    if updated_fields:
+        messages.success(
+            request=request,
+            message="Basic Information has been successfully updated."
+        )
+
+    else:
+        messages.info(
+            request=request,
+            message="No changes have been made.",
+        )
 
 
 @login_required(login_url="home")
@@ -374,56 +410,7 @@ def settings(request):
             update_basic_information_form = UpdateBasicInformationForm(data=request.POST)
 
             if update_basic_information_form.is_valid():
-                changes = {}
-
-                basic_information = request.user.profile.basic_information
-
-                if basic_information.firstname != request.POST["firstname"]:
-                    changes.update(
-                        {
-                            "firstname": request.POST["firstname"],
-                        },
-                    )
-
-                if basic_information.lastname != request.POST["lastname"]:
-                    changes.update(
-                        {
-                            "lastname": request.POST["lastname"],
-                        },
-                    )
-
-                if basic_information.date_of_birth != datetime.strptime(request.POST["date_of_birth"],
-                                                                        "%Y-%m-%d").date():
-                    changes.update(
-                        {
-                            "date_of_birth": request.POST["date_of_birth"],
-                        },
-                    )
-
-                if request.POST["biography"]:
-                    if basic_information.biography != request.POST["biography"]:
-                        changes.update(
-                            {
-                                "biography": request.POST["biography"],
-                            },
-                        )
-
-                if changes:
-                    for name, value in changes.items():
-                        setattr(basic_information, name, value.strip() if isinstance(value, str) else value)
-
-                    basic_information.save()
-
-                    messages.success(
-                        request=request,
-                        message="Basic Information has been successfully updated."
-                    )
-
-                else:
-                    messages.info(
-                        request=request,
-                        message="No changes have been made."
-                    )
+                handle_update_basic_information(request=request)
 
         if "contact-information" in request.POST:
             update_contact_information_form = UpdateContactInformationForm(
