@@ -23,11 +23,58 @@ class AdminPaymentMethod(admin.ModelAdmin):
     )
 
 
+@admin.register(BankTransfer)
+class AdminBankTransfer(admin.ModelAdmin):
+    list_display = [
+        "id",
+        "name",
+        "user",
+        "bank_name",
+        "iban",
+        "swift",
+        "account_number",
+    ]
+    form = AdminBankTransferForm
+    fieldsets = (
+        (
+            "Individual Payment Method Name", {
+                "fields": [
+                    "name",
+                ],
+            },
+        ),
+        (
+            "Related User", {
+                "fields": [
+                    "user",
+                ],
+            },
+        ),
+        (
+            "Bank Information", {
+                "fields": [
+                    "bank_name",
+                ],
+            },
+        ),
+        (
+            "Account Information", {
+                "fields": [
+                    "iban",
+                    "swift",
+                    "account_number",
+                ]
+            }
+        )
+    )
+
+
 @admin.register(PrepaidTransfer)
 class AdminPrepaidTransfer(admin.ModelAdmin):
     list_display = [
         "id",
         "name",
+        "user",
         "owner_name",
         "card_number",
         "expiration_date",
@@ -38,6 +85,13 @@ class AdminPrepaidTransfer(admin.ModelAdmin):
             "Individual Payment Method Name", {
                 "fields": [
                     "name",
+                ],
+            },
+        ),
+        (
+            "Related User", {
+                "fields": [
+                    "user",
                 ],
             },
         ),
@@ -59,17 +113,15 @@ class AdminPrepaidTransfer(admin.ModelAdmin):
     )
 
 
-@admin.register(BankTransfer)
-class AdminBankTransfer(admin.ModelAdmin):
+@admin.register(PayPalTransfer)
+class AdminPayPalTransfer(admin.ModelAdmin):
     list_display = [
         "id",
         "name",
-        "bank_name",
-        "iban",
-        "swift",
-        "account_number",
+        "user",
+        "paypal_email",
     ]
-    form = AdminBankTransferForm
+    form = AdminPayPalTransferForm
     fieldsets = (
         (
             "Individual Payment Method Name", {
@@ -79,21 +131,19 @@ class AdminBankTransfer(admin.ModelAdmin):
             },
         ),
         (
-            "Bank Information", {
+            "Related User", {
                 "fields": [
-                    "bank_name",
+                    "user",
                 ],
             },
         ),
         (
-            "Account Information", {
+            "PayPal Information", {
                 "fields": [
-                    "iban",
-                    "swift",
-                    "account_number",
-                ]
-            }
-        )
+                    "paypal_email",
+                ],
+            },
+        ),
     )
 
 
@@ -120,6 +170,7 @@ class AdminCryptoTransfer(admin.ModelAdmin):
     list_display = [
         "id",
         "name",
+        "user",
         "cryptocurrency",
         "wallet_address",
     ]
@@ -129,6 +180,13 @@ class AdminCryptoTransfer(admin.ModelAdmin):
             "Individual Payment Method Name", {
                 "fields": [
                     "name",
+                ],
+            },
+        ),
+        (
+            "Related User", {
+                "fields": [
+                    "user",
                 ],
             },
         ),
@@ -143,32 +201,6 @@ class AdminCryptoTransfer(admin.ModelAdmin):
             "Wallet Information", {
                 "fields": [
                     "wallet_address",
-                ],
-            },
-        ),
-    )
-
-
-@admin.register(PayPalTransfer)
-class AdminPayPalTransfer(admin.ModelAdmin):
-    list_display = [
-        "id",
-        "name",
-        "paypal_email",
-    ]
-    form = AdminPayPalTransferForm
-    fieldsets = (
-        (
-            "Individual Payment Method Name", {
-                "fields": [
-                    "name",
-                ],
-            },
-        ),
-        (
-            "PayPal Information", {
-                "fields": [
-                    "paypal_email",
                 ],
             },
         ),

@@ -8,7 +8,7 @@ from django.dispatch import receiver
 from django.db.models.signals import pre_delete
 import random as rnd
 from contracts.models import Contract, Benefit, JobPosition, EmploymentStatus
-from payments.models import BankTransfer, PrepaidTransfer, PayPalTransfer, CryptoTransfer
+from payments.models import BankTransfer, PrepaidTransfer, PayPalTransfer, CryptoTransfer, PaymentMethod
 
 
 class CustomUserManager(UserManager):
@@ -107,6 +107,23 @@ class User(AbstractBaseUser, PermissionsMixin):
                 benefits = Benefit.objects.create()
                 contract.benefits = benefits
                 contract.save()
+
+                # Creating BankTransfer
+                bank_transfer = BankTransfer.objects.create(name=f"Bank Transfer for {self.username}", user=self)
+                bank_transfer.save()
+
+                # Creating PrepaidTransfer
+                prepaid_transfer = PrepaidTransfer.objects.create(name=f"Prepaid Transfer for {self.username}",
+                                                                  user=self)
+                prepaid_transfer.save()
+
+                # Creating PayPalTransfer
+                paypal_transfer = PayPalTransfer.objects.create(name=f"PayPal Transfer for {self.username}", user=self)
+                paypal_transfer.save()
+
+                # Creating CryptoTransfer
+                crypto_transfer = CryptoTransfer.objects.create(name=f"Crypto Transfer for {self.username}", user=self)
+                crypto_transfer.save()
 
                 # Saving Profile with Basic Information, Contact Information, Employment Information
                 profile.save()
