@@ -358,22 +358,33 @@ def update_fields(instance, changes):
 
 
 # Update Basic Information
-def handle_update_basic_information(request):
-    changes = {
-        "firstname": request.POST["firstname"],
-        "lastname": request.POST["lastname"],
-        "date_of_birth": datetime.strptime(request.POST["date_of_birth"], '%Y-%m-%d').date(),
-        "biography": request.POST["biography"],
-    }
+def handle_update_profile_information(request):
+    data = request.POST.copy()
+    data.pop("csrfmiddlewaretoken")
 
-    instance = request.user.profile.basic_information
+    if "basic-information" in data:
+        data.pop("basic-information")
+    elif "contact-information" in data:
+        data.pop("contact-information")
 
-    updated_fields = update_fields(instance=instance, changes=changes)
+    changes = {}
+
+    for key, value in data.items():
+        if key == "date_of_birth":
+            changes[key] = datetime.strptime(request.POST["date_of_birth"], "%Y-%m-%d").date()
+
+        else:
+            changes[key] = value
+
+    updated_fields = update_fields(
+        instance=request.user.profile.basic_information if "basic-information" in request.POST else request.user.profile.contact_information if "contact-information" in request.POST else None,
+        changes=changes
+    )
 
     if updated_fields:
         messages.success(
             request=request,
-            message="Basic Information has been successfully updated."
+            message=f"{'Basic' if 'basic-information' in request.POST else 'Contact'} Information has been successfully updated."
         )
 
     else:
@@ -410,7 +421,7 @@ def settings(request):
             update_basic_information_form = UpdateBasicInformationForm(data=request.POST)
 
             if update_basic_information_form.is_valid():
-                handle_update_basic_information(request=request)
+                handle_update_profile_information(request=request)
 
         if "contact-information" in request.POST:
             update_contact_information_form = UpdateContactInformationForm(
@@ -419,82 +430,7 @@ def settings(request):
             )
 
             if update_contact_information_form.is_valid():
-                changes = {}
-                contact_information = request.user.profile.contact_information
-
-                if contact_information.phone_number != request.POST["phone_number"]:
-                    changes.update(
-                        {
-                            "phone_number": request.POST["phone_number"],
-                        },
-                    )
-
-                if contact_information.country != request.POST["country"]:
-                    changes.update(
-                        {
-                            "country": request.POST["country"],
-                        },
-                    )
-
-                if contact_information.province != request.POST["province"]:
-                    changes.update(
-                        {
-                            "province": request.POST["province"],
-                        },
-                    )
-
-                if contact_information.city != request.POST["city"]:
-                    changes.update(
-                        {
-                            "city": request.POST["city"],
-                        },
-                    )
-
-                if contact_information.postal_code != request.POST["postal_code"]:
-                    changes.update(
-                        {
-                            "postal_code": request.POST["postal_code"],
-                        },
-                    )
-
-                if contact_information.street != request.POST["street"]:
-                    changes.update(
-                        {
-                            "street": request.POST["street"],
-                        },
-                    )
-
-                if contact_information.house_number != request.POST["house_number"]:
-                    changes.update(
-                        {
-                            "house_number": request.POST["house_number"],
-                        },
-                    )
-
-                if request.POST["apartment_number"]:
-                    if contact_information.apartment_number != request.POST["apartment_number"]:
-                        changes.update(
-                            {
-                                "apartment_number": request.POST["apartment_number"],
-                            },
-                        )
-
-                if changes:
-                    for name, value in changes.items():
-                        setattr(contact_information, name, value.strip() if isinstance(value, str) else value)
-
-                    contact_information.save()
-
-                    messages.success(
-                        request=request,
-                        message="Contact Information has been successfully updated.",
-                    )
-
-                else:
-                    messages.info(
-                        request=request,
-                        message="No changes have been made.",
-                    )
+                handle_update_profile_information(request=request)
 
         if "payment-information" in request.POST:
             if "payment-method" in request.POST:
@@ -521,6 +457,7 @@ def settings(request):
                                         name=payment_method_name,
                                         bank_name=request.POST["bank_name"],
                                         iban=request.POST["iban"],
+                                        swift=request.POST["swift"],
                                         account_number=request.POST["account_number"],
                                     )
                                     banktransfer.save()
@@ -543,6 +480,9 @@ def settings(request):
 
                                     if bank_transfer.iban != request.POST["iban"]:
                                         changes["iban"] = request.POST["iban"]
+
+                                    if bank_transfer.swift != request.POST["swift"]:
+                                        changes["swift"] = request.POST["swift"]
 
                                     if bank_transfer.account_number != request.POST["account_number"]:
                                         changes["account_number"] = request.POST["account_number"]
@@ -587,6 +527,7 @@ def settings(request):
                                         name=payment_method_name,
                                         bank_name=request.POST["bank_name"],
                                         iban=request.POST["iban"],
+                                        swift=request.POST["swift"],
                                         account_number=request.POST["account_number"],
                                     )
                                     banktransfer.save()
@@ -607,6 +548,9 @@ def settings(request):
 
                                     if bank_transfer.iban != request.POST["iban"]:
                                         changes["iban"] = request.POST["iban"]
+
+                                    if bank_transfer.swift != request.POST["swift"]:
+                                        changes["swift"] = request.POST["swift"]
 
                                     if bank_transfer.account_number != request.POST["account_number"]:
                                         changes["account_number"] = request.POST["account_number"]
@@ -636,6 +580,9 @@ def settings(request):
 
                             if payment_method.banktransfer.iban != request.POST["iban"]:
                                 changes["iban"] = request.POST["iban"]
+
+                            if payment_method.banktransfer.swift != request.POST["swift"]:
+                                changes["swift"] = request.POST["swift"]
 
                             if payment_method.banktransfer.account_number != request.POST["account_number"]:
                                 changes["account_number"] = request.POST["account_number"]

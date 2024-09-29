@@ -1,7 +1,7 @@
 from django import forms
-from .models import CryptoTransfer, PayPalTransfer, BankTransfer, PrepaidTransfer, PaymentMethod
+from .models import CryptoTransfer, PayPalTransfer, BankTransfer, PrepaidTransfer, PaymentMethod, CryptoCurrency, \
+    Transaction
 from django.core.exceptions import ValidationError
-from accounts.models import User
 
 
 class AdminPaymentMethodForm(forms.ModelForm):
@@ -10,14 +10,21 @@ class AdminPaymentMethodForm(forms.ModelForm):
         label="Payment Method",
         required=True,
     )
-    active = forms.BooleanField(
-        help_text="Check if this payment method is active.",
-        label="Active",
-        required=False,
-    )
 
     class Meta:
         model = PaymentMethod
+        fields = "__all__"
+
+
+class AdminCryptoCurrencyForm(forms.ModelForm):
+    name = forms.CharField(
+        help_text="Enter the crypto currency.",
+        label="Crypto Currency Name",
+        required=True,
+    )
+
+    class Meta:
+        model = CryptoCurrency
         fields = "__all__"
 
 
@@ -36,6 +43,13 @@ class AdminCryptoTransferForm(forms.ModelForm):
     class Meta:
         model = CryptoTransfer
         fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super(AdminCryptoTransferForm, self).__init__(*args, **kwargs)
+
+        self.fields["cryptocurrency"].help_text = "Select your cryptocurrency."
+        self.fields["cryptocurrency"].label = "Cryptocurrency"
+        self.fields["cryptocurrency"].required = True
 
 
 class AdminPayPalTransferForm(forms.ModelForm):
@@ -61,6 +75,11 @@ class AdminBankTransferForm(forms.ModelForm):
         label="IBAN",
         required=True,
     )
+    swift = forms.CharField(
+        help_text="Enter your SWIFT.",
+        label="SWIFT",
+        required=True,
+    )
     account_number = forms.CharField(
         help_text="Enter your bank account number.",
         label="Account Number",
@@ -73,15 +92,51 @@ class AdminBankTransferForm(forms.ModelForm):
 
 
 class AdminPrepaidTransferForm(forms.ModelForm):
+    owner_name = forms.CharField(
+        help_text="Enter the card owner full name.",
+        label="Owner",
+        required=True,
+    )
     card_number = forms.CharField(
         help_text="Enter your prepaid card number for transfers.",
         label="Card Number",
+        required=True,
+    )
+    expiration_date = forms.DateField(
+        help_text="Enter the expiration date.",
+        label="Expiration Date",
         required=True,
     )
 
     class Meta:
         model = PrepaidTransfer
         fields = "__all__"
+
+
+class AdminTransactionForm(forms.ModelForm):
+    description = forms.CharField(
+        help_text="Enter the transaction description.",
+        label="Description",
+        required=False,
+    )
+    amount = forms.IntegerField(
+        help_text="Enter the amount.",
+        label="Amount",
+        required=True
+    )
+
+    class Meta:
+        model = Transaction
+        fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super(AdminTransactionForm, self).__init__(*args, **kwargs)
+
+        self.fields["user"].help_text = "Select the user."
+        self.fields["payment_method"].help_text = "Select the payment method."
+
+        self.fields["user"].label = "User"
+        self.fields["payment_method"].label = "Payment Method"
 
 
 class UpdateBankTransferForm(forms.ModelForm):
@@ -94,6 +149,12 @@ class UpdateBankTransferForm(forms.ModelForm):
     iban = forms.CharField(
         error_messages={
             "required": "IBAN is required.",
+        },
+        required=True,
+    )
+    swift = forms.CharField(
+        error_messages={
+            "required": "SWIFT is required.",
         },
         required=True,
     )
@@ -133,48 +194,69 @@ class UpdateBankTransferForm(forms.ModelForm):
 
         if not iban.replace(" ", "").isalpha():
             raise ValidationError(
-                message="The iban must consist of letters only.",
+                message="The IBAN must consist of letters only.",
             )
 
         if len(iban.replace(" ", "")) < 2:
             raise ValidationError(
-                message="The iban should contain at least 2 characters.",
+                message="The IBAN should contain at least 2 characters.",
             )
 
         if len(iban.replace(" ", "")) > 10:
             raise ValidationError(
-                message="The iban should contain a maximum of 10 characters.",
+                message="The IBAN should contain a maximum of 10 characters.",
             )
 
         return iban
 
-    def clean_account_number(self):
-        account_number = self.cleaned_data.get("account_number")
+    def clean_swift(self):
+        swift = self.cleaned_data.get("swift").strip()
 
-        if not account_number.replace(" ", "").isdigit():
+        if not swift.replace(" ", "").isalnum():
             raise ValidationError(
-                message="The iban must consist of digits only.",
+                message="The SWIFT must consist of letters or digits only.",
             )
 
-        if len(account_number.replace(" ", "")) < 8:
+        if len(swift.replace(" ", "")) < 8:
             raise ValidationError(
-                message="The account number should contain at least 8 characters.",
+                message="The SWIFT should contain at least 8 characters.",
             )
 
-        if len(account_number.replace(" ", "")) > 30:
+        if len(swift.replace(" ", "")) > 11:
             raise ValidationError(
-                message="The account number should contain a maximum of 30 characters.",
+                message="The SWIFT should contain a maximum of 11 characters.",
             )
 
-        if hasattr(self.instance.payment_method, "banktransfer"):
-            if self.instance.payment_method.banktransfer.account_number != account_number:
-                print("!=")
-                if BankTransfer.objects.filter(account_number=account_number).exists():
-                    raise ValidationError(
-                        message="This bank account number already exists; please provide a different one.",
-                    )
+        return swift
 
-        return account_number
+
+def clean_account_number(self):
+    account_number = self.cleaned_data.get("account_number")
+
+    if not account_number.replace(" ", "").isdigit():
+        raise ValidationError(
+            message="The iban must consist of digits only.",
+        )
+
+    if len(account_number.replace(" ", "")) < 8:
+        raise ValidationError(
+            message="The account number should contain at least 8 characters.",
+        )
+
+    if len(account_number.replace(" ", "")) > 30:
+        raise ValidationError(
+            message="The account number should contain a maximum of 30 characters.",
+        )
+
+    if hasattr(self.instance.payment_method, "banktransfer"):
+        if self.instance.payment_method.banktransfer.account_number != account_number:
+            print("!=")
+            if BankTransfer.objects.filter(account_number=account_number).exists():
+                raise ValidationError(
+                    message="This bank account number already exists; please provide a different one.",
+                )
+
+    return account_number
 
 
 class UpdatePrepaidTransferForm(forms.ModelForm):

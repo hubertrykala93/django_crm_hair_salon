@@ -295,7 +295,6 @@
                 </div>
                 <div class="form-row">
                     <label for="bank_name" class="info-label">Bank Name *</label>
-<!--                    <input type="text" id="bank_name" name="bank_name" placeholder="Bank Name" value="{% if update_bank_transfer_form.bank_name.value %}{{ update_bank_transfer_form.bank_name.value }}{% else %}{{ request.user.profile.employment_information.contract.payment_method.banktransfer.bank_name }}{% endif %}">-->
                     <input type="text" id="bank_name" name="bank_name" placeholder="Bank Name" value="{% if update_bank_transfer_form.bank_name.value %}{{ update_bank_transfer_form.bank_name.value }}{% else %}{% if request.user.profile.employment_information.contract.payment_method.banktransfer.bank_name %}{{ request.user.profile.employment_information.contract.payment_method.banktransfer.bank_name }}{% else %}{{ bank_transfer.0.bank_name }}{% endif %}{% endif %}">
                     {% if update_bank_transfer_form.bank_name.errors %}
                     {% for error in update_bank_transfer_form.bank_name.errors %}
@@ -305,7 +304,6 @@
                 </div>
                 <div class="form-row">
                     <label for="iban" class="info-label">IBAN *</label>
-<!--                    <input type="text" id="iban" name="iban" placeholder="IBAN" value="{% if update_bank_transfer_form.iban.value %}{{ update_bank_transfer_form.iban.value }}{% else %}{{ request.user.profile.employment_information.contract.payment_method.banktransfer.iban }}{% endif %}">-->
                     <input type="text" id="iban" name="iban" placeholder="IBAN" value="{% if update_bank_transfer_form.iban.value %}{{ update_bank_transfer_form.iban.value }}{% else %}{% if request.user.profile.employment_information.contract.payment_method.banktransfer.iban %}{{ request.user.profile.employment_information.contract.payment_method.banktransfer.iban }}{% else %}{{ bank_transfer.0.iban }}{% endif %}{% endif %}">
                     {% if update_bank_transfer_form.iban.errors %}
                     {% for error in update_bank_transfer_form.iban.errors %}
@@ -314,8 +312,16 @@
                     {% endif %}
                 </div>
                 <div class="form-row">
+                    <label for="swift" class="info-label">SWIFT *</label>
+                    <input type="text" id="swift" name="swift" placeholder="SWIFT" value="{% if update_bank_transfer_form.swift.value %}{{ update_bank_transfer_form.swift.value }}{% else %}{% if request.user.profile.employment_information.contract.payment_method.banktransfer.swift %}{{ request.user.profile.employment_information.contract.payment_method.banktransfer.swift }}{% else %}{{ bank_transfer.0.swift }}{% endif %}{% endif %}">
+                    {% if update_bank_transfer_form.swift.errors %}
+                    {% for error in update_bank_transfer_form.swift.errors %}
+                    <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+                <div class="form-row">
                     <label for="account_number" class="info-label">Account Number *</label>
-<!--                    <input type="text" id="account_number" name="account_number" placeholder="Account Number" value="{% if update_bank_transfer_form.account_number.value %}{{ update_bank_transfer_form.account_number.value }}{% else %}{{ request.user.profile.employment_information.contract.payment_method.banktransfer.account_number }}{% endif %}">-->
                     <input type="text" id="account_number" name="account_number" placeholder="Account Number" value="{% if update_bank_transfer_form.account_number.value %}{{ update_bank_transfer_form.account_number.value }}{% else %}{% if request.user.profile.employment_information.contract.payment_method.banktransfer.account_number %}{{ request.user.profile.employment_information.contract.payment_method.banktransfer.account_number }}{% else %}{{ bank_transfer.0.account_number }}{% endif %}{% endif %}">
                     {% if update_bank_transfer_form.account_number.errors %}
                     {% for error in update_bank_transfer_form.account_number.errors %}

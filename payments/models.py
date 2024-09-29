@@ -1,10 +1,10 @@
 from django.db import models
-from django.apps import apps
+from django.utils.timezone import now
+from uuid import uuid4
 
 
 class PaymentMethod(models.Model):
     name = models.CharField(max_length=50)
-    active = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = "Payment Method"
@@ -17,6 +17,7 @@ class PaymentMethod(models.Model):
 class BankTransfer(PaymentMethod):
     bank_name = models.CharField(max_length=50)
     iban = models.CharField(max_length=10)
+    swift = models.CharField(max_length=20, null=True)
     account_number = models.CharField(max_length=50, unique=True)
 
     class Meta:
@@ -28,7 +29,9 @@ class BankTransfer(PaymentMethod):
 
 
 class PrepaidTransfer(PaymentMethod):
+    owner_name = models.CharField(max_length=255, null=True)
     card_number = models.CharField(max_length=100, unique=True)
+    expiration_date = models.DateField(null=True)
 
     class Meta:
         verbose_name = "Prepaid Transfer"
@@ -49,7 +52,19 @@ class PayPalTransfer(PaymentMethod):
         return self.paypal_email
 
 
+class CryptoCurrency(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    class Meta:
+        verbose_name = "Crypto Currency"
+        verbose_name_plural = "Crypto Currencies"
+
+    def __str__(self):
+        return self.name
+
+
 class CryptoTransfer(PaymentMethod):
+    cryptocurrency = models.ForeignKey(to=CryptoCurrency, on_delete=models.SET_NULL, null=True)
     wallet_address = models.CharField(max_length=255, unique=True)
 
     class Meta:
@@ -58,3 +73,39 @@ class CryptoTransfer(PaymentMethod):
 
     def __str__(self):
         return self.wallet_address
+
+
+class Transaction(models.Model):
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(auto_now=True)
+    transaction_id = models.UUIDField(default=uuid4, unique=True)
+    user = models.ForeignKey(to="accounts.User", on_delete=models.CASCADE, null=True)
+    description = models.CharField(max_length=100)
+    payment_method = models.ForeignKey(to=PaymentMethod, on_delete=models.CASCADE, null=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(
+        max_length=10,
+        choices=(
+            ("Pending", "Pending"),
+            ("Completed", "Completed"),
+            ("Failed", "Failed"),
+            ("Canceled", "Canceled"),
+        )
+    )
+
+    class Meta:
+        verbose_name = "Transaction"
+        verbose_name_plural = "Transactions"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Transaction {self.transaction_id} sent to {self.user.username}"
+
+    def save(self, *args, **kwargs):
+        if not self.description:
+            self.description = f"{self.payment_method.name.split(sep=' ')[0]} Transfer to {self.payment_method.name.split(sep=' ')[-1]}"
+
+        if not self.status:
+            self.status = "Completed"
+
+        super(Transaction, self).save(*args, **kwargs)
