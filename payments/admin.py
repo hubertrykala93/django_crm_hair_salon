@@ -77,7 +77,7 @@ class AdminPrepaidTransfer(admin.ModelAdmin):
         "user",
         "owner_name",
         "card_number",
-        "expiration_date",
+        "formatted_expiration_date",
     ]
     form = AdminPrepaidTransferForm
     fieldsets = (
@@ -111,6 +111,12 @@ class AdminPrepaidTransfer(admin.ModelAdmin):
             },
         ),
     )
+
+    def formatted_expiration_date(self, obj):
+        if obj.expiration_date:
+            return obj.expiration_date.strftime("%Y-%m-%d")
+
+    formatted_expiration_date.short_description = "Expiration Date"
 
 
 @admin.register(PayPalTransfer)

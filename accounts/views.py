@@ -345,12 +345,29 @@ def handle_update_password(request):
 def update_fields(instance, changes):
     updated_fields = []
 
-    for field, value in changes.items():
-        current_value = getattr(instance, field)
+    if not "cryptocurrency" in changes:
+        for field, value in changes.items():
+            current_value = getattr(instance, field)
 
-        if current_value != value:
-            setattr(instance, field, value)
-            updated_fields.append(field)
+            if current_value != value:
+                setattr(instance, field, value)
+                updated_fields.append(field)
+
+    else:
+        try:
+            cryptocurrency = CryptoCurrency.objects.get(code=changes["cryptocurrency"])
+
+        except CryptoCurrency.DoesNotExist:
+            pass
+
+        if instance.cryptocurrency.code != changes["cryptocurrency"]:
+            updated_fields.append("cryptocurrency")
+
+        if instance.wallet_address != changes["wallet_address"]:
+            updated_fields.append("wallet_address")
+
+        instance.cryptocurrency = CryptoCurrency.objects.get(code=changes["cryptocurrency"])
+        instance.wallet_address = changes["wallet_address"]
 
     instance.save()
 
@@ -389,6 +406,76 @@ def handle_profile_data(request):
         )
 
 
+def payment_messages(request, instance, updated_fields, save_method, contract):
+    print(instance)
+    print(instance.name)
+    print(type(instance.name))
+
+    method_name = instance.name.split(sep=" ")[0].lower() + " " + instance.name.split(sep=" ")[1].lower()
+    print(method_name)
+    if updated_fields and save_method:
+        if contract.payment_method:
+            messages.success(
+                request=request,
+                message="The payment method via bank transfer has been successfully updated.",
+            )
+
+        else:
+            contract.payment_method = request.user.banktransfer
+            contract.save()
+
+            messages.success(
+                request=request,
+                message="The payment method via bank transfer has been successfully updated and set.",
+            )
+
+    elif updated_fields and not save_method:
+        if contract.payment_method:
+            contract.payment_method = None
+            contract.save()
+
+            messages.info(
+                request=request,
+                message="The payment method via bank transfer has been removed. To receive a transfer, please set one of the payment methods.",
+            )
+        messages.success(
+            request=request,
+            message="The payment method via bank transfer has been successfully updated.",
+        )
+
+    elif not updated_fields and save_method:
+        if contract.payment_method:
+            messages.info(
+                request=request,
+                message="No changes have been made.",
+            )
+
+        else:
+            contract.payment_method = request.user.banktransfer
+            contract.save()
+
+            messages.success(
+                request=request,
+                message="The payment method via bank transfer has been successfully set.",
+            )
+
+    elif not updated_fields and not save_method:
+        if contract.payment_method:
+            contract.payment_method = None
+            contract.save()
+
+            messages.info(
+                request=request,
+                message="The payment method via bank transfer has been removed. To receive a transfer, please set one of the payment methods.",
+            )
+
+        else:
+            messages.info(
+                request=request,
+                message="No changes have been made.",
+            )
+
+
 def handle_bank_transfer(request):
     data = request.POST.copy()
 
@@ -405,79 +492,77 @@ def handle_bank_transfer(request):
         changes=changes
     )
 
-    contract = request.user.profile.employment_information.contract
+    payment_messages(
+        request=request,
+        instance=request.user.banktransfer,
+        updated_fields=updated_fields,
+        save_method=save_method,
+        contract=request.user.profile.employment_information.contract
+    )
 
-    if updated_fields and save_method:
-        print("Update Fields and Save Method")
-        if contract.payment_method:
-            print("Contract has Payment Method")
-            messages.success(
-                request=request,
-                message="The payment method via bank transfer has been successfully updated.",
-            )
+    # contract = request.user.profile.employment_information.contract
 
-        else:
-            print("Contract has no Payment Method")
-            contract.payment_method = request.user.banktransfer
-            contract.save()
-
-            messages.success(
-                request=request,
-                message="The payment method via bank transfer has been successfully updated and set.",
-            )
-
-    elif updated_fields and not save_method:
-        print("Update Fields and not Save Method")
-        if contract.payment_method:
-            print("Contract has Payment Method")
-            contract.payment_method = None
-            contract.save()
-
-            messages.info(
-                request=request,
-                message="The payment method via bank transfer has been removed. To receive a transfer, please set one of the payment methods.",
-            )
-        messages.success(
-            request=request,
-            message="The payment method via bank transfer has been successfully updated.",
-        )
-
-    elif not updated_fields and save_method:
-        print("Not Updated Fields and Save Method")
-        if contract.payment_method:
-            messages.info(
-                request=request,
-                message="No changes have been made.",
-            )
-
-        else:
-            print("Contract has no Payment Method")
-            contract.payment_method = request.user.banktransfer
-            contract.save()
-
-            messages.success(
-                request=request,
-                message="The payment method via bank transfer has been successfully set.",
-            )
-
-    elif not updated_fields and not save_method:
-        print("Not Update Fields and not Save Method")
-        if contract.payment_method:
-            print("Contract has Payment Method")
-            contract.payment_method = None
-            contract.save()
-
-            messages.info(
-                request=request,
-                message="The payment method via bank transfer has been removed. To receive a transfer, please set one of the payment methods.",
-            )
-
-        else:
-            print("Contract has no Payment Method")
-            messages.info(
-                request=request,
-                message="No changes have been made.",
-            )
+    # if updated_fields and save_method:
+    #     if contract.payment_method:
+    #         messages.success(
+    #             request=request,
+    #             message="The payment method via bank transfer has been successfully updated.",
+    #         )
+    #
+    #     else:
+    #         contract.payment_method = request.user.banktransfer
+    #         contract.save()
+    #
+    #         messages.success(
+    #             request=request,
+    #             message="The payment method via bank transfer has been successfully updated and set.",
+    #         )
+    #
+    # elif updated_fields and not save_method:
+    #     if contract.payment_method:
+    #         contract.payment_method = None
+    #         contract.save()
+    #
+    #         messages.info(
+    #             request=request,
+    #             message="The payment method via bank transfer has been removed. To receive a transfer, please set one of the payment methods.",
+    #         )
+    #     messages.success(
+    #         request=request,
+    #         message="The payment method via bank transfer has been successfully updated.",
+    #     )
+    #
+    # elif not updated_fields and save_method:
+    #     if contract.payment_method:
+    #         messages.info(
+    #             request=request,
+    #             message="No changes have been made.",
+    #         )
+    #
+    #     else:
+    #         contract.payment_method = request.user.banktransfer
+    #         contract.save()
+    #
+    #         messages.success(
+    #             request=request,
+    #             message="The payment method via bank transfer has been successfully set.",
+    #         )
+    #
+    # elif not updated_fields and not save_method:
+    #     if contract.payment_method:
+    #         contract.payment_method = None
+    #         contract.save()
+    #
+    #         messages.info(
+    #             request=request,
+    #             message="The payment method via bank transfer has been removed. To receive a transfer, please set one of the payment methods.",
+    #         )
+    #
+    #     else:
+    #         messages.info(
+    #             request=request,
+    #             message="No changes have been made.",
+    #         )
 
 
 def handle_prepaid_transfer(request):
@@ -648,7 +733,86 @@ def handle_paypal_transfer(request):
 
 
 def handle_crypto_transfer(request):
-    pass
+    data = request.POST.copy()
+
+    for key in ["csrfmiddlewaretoken", "payment-method", "payment-information"]:
+        if key in data:
+            data.pop(key)
+
+    save_method = request.POST.get("save_method", None)
+
+    changes = {
+        k: v for k, v in data.items()
+    }
+
+    updated_fields = update_fields(
+        instance=request.user.cryptotransfer,
+        changes=changes,
+    )
+
+    contract = request.user.profile.employment_information.contract
+
+    if updated_fields and save_method:
+        if contract.payment_method:
+            messages.success(
+                request=request,
+                message="The payment method via crypto transfer has been successfully updated.",
+            )
+
+        else:
+            contract.payment_method = request.user.cryptotransfer
+            contract.save()
+
+            messages.success(
+                request=request,
+                message="The payment method via crypto transfer has been successfully updated and set.",
+            )
+
+    elif updated_fields and not save_method:
+        if contract.payment_method:
+            contract.payment_method = None
+            contract.save()
+
+            messages.info(
+                request=request,
+                message="The payment method via paypal crypto has been removed. To receive a transfer, please set one of the payment methods.",
+            )
+        messages.success(
+            request=request,
+            message="The payment method via crypto transfer has been successfully updated.",
+        )
+
+    elif not updated_fields and save_method:
+        if contract.payment_method:
+            messages.info(
+                request=request,
+                message="No changes have been made.",
+            )
+
+        else:
+            contract.payment_method = request.user.cryptotransfer
+            contract.save()
+
+            messages.success(
+                request=request,
+                message="The payment method via crypto transfer has been successfully set.",
+            )
+
+    elif not updated_fields and not save_method:
+        if contract.payment_method:
+            contract.payment_method = None
+            contract.save()
+
+            messages.info(
+                request=request,
+                message="The payment method via crypto transfer has been removed. To receive a transfer, please set one of the payment methods.",
+            )
+
+        else:
+            messages.info(
+                request=request,
+                message="No changes have been made.",
+            )
 
 
 @login_required(login_url="home")
@@ -734,9 +898,6 @@ def settings(request):
 
                     if update_crypto_transfer_form.is_valid():
                         handle_crypto_transfer(request=request)
-
-                    else:
-                        print(update_crypto_transfer_form.errors)
 
     time_remaining = None
 

@@ -423,17 +423,17 @@
                     <h1 class="info-title">Crypto Transfer</h1>
                 </div>
                 <div class="form-row">
-                    <label for="cryptocurrency" class="info-label">Cryptocurrency</label>
+                    <label for="cryptocurrency" class="info-label">Cryptocurrency *</label>
                     <select id="cryptocurrency" name="cryptocurrency" class="select-cryptocurrency">
-                        <option value="">{% if update_crypto_transfer_form.cryptocurrency.value %}{{ update_crypto_transfer_form.cryptocurrency.value }}{% elif request.user.cryptotransfer.cryptocurrency.name %}{{ request.user.cryptotransfer.cryptocurrency.name }}{% else %}------------{% endif %}</option>
                         {% for cryptocurrency in cryptocurrencies %}
-                        <option value="{{ cryptocurrency.code }}">{{ cryptocurrency.code }}</option>
+                            <option value="{{ cryptocurrency.code }}" {% if cryptocurrency.code == request.POST.cryptocurrency or cryptocurrency.code == request.user.cryptotransfer.cryptocurrency.code %}selected{% endif %}>{{ cryptocurrency.code }}</option>
                         {% endfor %}
                     </select>
+
                     {% if update_crypto_transfer_form.cryptocurrency.errors %}
-                    {% for error in update_crypto_transfer_form.cryptocurrency.errors %}
-                    <span class="form-error">{{ error }}</span>
-                    {% endfor %}
+                        {% for error in update_crypto_transfer_form.cryptocurrency.errors %}
+                            <span class="form-error">{{ error }}</span>
+                        {% endfor %}
                     {% endif %}
                 </div>
                 <div class="form-row">
@@ -447,7 +447,7 @@
                 </div>
                 <div class="form-row">
                     <label for="save_method" style="display: flex;">
-                        <input type="checkbox" id="save_method" name="save_method">
+                        <input type="checkbox" id="save_method" name="save_method" {% if request.user.profile.employment_information.contract.payment_method.cryptotransfer %}checked{% endif %}>
                         <div class="checkbox-info">
                             <span class="checkbox-text">Save this payment method as new.</span>
                         </div>
