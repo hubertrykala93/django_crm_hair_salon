@@ -4,7 +4,7 @@ from uuid import uuid4
 
 
 class PaymentMethod(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=100)
 
     class Meta:
         verbose_name = "Payment Method"
@@ -16,7 +16,7 @@ class PaymentMethod(models.Model):
 
 class BankTransfer(PaymentMethod):
     user = models.OneToOneField(to="accounts.User", on_delete=models.CASCADE, null=True)
-    bank_name = models.CharField(max_length=50)
+    bank_name = models.CharField(max_length=100)
     iban = models.CharField(max_length=10)
     swift = models.CharField(max_length=20, null=True)
     account_number = models.CharField(max_length=50, unique=True)
@@ -57,6 +57,7 @@ class PayPalTransfer(PaymentMethod):
 
 class CryptoCurrency(models.Model):
     name = models.CharField(max_length=100, unique=True)
+    code = models.CharField(max_length=10, unique=True, null=True)
 
     class Meta:
         verbose_name = "Crypto Currency"
@@ -69,14 +70,14 @@ class CryptoCurrency(models.Model):
 class CryptoTransfer(PaymentMethod):
     user = models.OneToOneField(to="accounts.User", on_delete=models.CASCADE, null=True)
     cryptocurrency = models.ForeignKey(to=CryptoCurrency, on_delete=models.SET_NULL, null=True)
-    wallet_address = models.CharField(max_length=255, unique=True)
+    wallet_address = models.CharField(max_length=255, unique=True, null=True)
 
     class Meta:
         verbose_name = "Crypto Transfer"
         verbose_name_plural = "Crypto Transfers"
 
     def __str__(self):
-        return self.wallet_address
+        return str(self.wallet_address)
 
 
 class Transaction(models.Model):

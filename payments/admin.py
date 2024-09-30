@@ -152,6 +152,7 @@ class AdminCryptoCurrency(admin.ModelAdmin):
     list_display = [
         "id",
         "name",
+        "code",
     ]
     form = AdminCryptoCurrencyForm
     fieldsets = (
@@ -159,6 +160,7 @@ class AdminCryptoCurrency(admin.ModelAdmin):
             "Cryptocurrency", {
                 "fields": [
                     "name",
+                    "code",
                 ],
             },
         ),

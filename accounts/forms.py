@@ -590,7 +590,7 @@ class UpdateBasicInformationForm(forms.Form):
 
         except ValueError:
             raise ValidationError(
-                message="Date must be in the format DD-MM-YYYY.",
+                message="Date of Birth must be in the format YYYY-MM-DD.",
             )
 
         if date_object >= date.today():

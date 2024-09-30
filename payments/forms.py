@@ -2,6 +2,9 @@ from django import forms
 from .models import CryptoTransfer, PayPalTransfer, BankTransfer, PrepaidTransfer, PaymentMethod, CryptoCurrency, \
     Transaction
 from django.core.exceptions import ValidationError
+from datetime import datetime, date
+import re
+from accounts.models import User
 
 
 class AdminPaymentMethodForm(forms.ModelForm):
@@ -100,8 +103,13 @@ class AdminPayPalTransferForm(forms.ModelForm):
 
 class AdminCryptoCurrencyForm(forms.ModelForm):
     name = forms.CharField(
-        help_text="Enter the crypto currency.",
-        label="Crypto Currency Name",
+        help_text="Enter the cryptocurrency.",
+        label="Cryptocurrency Name",
+        required=True,
+    )
+    code = forms.CharField(
+        help_text="Enter the cryptocurrency code.",
+        label="Cryptocurrency Code",
         required=True,
     )
 
@@ -164,7 +172,7 @@ class AdminTransactionForm(forms.ModelForm):
         self.fields["payment_method"].label = "Payment Method"
 
 
-class UpdateBankTransferForm(forms.ModelForm):
+class UpdateBankTransferForm(forms.Form):
     bank_name = forms.CharField(
         error_messages={
             "required": "Bank Name is required.",
@@ -190,9 +198,10 @@ class UpdateBankTransferForm(forms.ModelForm):
         required=True,
     )
 
-    class Meta:
-        model = BankTransfer
-        exclude = ["name"]
+    def __init__(self, *args, **kwargs):
+        self.instance = kwargs.pop("instance", None)
+
+        super(UpdateBankTransferForm, self).__init__(*args, **kwargs)
 
     def clean_bank_name(self):
         bank_name = self.cleaned_data.get("bank_name")
@@ -254,49 +263,239 @@ class UpdateBankTransferForm(forms.ModelForm):
 
         return swift
 
+    def clean_account_number(self):
+        account_number = self.cleaned_data.get("account_number")
 
-def clean_account_number(self):
-    account_number = self.cleaned_data.get("account_number")
+        if not account_number.replace(" ", "").isdigit():
+            raise ValidationError(
+                message="The iban must consist of digits only.",
+            )
 
-    if not account_number.replace(" ", "").isdigit():
-        raise ValidationError(
-            message="The iban must consist of digits only.",
-        )
+        if len(account_number.replace(" ", "")) < 8:
+            raise ValidationError(
+                message="The account number should contain at least 8 characters.",
+            )
 
-    if len(account_number.replace(" ", "")) < 8:
-        raise ValidationError(
-            message="The account number should contain at least 8 characters.",
-        )
+        if len(account_number.replace(" ", "")) > 30:
+            raise ValidationError(
+                message="The account number should contain a maximum of 30 characters.",
+            )
 
-    if len(account_number.replace(" ", "")) > 30:
-        raise ValidationError(
-            message="The account number should contain a maximum of 30 characters.",
-        )
-
-    if hasattr(self.instance.payment_method, "banktransfer"):
-        if self.instance.payment_method.banktransfer.account_number != account_number:
-            print("!=")
+        if self.instance.account_number != account_number:
             if BankTransfer.objects.filter(account_number=account_number).exists():
                 raise ValidationError(
                     message="This bank account number already exists; please provide a different one.",
                 )
 
-    return account_number
+        return account_number
 
 
-class UpdatePrepaidTransferForm(forms.ModelForm):
-    class Meta:
-        model = PrepaidTransfer
-        fields = "__all__"
+class UpdatePrepaidTransferForm(forms.Form):
+    owner_name = forms.CharField(
+        error_messages={
+            "required": "Cardholder's name is required.",
+        },
+        required=True,
+    )
+    card_number = forms.CharField(
+        error_messages={
+            "required": "Card Number is required.",
+        },
+        required=True,
+    )
+    expiration_date = forms.CharField(
+        error_messages={
+            "required": "Expiration Date is required.",
+        },
+        required=True,
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.instance = kwargs.pop("instance", None)
+
+        super(UpdatePrepaidTransferForm, self).__init__(*args, **kwargs)
+
+    def clean_owner_name(self):
+        owner_name = self.cleaned_data.get("owner_name")
+
+        for name in owner_name.split():
+            if not name.isalpha():
+                raise ValidationError(
+                    message="The cardholder's name must consist of letters only.",
+                )
+
+        if len(owner_name) < 2:
+            raise ValidationError(
+                message="The cardholder's name should contain at least 2 characters.",
+            )
+
+        if len(owner_name) > 255:
+            raise ValidationError(
+                message="The cardholder's name should contain a maximum of 255 characters.",
+            )
+
+        return owner_name
+
+    def clean_card_number(self):
+        card_number = self.cleaned_data.get("card_number").replace(" ", "").strip()
+
+        if not card_number.isdigit():
+            raise ValidationError(
+                message="The cardholder's name must consist of digits only.",
+            )
+
+        if len(card_number) < 14:
+            raise ValidationError(
+                message="The card number should contain at least 14 characters.",
+            )
+
+        if len(card_number) > 16:
+            raise ValidationError(
+                message="The card number should contain a maximum of 16 characters.",
+            )
+
+        return card_number
+
+    def clean_expiration_date(self):
+        expiration_date = self.cleaned_data.get("expiration_date")
+        today = date.today()
+
+        try:
+            date_object = datetime.strptime(expiration_date, "%Y-%m-%d").date()
+
+        except ValueError:
+            raise ValidationError(
+                message="Expiration Date must be in the format YYYY-MM-DD.",
+            )
+
+        if date_object < today:
+            raise ValidationError(
+                message="You cannot provide an inactive card; please provide an active card.",
+            )
+
+        if date_object == today:
+            raise ValidationError(
+                message="Your card expires today; please provide a card with a longer validity period.",
+            )
+
+        return expiration_date
 
 
-class UpdatePayPalTransferForm(forms.ModelForm):
-    class Meta:
-        model = PayPalTransfer
-        fields = "__all__"
+class UpdatePayPalTransferForm(forms.Form):
+    paypal_email = forms.CharField(
+        error_messages={
+            "required": "Paypal email address is required.",
+        },
+        required=True,
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
+        self.instance = kwargs.pop("instance", None)
+
+        super(UpdatePayPalTransferForm, self).__init__(*args, **kwargs)
+
+    def clean_paypal_email(self):
+        paypal_email = self.cleaned_data.get("paypal_email")
+
+        if len(paypal_email) > 255:
+            raise ValidationError(
+                message="The paypal e-mail address cannot be longer than 255 characters.",
+            )
+
+        if not re.match(pattern=r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)",
+                        string=paypal_email):
+            raise ValidationError(
+                message="The paypal e-mail address format is invalid.",
+            )
+
+        if self.instance.paypal_email != paypal_email:
+            if PayPalTransfer.objects.filter(paypal_email=paypal_email).exists():
+                raise ValidationError(
+                    message="This paypal e-mail already exists; please provide a different one.",
+                )
+
+        if paypal_email != self.user.email:
+            if User.objects.filter(email=paypal_email).exists():
+                raise ValidationError(
+                    message="This email address is already in use; please provide a different one.",
+                )
+
+        return paypal_email
 
 
-class UpdateCryptoTransferForm(forms.ModelForm):
-    class Meta:
-        model = CryptoTransfer
-        fields = "__all__"
+class UpdateCryptoTransferForm(forms.Form):
+    cryptocurrency = forms.CharField(
+        error_messages={
+            "required": "Cryptocurrency is required.",
+        },
+        required=True,
+    )
+    wallet_address = forms.CharField(
+        error_messages={
+            "required": "Wallet Address is required.",
+        },
+        required=True,
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.instance = kwargs.pop("instance", None)
+
+        super(UpdateCryptoTransferForm, self).__init__(*args, **kwargs)
+
+    def clean_wallet_address(self):
+        cryptocurrency = self.data.get("cryptocurrency", None)
+        wallet_address = self.cleaned_data.get("wallet_address")
+
+        if cryptocurrency == "BTC":
+            if wallet_address.startswith("1"):
+                if len(wallet_address) < 26:
+                    raise ValidationError(
+                        message="The Bitcoin wallet address should consist of at least 26 characters for the P2PKH network.",
+                    )
+
+                elif len(wallet_address) > 35:
+                    raise ValidationError(
+                        message="The Bitcoin wallet address should consist of at most 35 characters for the P2PKH network.",
+                    )
+
+            elif wallet_address.startswith("3"):
+                if len(wallet_address) < 26:
+                    raise ValidationError(
+                        message="The Bitcoin wallet address should consist of at least 26 characters for the P2SH network.",
+                    )
+
+                elif len(wallet_address) > 35:
+                    raise ValidationError(
+                        message="The Bitcoin wallet address should consist of at most 35 characters for the P2SH network.",
+                    )
+
+            elif wallet_address.startswith("bc1"):
+                if len(wallet_address) < 42:
+                    raise ValidationError(
+                        message="The Bitcoin wallet address should consist of at least 42 characters for the SegWit network.",
+                    )
+
+                elif len(wallet_address) > 62:
+                    raise ValidationError(
+                        message="The Bitcoin wallet address should consist of at most 62 characters for the SegWit network.",
+                    )
+
+            else:
+                raise ValidationError(
+                    message="Invalid wallet address. The wallet address should start with '1' for the 'P2PKH' network, '3' for the 'P2SH' network, and 'bc1' for the 'SegWit' network.",
+                )
+
+        elif cryptocurrency == "ETH":
+            if len(wallet_address) == 42:
+                if not wallet_address.startswith("0x"):
+                    raise ValidationError(
+                        message="Invalid wallet address. The wallet address for Ethereum should start with '0x'.",
+                    )
+
+            else:
+                raise ValidationError(
+                    message="The length of the wallet address for Ethereum must be 42 characters.",
+                )
+
+        return wallet_address
