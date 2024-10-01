@@ -453,6 +453,71 @@ header nav li a.active {
     background-size: 10px 10px;
 }
 
+.invoice-details {
+    padding: 10px;
+    background-color: white;
+    border-radius: var(--radius);
+}
+
+.issue-date-info {
+    display: flex;
+    margin-bottom: 1px;
+}
+
+.invoice-issue-date-label {
+    font-size: small;
+    margin-right: 10px;
+}
+
+.invoice-status {
+    font-size: small;
+}
+
+.invoice-status-paid {
+    font-size: small;
+    color: #28a745;
+}
+
+.invoice-status-pending {
+    font-size: small;
+    color: #ffc107;
+}
+
+.invoice-status-partially-paid {
+    font-size: small;
+    color: #17a2b8;
+}
+
+.invoice-status-overdue {
+    font-size: small;
+    color: #dc3545;
+}
+
+.invoice-status-cancelled {
+    font-size: small;
+    color: #6c757d;
+}
+
+.invoice-status-rejected {
+    font-size: small;
+    color: #dc3545;
+}
+
+.invoice-status-on-hold {
+    font-size: small;
+    color: #fd7e14;
+}
+
+.invoice-status-in-progress {
+    font-size: small;
+    color: #007bff;
+}
+
+.invoice-status-refunded {
+    font-size: small;
+    color: #6f42c1;
+}
+
 /* Footer */
 footer {
     background-color: var(--neutral-primary);

@@ -8,7 +8,7 @@ from django.dispatch import receiver
 from django.db.models.signals import pre_delete
 import random as rnd
 from contracts.models import Contract, Benefit, EmploymentStatus
-from payments.models import BankTransfer, PrepaidTransfer, PayPalTransfer, CryptoTransfer
+from payments.models import BankTransfer, PrepaidTransfer, PayPalTransfer, CryptoTransfer, CryptoCurrency
 
 
 class CustomUserManager(UserManager):
@@ -118,6 +118,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 
                 # Creating CryptoTransfer
                 crypto_transfer = CryptoTransfer.objects.create(name=f"Crypto Transfer for {self.username}", user=self)
+                cryptocurrency = CryptoCurrency.objects.get(code="BTC")
+                crypto_transfer.cryptocurrency = cryptocurrency
                 crypto_transfer.save()
 
                 # Saving Profile with Basic Information, Contact Information, Employment Information
@@ -209,7 +211,7 @@ class ProfileImage(models.Model):
 class ProfileBasicInformation(models.Model):
     firstname = models.CharField(max_length=200)
     lastname = models.CharField(max_length=200)
-    profile_image = models.OneToOneField(to=ProfileImage, on_delete=models.CASCADE, null=True)
+    profile_image = models.OneToOneField(to=ProfileImage, on_delete=models.SET_NULL, null=True)
     biography = models.TextField(max_length=10000, null=True)
     date_of_birth = models.DateField(null=True, blank=True)
 

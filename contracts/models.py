@@ -105,7 +105,6 @@ class DevelopmentBenefit(models.Model):
 
 
 class Benefit(models.Model):
-    job_type = models.ForeignKey(to=JobType, on_delete=models.SET_NULL, null=True, blank=True)
     salary_benefits = models.ManyToManyField(to=SalaryBenefit)
     sport_benefits = models.ManyToManyField(to=SportBenefit)
     health_benefits = models.ManyToManyField(to=HealthBenefit)
@@ -167,6 +166,10 @@ class Contract(models.Model):
     work_hours_per_week = models.IntegerField(null=True, blank=True)
     benefits = models.OneToOneField(to=Benefit, on_delete=models.CASCADE, null=True, blank=True)
     status = models.ForeignKey(to=EmploymentStatus, on_delete=models.SET_NULL, null=True)
+    invoices = models.ManyToManyField(to="invoices.Invoice")
+    total_invoices = models.IntegerField(default=0, null=True)
+    total_earnings_gross = models.DecimalField(default=0, max_digits=10, decimal_places=2, null=True)
+    total_earnings_net = models.DecimalField(default=0, max_digits=10, decimal_places=2, null=True)
 
     class Meta:
         verbose_name = "Contract"

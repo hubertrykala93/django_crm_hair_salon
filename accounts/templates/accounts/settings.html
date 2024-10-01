@@ -34,9 +34,7 @@
                         <a href="?payment-information&crypto-transfer" class="menu-link">Crypto Transfer</a>
                     </div>
                 </div>
-                {% if benefits.salary_benefits.all or benefits.sport_benefits.all or benefits.health_benefits.all or benefits.insurance_benefits.all or development_benefits.all %}
                 <a href="?benefits" class="menu-link {% if 'benefits' in request.GET %}active{% endif %}"><i class="fa-solid fa-briefcase"></i>Benefits</a>
-                {% endif %}
                 <a href="?invoices" class="menu-link {% if 'invoices' in request.GET %}active{% endif %}"><i class="fa-solid fa-file-invoice"></i>Invoices</a>
             </div>
         </div>
@@ -46,16 +44,6 @@
             {% if not request.GET %}
             <div class="info-header">
                 <h1 class="info-title">Information</h1>
-            </div>
-
-            <div class="info-row">
-                <label class="info-label">Username:</label>
-                <p class="info-email">{{ user.username }}</p>
-            </div>
-
-            <div class="info-row">
-                <label class="info-label">Email:</label>
-                <p class="info-email">{{ user.email }}</p>
             </div>
 
             {% if contract.job_position.name %}
@@ -110,7 +98,7 @@
             <div class="info-row">
                 <label class="info-label">Withdrawal Method:</label>
                 {% if contract.payment_method %}
-                <p class="info-email">{{ contract.payment_method.name|cut_withdrawal_method }}</p>
+                <a href="?payment-information&{{ contract.payment_method.name|cut_withdrawal_method_for_url }}"><p class="info-email">{{ contract.payment_method.name|cut_withdrawal_method }}</p></a>
                 {% else %}
                 <div class="withdrawal-information">
                     <p class="info-email">Set one of the most convenient payment methods for you. Otherwise, <strong>transfers to you will be suspended</strong>.</p>
@@ -471,52 +459,68 @@
                 <p class="info-email">Period: {{ benefit.period.name }}</p>
                 {% endfor %}
             </div>
-            {% endif %}
 
-            {% if benefits.sport_benefits.all %}
+            {% elif benefits.sport_benefits.all %}
             <div class="info-row">
                 <label class="info-label">Sport Benefits:</label>
                 {% for benefit in benefits.sport_benefits.all %}
                 <p class="info-email">{{ benefit.name }}</p>
                 {% endfor %}
             </div>
-            {% endif %}
 
-            {% if benefits.health_benefits.all %}
+            {% elif benefits.health_benefits.all %}
             <div class="info-row">
                 <label class="info-label">Health Benefits:</label>
                 {% for benefit in benefits.health_benefits.all %}
                 <p class="info-email">{{ benefit.name }}</p>
                 {% endfor %}
             </div>
-            {% endif %}
 
-            {% if benefits.insurance_benefits.all %}
+            {% elif benefits.insurance_benefits.all %}
             <div class="info-row">
                 <label class="info-label">Insurance Benefits:</label>
                 {% for benefit in benefits.insurance_benefits.all %}
                 <p class="info-email">{{ benefit.name }}</p>
                 {% endfor %}
             </div>
-            {% endif %}
 
-            {% if benefits.development_benefits.all %}
+            {% elif benefits.development_benefits.all %}
             <div class="info-row">
                 <label class="info-label">Development Benefits:</label>
                 {% for benefit in benefits.development_benefits.all %}
                 <p class="info-email">{{ benefit.name }}</p>
                 {% endfor %}
             </div>
+            {% else %}
+            <p class="info-email">No benefits found.</p>
             {% endif %}
 
             {% elif 'invoices' in request.GET %}
             <div class="info-header">
                 <h1 class="info-title">Invoices</h1>
             </div>
-            <div class="info-row">
-                <label class="info-label">Username:</label>
-                <p class="info-email">{{ user.username }}</p>
-            </div>
+            {% if invoices %}
+            <ul>
+                {% for invoice in invoices %}
+                <div class="invoice-container">
+                    <li class="info-row">
+                        <div class="invoice-details">
+                            <p class="info-label">{{ invoice.invoice_number }}</p>
+                            <div class="issue-date-info">
+                                <p class="invoice-issue-date-label">{{ invoice.issue_date|date:'Y-m-d H:m:i' }}</p>
+                                <span class="invoice-status-{{ invoice.status.name|lower|split_invoice_status }}">{{ invoice.status.name }}</span>
+                            </div>
+                            <p class="info-email">
+                                <a href="{{ invoice.invoice_file.file.url }}" download>{{ invoice.invoice_file.file.name|invoice_name_split }}</a>
+                            </p>
+                        </div>
+                    </li>
+                </div>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="info-email">No invoices found.</p>
+            {% endif %}
             {% endif %}
         </div>
     </div>

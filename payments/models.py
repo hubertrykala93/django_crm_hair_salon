@@ -45,14 +45,14 @@ class PrepaidTransfer(PaymentMethod):
 
 class PayPalTransfer(PaymentMethod):
     user = models.OneToOneField(to="accounts.User", on_delete=models.CASCADE, null=True)
-    paypal_email = models.EmailField(max_length=255, unique=True)
+    paypal_email = models.EmailField(max_length=255, unique=True, null=True)
 
     class Meta:
         verbose_name = "PayPal Transfer"
         verbose_name_plural = "PayPal Transfers"
 
     def __str__(self):
-        return self.paypal_email
+        return str(self.paypal_email)
 
 
 class CryptoCurrency(models.Model):

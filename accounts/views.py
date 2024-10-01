@@ -423,11 +423,6 @@ def payment_messages(request, instance, updated_fields, save_method, contract):
                     message=f"The payment method has been successfully switched to {method_name} and updated.",
                 )
 
-            # messages.success(
-            #     request=request,
-            #     message=f"The payment method via {method_name} has been successfully updated.",
-            # )
-
         else:
             print("Contract has not Payment Method")
             contract.payment_method = instance
@@ -486,7 +481,7 @@ def payment_messages(request, instance, updated_fields, save_method, contract):
                 message=f"The payment method via {method_name} has been successfully set.",
             )
 
-    elif not updated_fields and not save_method:
+    else:
         print("Not Updated Fields and not Save Method")
         if contract.payment_method:
             print(instance.name == contract.payment_method.name)
@@ -506,13 +501,6 @@ def payment_messages(request, instance, updated_fields, save_method, contract):
                     request=request,
                     message=f"The payment method via {method_name} has been removed. To receive a transfer, please set one of the payment methods.",
                 )
-
-        else:
-            print("Contract has not Payment Method")
-            messages.info(
-                request=request,
-                message="No changes have been made.",
-            )
 
 
 def handle_bank_transfer(request):
@@ -716,6 +704,7 @@ def settings(request):
             "contact_information": request.user.profile.contact_information,
             "contract": request.user.profile.contract,
             "benefits": request.user.profile.contract.benefits,
+            "invoices": request.user.profile.contract.invoices.all().order_by("-issue_date"),
             "banktransfer": request.user.banktransfer,
             "prepaidtransfer": request.user.prepaidtransfer,
             "paypaltransfer": request.user.paypaltransfer,

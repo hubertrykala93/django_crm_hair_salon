@@ -189,7 +189,6 @@ class AdminDevelopmentBenefit(admin.ModelAdmin):
 class AdminBenefit(admin.ModelAdmin):
     list_display = [
         "id",
-        "job_type",
         "get_salary_benefits",
         "get_sport_benefits",
         "get_health_benefits",
@@ -198,13 +197,6 @@ class AdminBenefit(admin.ModelAdmin):
     ]
     form = AdminBenefitForm
     fieldsets = (
-        (
-            "Job Type", {
-                "fields": [
-                    "job_type",
-                ],
-            },
-        ),
         (
             "Salary Benefits", {
                 "fields": [
@@ -326,6 +318,7 @@ class AdminContract(admin.ModelAdmin):
     list_display = [
         "id",
         "contract_type",
+        "job_type",
         "job_position",
         "formatted_start_date",
         "formatted_end_date",
@@ -337,6 +330,10 @@ class AdminContract(admin.ModelAdmin):
         "work_hours_per_week",
         "benefits",
         "status",
+        "get_invoices",
+        "total_invoices",
+        "formatted_total_earnings_gross",
+        "formatted_total_earnings_net",
     ]
     form = AdminContractForm
     fieldsets = (
@@ -344,6 +341,13 @@ class AdminContract(admin.ModelAdmin):
             "Contract Type", {
                 "fields": [
                     "contract_type",
+                ],
+            },
+        ),
+        (
+            "Job Type", {
+                "fields": [
+                    "job_type",
                 ],
             },
         ),
@@ -393,6 +397,13 @@ class AdminContract(admin.ModelAdmin):
                 ],
             },
         ),
+        (
+            "Invoices", {
+                "fields": [
+                    "invoices",
+                ],
+            },
+        ),
     )
 
     def formatted_start_date(self, obj):
@@ -412,3 +423,19 @@ class AdminContract(admin.ModelAdmin):
             return f"{obj.time_remaining.days} days" if obj.time_remaining.days != 1 else f"{obj.time_remaining.days} day"
 
     formatted_time_remaining.short_description = "Time Remaining"
+
+    def formatted_total_earnings_gross(self, obj):
+        return obj.total_earnings_gross
+
+    formatted_total_earnings_gross.short_description = "Gross Earnings"
+
+    def formatted_total_earnings_net(self, obj):
+        return obj.total_earnings_net
+
+    formatted_total_earnings_net.short_description = "Net Earnings"
+
+    def get_invoices(self, obj):
+        if obj.invoices:
+            return len([invoice for invoice in obj.invoices.all()])
+
+    get_invoices.short_description = "Invoices"

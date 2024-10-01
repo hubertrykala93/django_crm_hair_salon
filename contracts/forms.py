@@ -94,10 +94,6 @@ class AdminBenefitForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(AdminBenefitForm, self).__init__(*args, **kwargs)
 
-        self.fields["job_type"].help_text = "Select the type of work."
-        self.fields["job_type"].label = "Job Type"
-        self.fields["job_type"].required = True
-
         self.fields["salary_benefits"].help_text = "Select bonus benefits."
         self.fields["salary_benefits"].label = "Bonus Benefits"
         self.fields["salary_benefits"].required = False
@@ -149,6 +145,9 @@ class AdminContractForm(forms.ModelForm):
     salary = forms.DecimalField(help_text="Enter the salary.", label="Contract Salary", required=True)
     work_hours_per_week = forms.IntegerField(help_text="Enter the number of working hours per week.",
                                              label="Working Hours", required=False)
+    total_invoices = forms.IntegerField(
+        required=False,
+    )
 
     class Meta:
         model = Contract
@@ -160,6 +159,10 @@ class AdminContractForm(forms.ModelForm):
         self.fields["contract_type"].help_text = "Select the type of contract."
         self.fields["contract_type"].label = "Contract Type"
         self.fields["contract_type"].required = True
+
+        self.fields["job_type"].help_text = "Select the type of job."
+        self.fields["job_type"].label = "Job Type"
+        self.fields["job_type"].required = True
 
         self.fields["job_position"].help_text = "Select the job position"
         self.fields["job_position"].label = "Job Position"
