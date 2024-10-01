@@ -155,6 +155,7 @@ class EmploymentStatus(models.Model):
 class Contract(models.Model):
     contract_type = models.ForeignKey(to=ContractType, on_delete=models.SET_NULL, null=True, blank=True)
     job_type = models.ForeignKey(to=JobType, on_delete=models.SET_NULL, null=True, blank=True)
+    job_position = models.ForeignKey(to=JobPosition, on_delete=models.SET_NULL, null=True)
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
     time_remaining = models.DurationField(null=True)
@@ -164,6 +165,7 @@ class Contract(models.Model):
     payment_method = models.ForeignKey(to=PaymentMethod, on_delete=models.SET_NULL, null=True, blank=True)
     work_hours_per_week = models.IntegerField(null=True, blank=True)
     benefits = models.OneToOneField(to=Benefit, on_delete=models.CASCADE, null=True, blank=True)
+    status = models.ForeignKey(to=EmploymentStatus, on_delete=models.SET_NULL, null=True)
 
     class Meta:
         verbose_name = "Contract"

@@ -7,7 +7,7 @@ from PIL import Image
 from django.dispatch import receiver
 from django.db.models.signals import pre_delete
 import random as rnd
-from contracts.models import Contract, Benefit, JobPosition, EmploymentStatus
+from contracts.models import Contract, Benefit, EmploymentStatus
 from payments.models import BankTransfer, PrepaidTransfer, PayPalTransfer, CryptoTransfer
 
 
@@ -83,9 +83,9 @@ class User(AbstractBaseUser, PermissionsMixin):
                 contact_info = ProfileContactInformation.objects.create()
                 profile.contact_information = contact_info
 
-                # Creating Employment Information for Profile
-                employment_info = ProfileEmploymentInformation.objects.create()
-                profile.employment_information = employment_info
+                # Creating Contract for Profile
+                contract = Contract.objects.create()
+                profile.contract = contract
 
                 # Creating Profile Image for Basic Information
                 profile_image = ProfileImage.objects.create()
@@ -94,14 +94,9 @@ class User(AbstractBaseUser, PermissionsMixin):
                 # Saving Basic Information with Profile Image
                 basic_info.save()
 
-                # Creating and Saving Employment Status for Employment Information
-                employment_status = EmploymentStatus.objects.get(name="Active")
-                employment_info.employment_status = employment_status
-
-                # Creating and Saving Contract for Employment Information
-                contract = Contract.objects.create()
-                employment_info.contract = contract
-                employment_info.save()
+                # Creating Employment Status for Contract
+                status = EmploymentStatus.objects.get(name="Active")
+                contract.status = status
 
                 # Creating and Saving Benefits for Contract
                 benefits = Benefit.objects.create()
@@ -244,24 +239,11 @@ class ProfileContactInformation(models.Model):
         return str(self.pk)
 
 
-class ProfileEmploymentInformation(models.Model):
-    job_position = models.ForeignKey(to=JobPosition, on_delete=models.SET_NULL, null=True, blank=True)
-    employment_status = models.ForeignKey(to=EmploymentStatus, on_delete=models.SET_NULL, null=True, blank=True)
-    contract = models.OneToOneField(to=Contract, on_delete=models.CASCADE, null=True, blank=True)
-
-    class Meta:
-        verbose_name = "Employment Information"
-        verbose_name_plural = "Employment Information"
-
-    def __str__(self):
-        return str(self.pk)
-
-
 class Profile(models.Model):
     user = models.OneToOneField(to=User, on_delete=models.CASCADE)
     basic_information = models.OneToOneField(to=ProfileBasicInformation, on_delete=models.CASCADE, null=True)
     contact_information = models.OneToOneField(to=ProfileContactInformation, on_delete=models.CASCADE, null=True)
-    employment_information = models.OneToOneField(to=ProfileEmploymentInformation, on_delete=models.CASCADE, null=True)
+    contract = models.OneToOneField(to=Contract, on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:
         verbose_name = "Profile"
@@ -295,13 +277,10 @@ def delete_instances(sender, instance, **kwargs):
         if hasattr(instance.profile, "contact_information"):
             instance.profile.contact_information.delete()
 
-        if hasattr(instance.profile, "employment_information"):
-            if hasattr(instance.profile.employment_information, "contract"):
-                if hasattr(instance.profile.employment_information.contract, "benefits"):
-                    instance.profile.employment_information.contract.benefits.delete()
+        if hasattr(instance.profile, "contract"):
+            if hasattr(instance.profile.contract, "benefits"):
+                instance.profile.contract.benefits.delete()
 
-                instance.profile.employment_information.contract.delete()
-
-            instance.profile.employment_information.delete()
+            instance.profile.contract.delete()
 
         instance.profile.delete()

@@ -1,6 +1,5 @@
 from django import forms
-from .models import User, Profile, ProfileImage, OneTimePassword, ProfileBasicInformation, ProfileContactInformation, \
-    ProfileEmploymentInformation
+from .models import User, Profile, ProfileImage, OneTimePassword, ProfileBasicInformation, ProfileContactInformation
 from django.core.exceptions import ValidationError
 import re
 from django.contrib.auth.hashers import make_password
@@ -103,27 +102,6 @@ class AdminProfileContactInformationForm(forms.ModelForm):
         fields = "__all__"
 
 
-class AdminProfileEmploymentInformationForm(forms.ModelForm):
-    class Meta:
-        model = ProfileEmploymentInformation
-        fields = "__all__"
-
-    def __init__(self, *args, **kwargs):
-        super(AdminProfileEmploymentInformationForm, self).__init__(*args, **kwargs)
-
-        self.fields["job_position"].help_text = "Select the job position."
-        self.fields["employment_status"].help_text = "Select the employment status."
-        self.fields["contract"].help_text = "Select the contract."
-
-        self.fields["job_position"].label = "Job Position"
-        self.fields["employment_status"].label = "Employment Status"
-        self.fields["contract"].label = "Contract"
-
-        self.fields["job_position"].required = True
-        self.fields["employment_status"].required = True
-        self.fields["contract"].required = True
-
-
 class AdminProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
@@ -144,9 +122,9 @@ class AdminProfileForm(forms.ModelForm):
         self.fields["contact_information"].label = "Contact Information"
         self.fields["contact_information"].required = True
 
-        self.fields["employment_information"].help_text = "Select the employment information for this user."
-        self.fields["employment_information"].label = "Employment Information"
-        self.fields["employment_information"].required = True
+        self.fields["contract"].help_text = "Select the contract for this user"
+        self.fields["contract"].label = "Contract"
+        self.fields["contract"].required = True
 
 
 class AdminProfileImageForm(forms.ModelForm):

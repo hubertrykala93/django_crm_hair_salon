@@ -13,8 +13,8 @@
                 <div class="profile-text-container">
                     <h1 class="profile-title">{% if request.user.profile.basic_information.firstname and request.user.profile.basic_information.lastname %}{{ request.user.profile.basic_information.firstname }} {{ request.user.profile.basic_information.lastname }}{% else %}{{ request.user.username }}{% endif %}</h1>
                     <p class="profile-email">{{ request.user.email }}</p>
-                    {% if request.user.profile.employment_information.contract.benefits.job_type %}
-                    <p class="profile-email">{{ request.user.profile.employment_information.contract.benefits.job_type }}</p>
+                    {% if request.user.profile.contract.benefits.job_type %}
+                    <p class="profile-email">{{ request.user.profile.contract.benefits.job_type }}</p>
                     {% endif %}
                 </div>
             </div>
@@ -58,45 +58,45 @@
                 <p class="info-email">{{ request.user.email }}</p>
             </div>
 
-            {% if request.user.profile.employment_information.job_position.name %}
+            {% if request.user.profile.contract.job_position.name %}
             <div class="info-row">
                 <label class="info-label">Position:</label>
-                <p class="info-email">{{ request.user.profile.employment_information.job_position.name }}</p>
+                <p class="info-email">{{ request.user.profile.contract.job_position.name }}</p>
             </div>
             {% endif %}
 
-            {% if request.user.profile.employment_information.employment_status.name %}
+            {% if request.user.profile.contract.status.name %}
             <div class="info-row">
                 <label class="info-label">Status:</label>
-                <p class="info-email">{{ request.user.profile.employment_information.employment_status.name }}</p>
+                <p class="info-email">{{ request.user.profile.contract.status.name }}</p>
             </div>
             {% endif %}
 
-            {% if request.user.profile.employment_information.contract.name %}
+            {% if request.user.profile.contract.contract_type.name %}
             <div class="info-row">
                 <label class="info-label">Contract:</label>
-                <p class="info-email">{{ request.user.profile.employment_information.contract.name }}</p>
+                <p class="info-email">{{ request.user.profile.contract.contract_type.name }}</p>
             </div>
             {% endif %}
 
-            {% if request.user.profile.employment_information.contract.salary %}
+            {% if request.user.profile.contract.salary %}
             <div class="info-row">
                 <label class="info-label">Salary:</label>
-                <p class="info-email">{{ request.user.profile.employment_information.contract.salary|floatformat:1 }}{% if request.user.profile.employment_information.contract.currency %} {{ request.user.profile.employment_information.contract.currency.name }}{% endif %}</p>
+                <p class="info-email">{{ request.user.profile.contract.salary|floatformat:1 }}{% if request.user.profile.contract.currency %} {{ request.user.profile.contract.currency.name }}{% endif %}</p>
             </div>
             {% endif %}
 
-            {% if request.user.profile.employment_information.contract.start_date %}
+            {% if request.user.profile.contract.start_date %}
             <div class="info-row">
                 <label class="info-label">Start Date:</label>
-                <p class="info-email">{{ request.user.profile.employment_information.contract.start_date|date:'Y-m-d' }}</p>
+                <p class="info-email">{{ request.user.profile.contract.start_date|date:'Y-m-d' }}</p>
             </div>
             {% endif %}
 
-            {% if request.user.profile.employment_information.contract.end_date %}
+            {% if request.user.profile.contract.end_date %}
             <div class="info-row">
                 <label class="info-label">End Date:</label>
-                <p class="info-email">{{ request.user.profile.employment_information.contract.end_date|date:'Y-m-d' }}</p>
+                <p class="info-email">{{ request.user.profile.contract.end_date|date:'Y-m-d' }}</p>
             </div>
 
             <div class="info-row">
@@ -107,8 +107,8 @@
 
             <div class="info-row">
                 <label class="info-label">Withdrawal Method:</label>
-                {% if request.user.profile.employment_information.contract.payment_method %}
-                <p class="info-email">{{ request.user.profile.employment_information.contract.payment_method.name|cut_withdrawal_method }}</p>
+                {% if request.user.profile.contract.payment_method %}
+                <p class="info-email">{{ request.user.profile.contract.payment_method.name|cut_withdrawal_method }}</p>
                 {% else %}
                 <div class="withdrawal-information">
                     <p class="info-email">Set one of the most convenient payment methods for you. Otherwise, <strong>transfers to you will be suspended</strong>.</p>
@@ -331,7 +331,7 @@
                 </div>
                 <div class="form-row">
                     <label for="save_method" style="display: flex;">
-                        <input type="checkbox" id="save_method" name="save_method" {% if request.user.profile.employment_information.contract.payment_method.banktransfer %}checked{% endif %}>
+                        <input type="checkbox" id="save_method" name="save_method" {% if request.user.profile.contract.payment_method.banktransfer %}checked{% endif %}>
                         <div class="checkbox-info">
                             <span class="checkbox-text">Save this payment method as new.</span>
                         </div>
@@ -377,7 +377,7 @@
                 </div>
                 <div class="form-row">
                     <label for="save_method" style="display: flex;">
-                        <input type="checkbox" id="save_method" name="save_method" {% if request.user.profile.employment_information.contract.payment_method.prepaidtransfer %}checked{% endif %}>
+                        <input type="checkbox" id="save_method" name="save_method" {% if request.user.profile.contract.payment_method.prepaidtransfer %}checked{% endif %}>
                         <div class="checkbox-info">
                             <span class="checkbox-text">Save this payment method as new.</span>
                         </div>
@@ -405,7 +405,7 @@
                 </div>
                 <div class="form-row">
                     <label for="save_method" style="display: flex;">
-                        <input type="checkbox" id="save_method" name="save_method" {% if request.user.profile.employment_information.contract.payment_method.paypaltransfer %}checked{% endif %}>
+                        <input type="checkbox" id="save_method" name="save_method" {% if request.user.profile.contract.payment_method.paypaltransfer %}checked{% endif %}>
                         <div class="checkbox-info">
                             <span class="checkbox-text">Save this payment method as new.</span>
                         </div>
@@ -447,7 +447,7 @@
                 </div>
                 <div class="form-row">
                     <label for="save_method" style="display: flex;">
-                        <input type="checkbox" id="save_method" name="save_method" {% if request.user.profile.employment_information.contract.payment_method.cryptotransfer %}checked{% endif %}>
+                        <input type="checkbox" id="save_method" name="save_method" {% if request.user.profile.contract.payment_method.cryptotransfer %}checked{% endif %}>
                         <div class="checkbox-info">
                             <span class="checkbox-text">Save this payment method as new.</span>
                         </div>
@@ -465,7 +465,7 @@
                 <label class="info-label">Salary Benefits:</label>
                 {% for benefit in benefits.salary_benefits.all %}
                 <p class="info-email">Awarded: {{ benefit.date_of_award|date:'Y-m-d' }}</p>
-                <p class="info-email">Amount: {{ benefit.amount|floatformat:1 }} {{ request.user.profile.employment_information.contract.currency.name }}</p>
+                <p class="info-email">Amount: {{ benefit.amount|floatformat:1 }} {{ request.user.profile.contract.currency.name }}</p>
                 <p class="info-email">Period: {{ benefit.period.name }}</p>
                 {% endfor %}
             </div>

@@ -505,7 +505,7 @@ def handle_bank_transfer(request):
         instance=request.user.banktransfer,
         updated_fields=updated_fields,
         save_method=save_method,
-        contract=request.user.profile.employment_information.contract
+        contract=request.user.profile.contract
     )
 
 
@@ -533,7 +533,7 @@ def handle_prepaid_transfer(request):
         instance=request.user.prepaidtransfer,
         updated_fields=updated_fields,
         save_method=save_method,
-        contract=request.user.profile.employment_information.contract
+        contract=request.user.profile.contract
     )
 
 
@@ -560,7 +560,7 @@ def handle_paypal_transfer(request):
         instance=request.user.paypaltransfer,
         updated_fields=updated_fields,
         save_method=save_method,
-        contract=request.user.profile.employment_information.contract
+        contract=request.user.profile.contract
     )
 
 
@@ -587,7 +587,7 @@ def handle_crypto_transfer(request):
         instance=request.user.cryptotransfer,
         updated_fields=updated_fields,
         save_method=save_method,
-        contract=request.user.profile.employment_information.contract
+        contract=request.user.profile.contract
     )
 
 
@@ -680,8 +680,8 @@ def settings(request):
         template_name="accounts/settings.html",
         context={
             "title": "Profile",
-            "benefits": request.user.profile.employment_information.contract.benefits,
-            "time_remaining": request.user.profile.employment_information.contract.time_remaining.days,
+            "benefits": request.user.profile.contract.benefits,
+            "time_remaining": None if request.user.profile.contract.time_remaining is None else request.user.profile.contract.time_remaining.days,
             "update_password_form": update_password_form,
             "update_basic_information_form": update_basic_information_form,
             "update_contact_information_form": update_contact_information_form,

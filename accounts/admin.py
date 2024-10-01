@@ -1,9 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.models import Group
-from .models import User, Profile, ProfileImage, OneTimePassword, ProfileBasicInformation, ProfileContactInformation, \
-    ProfileEmploymentInformation
+from .models import User, Profile, ProfileImage, OneTimePassword, ProfileBasicInformation, ProfileContactInformation
 from .forms import AdminRegisterForm, AdminProfileForm, AdminProfileImageForm, AdminOneTimePasswordForm, \
-    AdminProfileBasicInformationForm, AdminProfileContactInformationForm, AdminProfileEmploymentInformationForm
+    AdminProfileBasicInformationForm, AdminProfileContactInformationForm
 from django.contrib.sessions.models import Session
 
 admin.site.unregister(Group)
@@ -191,52 +190,6 @@ class AdminProfileContactInformation(admin.ModelAdmin):
     get_apartment_number.short_description = "Apartment Number"
 
 
-@admin.register(ProfileEmploymentInformation)
-class AdminProfileEmploymentInformation(admin.ModelAdmin):
-    list_display = [
-        "id",
-        "get_job_position",
-        "get_employment_status",
-        "contract",
-    ]
-    form = AdminProfileEmploymentInformationForm
-    fieldsets = (
-        (
-            "Job Position", {
-                "fields": [
-                    "job_position",
-                ],
-            },
-        ),
-        (
-            "Employment Status", {
-                "fields": [
-                    "employment_status",
-                ],
-            },
-        ),
-        (
-            "Contract", {
-                "fields": [
-                    "contract",
-                ],
-            },
-        ),
-    )
-
-    def get_job_position(self, obj):
-        if obj.job_position:
-            return obj.job_position
-
-    get_job_position.short_description = "Job Position"
-
-    def get_employment_status(self, obj):
-        if obj.employment_status:
-            return obj.employment_status
-
-    get_employment_status.short_description = "Employment Status"
-
-
 @admin.register(Profile)
 class AdminProfile(admin.ModelAdmin):
     list_display = [
@@ -244,7 +197,7 @@ class AdminProfile(admin.ModelAdmin):
         "user",
         "basic_information",
         "contact_information",
-        "employment_information",
+        "contract",
     ]
     form = AdminProfileForm
     fieldsets = (
@@ -270,9 +223,9 @@ class AdminProfile(admin.ModelAdmin):
             },
         ),
         (
-            "Employment Information", {
+            "Contract", {
                 "fields": [
-                    "employment_information",
+                    "contract",
                 ],
             },
         ),

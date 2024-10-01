@@ -160,6 +160,10 @@ class AdminContractForm(forms.ModelForm):
         self.fields["contract_type"].label = "Contract Type"
         self.fields["contract_type"].required = True
 
+        self.fields["job_position"].help_text = "Select the job position"
+        self.fields["job_position"].label = "Job Position"
+        self.fields["job_position"].required = True
+
         self.fields["currency"].help_text = "Select the currency."
         self.fields["currency"].label = "Currency"
         self.fields["currency"].required = True
@@ -176,3 +180,7 @@ class AdminContractForm(forms.ModelForm):
         self.fields["payment_method"].help_text = "Select payment method."
         self.fields["payment_method"].label = "Payment Method"
         self.fields["payment_method"].required = False
+
+        self.fields["status"].help_text = "Select the employment status."
+        self.fields["status"].label = "Status"
+        self.fields["status"].required = True

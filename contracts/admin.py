@@ -326,6 +326,7 @@ class AdminContract(admin.ModelAdmin):
     list_display = [
         "id",
         "contract_type",
+        "job_position",
         "formatted_start_date",
         "formatted_end_date",
         "formatted_time_remaining",
@@ -335,6 +336,7 @@ class AdminContract(admin.ModelAdmin):
         "payment_method",
         "work_hours_per_week",
         "benefits",
+        "status",
     ]
     form = AdminContractForm
     fieldsets = (
@@ -342,6 +344,13 @@ class AdminContract(admin.ModelAdmin):
             "Contract Type", {
                 "fields": [
                     "contract_type",
+                ],
+            },
+        ),
+        (
+            "Position", {
+                "fields": [
+                    "job_position",
                 ],
             },
         ),
@@ -367,6 +376,13 @@ class AdminContract(admin.ModelAdmin):
             "Working Hours", {
                 "fields": [
                     "work_hours_per_week",
+                ],
+            },
+        ),
+        (
+            "Employment Status", {
+                "fields": [
+                    "status",
                 ],
             },
         ),
