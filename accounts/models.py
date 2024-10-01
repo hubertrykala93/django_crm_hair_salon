@@ -8,7 +8,7 @@ from django.dispatch import receiver
 from django.db.models.signals import pre_delete
 import random as rnd
 from contracts.models import Contract, Benefit, JobPosition, EmploymentStatus
-from payments.models import BankTransfer, PrepaidTransfer, PayPalTransfer, CryptoTransfer, PaymentMethod
+from payments.models import BankTransfer, PrepaidTransfer, PayPalTransfer, CryptoTransfer
 
 
 class CustomUserManager(UserManager):

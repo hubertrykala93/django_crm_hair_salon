@@ -101,7 +101,7 @@
 
             <div class="info-row">
                 <label class="info-label">Time Remaining:</label>
-                <p class="info-email">{{ time_remaining.days }}</p>
+                <p class="info-email">{% if time_remaining == 0 %}{{ time_remaining }} days{% elif time_remaining == 1 %}{{ time_remaining }} day{% else %}{{ time_remaining }} days{% endif %}</p>
             </div>
             {% endif %}
 
@@ -295,7 +295,7 @@
                 </div>
                 <div class="form-row">
                     <label for="bank_name" class="info-label">Bank Name *</label>
-                    <input type="text" id="bank_name" name="bank_name" placeholder="Bank Name" value="{% if update_bank_transfer_form.bank_name.value %}{{ update_bank_transfer_form.bank_name.value }}{% else %}{% if request.user.profile.employment_information.contract.payment_method.banktransfer.bank_name %}{{ request.user.profile.employment_information.contract.payment_method.banktransfer.bank_name }}{% else %}{{ bank_transfer.0.bank_name }}{% endif %}{% endif %}">
+                    <input type="text" id="bank_name" name="bank_name" placeholder="Bank Name" value="{% if update_bank_transfer_form.bank_name.value %}{{ update_bank_transfer_form.bank_name.value }}{% elif request.user.banktransfer.bank_name %}{{ request.user.banktransfer.bank_name }}{% else %}{% endif %}">
                     {% if update_bank_transfer_form.bank_name.errors %}
                     {% for error in update_bank_transfer_form.bank_name.errors %}
                     <span class="form-error">{{ error }}</span>
@@ -304,7 +304,7 @@
                 </div>
                 <div class="form-row">
                     <label for="iban" class="info-label">IBAN *</label>
-                    <input type="text" id="iban" name="iban" placeholder="IBAN" value="{% if update_bank_transfer_form.iban.value %}{{ update_bank_transfer_form.iban.value }}{% else %}{% if request.user.profile.employment_information.contract.payment_method.banktransfer.iban %}{{ request.user.profile.employment_information.contract.payment_method.banktransfer.iban }}{% else %}{{ bank_transfer.0.iban }}{% endif %}{% endif %}">
+                    <input type="text" id="iban" name="iban" placeholder="IBAN" value="{% if update_bank_transfer_form.iban.value %}{{ update_bank_transfer_form.iban.value }}{% elif request.user.banktransfer.iban %}{{ request.user.banktransfer.iban }}{% else %}{% endif %}">
                     {% if update_bank_transfer_form.iban.errors %}
                     {% for error in update_bank_transfer_form.iban.errors %}
                     <span class="form-error">{{ error }}</span>
@@ -322,7 +322,7 @@
                 </div>
                 <div class="form-row">
                     <label for="account_number" class="info-label">Account Number *</label>
-                    <input type="text" id="account_number" name="account_number" placeholder="Account Number" value="{% if update_bank_transfer_form.account_number.value %}{{ update_bank_transfer_form.account_number.value }}{% else %}{% if request.user.profile.employment_information.contract.payment_method.banktransfer.account_number %}{{ request.user.profile.employment_information.contract.payment_method.banktransfer.account_number }}{% else %}{{ bank_transfer.0.account_number }}{% endif %}{% endif %}">
+                    <input type="text" id="account_number" name="account_number" placeholder="Account Number" value="{% if update_bank_transfer_form.account_number.value %}{{ update_bank_transfer_form.account_number.value }}{% elif request.user.banktransfer.account_number %}{{ request.user.banktransfer.account_number }}{% else %}{% endif %}">
                     {% if update_bank_transfer_form.account_number.errors %}
                     {% for error in update_bank_transfer_form.account_number.errors %}
                     <span class="form-error">{{ error }}</span>

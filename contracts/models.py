@@ -157,6 +157,7 @@ class Contract(models.Model):
     job_type = models.ForeignKey(to=JobType, on_delete=models.SET_NULL, null=True, blank=True)
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
+    time_remaining = models.DurationField(null=True)
     salary = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     currency = models.ForeignKey(to=Currency, on_delete=models.SET_NULL, null=True, blank=True)
     payment_frequency = models.ForeignKey(to=PaymentFrequency, on_delete=models.SET_NULL, null=True)
@@ -170,3 +171,12 @@ class Contract(models.Model):
 
     def __str__(self):
         return str(self.pk)
+
+    def save(self, *args, **kwargs):
+        if self.end_date and self.start_date:
+            self.time_remaining = self.end_date - self.start_date
+
+        else:
+            self.time_remaining = None
+
+        super(Contract, self).save(*args, **kwargs)

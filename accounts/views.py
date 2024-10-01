@@ -675,23 +675,13 @@ def settings(request):
                     if update_crypto_transfer_form.is_valid():
                         handle_crypto_transfer(request=request)
 
-    time_remaining = None
-
-    if request.user.profile.employment_information.contract.end_date:
-        time_remaining = request.user.profile.employment_information.contract.end_date - date.today()
-
-    bank_transfer = [
-        transfer for transfer in BankTransfer.objects.all() if
-        request.user.username == transfer.banktransfer.name.split(sep=" ")[-1]
-    ]
-
     return render(
         request=request,
         template_name="accounts/settings.html",
         context={
             "title": "Profile",
             "benefits": request.user.profile.employment_information.contract.benefits,
-            "time_remaining": time_remaining,
+            "time_remaining": request.user.profile.employment_information.contract.time_remaining.days,
             "update_password_form": update_password_form,
             "update_basic_information_form": update_basic_information_form,
             "update_contact_information_form": update_contact_information_form,
@@ -699,7 +689,6 @@ def settings(request):
             "update_prepaid_transfer_form": update_prepaid_transfer_form,
             "update_paypal_transfer_form": update_paypal_transfer_form,
             "update_crypto_transfer_form": update_crypto_transfer_form,
-            "bank_transfer": bank_transfer,
             "cryptocurrencies": CryptoCurrency.objects.all(),
         }
     )

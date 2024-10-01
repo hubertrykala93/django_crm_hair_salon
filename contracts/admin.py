@@ -328,6 +328,7 @@ class AdminContract(admin.ModelAdmin):
         "contract_type",
         "formatted_start_date",
         "formatted_end_date",
+        "formatted_time_remaining",
         "salary",
         "currency",
         "payment_frequency",
@@ -389,3 +390,9 @@ class AdminContract(admin.ModelAdmin):
             return obj.end_date.strftime("%Y-%m-%d")
 
     formatted_end_date.short_description = "End Date"
+
+    def formatted_time_remaining(self, obj):
+        if obj.time_remaining:
+            return f"{obj.time_remaining.days} days" if obj.time_remaining.days != 1 else f"{obj.time_remaining.days} day"
+
+    formatted_time_remaining.short_description = "Time Remaining"
