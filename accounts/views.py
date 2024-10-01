@@ -413,10 +413,20 @@ def payment_messages(request, instance, updated_fields, save_method, contract):
         print("Updated Fields and Save Method")
         if contract.payment_method:
             print("Contract has Payment Method")
-            messages.success(
-                request=request,
-                message=f"The payment method via {method_name} has been successfully updated.",
-            )
+
+            if instance.name != contract.payment_method.name:
+                contract.payment_method = instance
+                contract.save()
+
+                messages.success(
+                    request=request,
+                    message=f"The payment method has been successfully switched to {method_name} and updated.",
+                )
+
+            # messages.success(
+            #     request=request,
+            #     message=f"The payment method via {method_name} has been successfully updated.",
+            # )
 
         else:
             print("Contract has not Payment Method")
@@ -432,13 +442,14 @@ def payment_messages(request, instance, updated_fields, save_method, contract):
         print("Updated Fields and not Save Method")
         if contract.payment_method:
             print("Contract has Payment Method")
-            contract.payment_method = None
-            contract.save()
+            if instance.name == contract.payment_method.name:
+                contract.payment_method = None
+                contract.save()
 
-            messages.info(
-                request=request,
-                message=f"The payment method via {method_name} has been removed. To receive a transfer, please set one of the payment methods.",
-            )
+                messages.info(
+                    request=request,
+                    message=f"The payment method via {method_name} has been removed. To receive a transfer, please set one of the payment methods.",
+                )
 
         messages.success(
             request=request,
@@ -449,10 +460,21 @@ def payment_messages(request, instance, updated_fields, save_method, contract):
         print("Not Updated Fields and Save Method")
         if contract.payment_method:
             print("Contract has Payment Method")
-            messages.info(
-                request=request,
-                message="No changes have been made.",
-            )
+
+            if instance.name != contract.payment_method.name:
+                contract.payment_method = instance
+                contract.save()
+
+                messages.success(
+                    request=request,
+                    message=f"The payment method has been successfully switched to {method_name}.",
+                )
+
+            else:
+                messages.info(
+                    request=request,
+                    message="No changes have been made.",
+                )
 
         else:
             print("Contract has not Payment Method")
@@ -467,14 +489,23 @@ def payment_messages(request, instance, updated_fields, save_method, contract):
     elif not updated_fields and not save_method:
         print("Not Updated Fields and not Save Method")
         if contract.payment_method:
+            print(instance.name == contract.payment_method.name)
             print("Contract has Payment Method")
-            contract.payment_method = None
-            contract.save()
+            if instance.name != contract.payment_method.name:
+                print("Instance Name != Contract Payment Method Name")
+                messages.info(
+                    request=request,
+                    message="No changes have been made.",
+                )
 
-            messages.info(
-                request=request,
-                message=f"The payment method via {method_name} has been removed. To receive a transfer, please set one of the payment methods.",
-            )
+            else:
+                contract.payment_method = None
+                contract.save()
+
+                messages.info(
+                    request=request,
+                    message=f"The payment method via {method_name} has been removed. To receive a transfer, please set one of the payment methods.",
+                )
 
         else:
             print("Contract has not Payment Method")
@@ -689,7 +720,6 @@ def settings(request):
             "prepaidtransfer": request.user.prepaidtransfer,
             "paypaltransfer": request.user.paypaltransfer,
             "cryptotransfer": request.user.cryptotransfer,
-            # "time_remaining": None if request.user.profile.contract.time_remaining is None else request.user.profile.contract.time_remaining.days,
             "update_password_form": update_password_form,
             "update_basic_information_form": update_basic_information_form,
             "update_contact_information_form": update_contact_information_form,
