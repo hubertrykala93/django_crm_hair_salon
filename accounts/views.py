@@ -689,7 +689,7 @@ def settings(request):
             "prepaidtransfer": request.user.prepaidtransfer,
             "paypaltransfer": request.user.paypaltransfer,
             "cryptotransfer": request.user.cryptotransfer,
-            "time_remaining": None if request.user.profile.contract.time_remaining is None else request.user.profile.contract.time_remaining.days,
+            # "time_remaining": None if request.user.profile.contract.time_remaining is None else request.user.profile.contract.time_remaining.days,
             "update_password_form": update_password_form,
             "update_basic_information_form": update_basic_information_form,
             "update_contact_information_form": update_contact_information_form,

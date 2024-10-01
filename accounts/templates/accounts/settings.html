@@ -99,10 +99,12 @@
                 <p class="info-email">{{ contract.end_date|date:'Y-m-d' }}</p>
             </div>
 
+            {% if contract.time_remaining.days >= 0 %}
             <div class="info-row">
                 <label class="info-label">Time Remaining:</label>
-                <p class="info-email">{% if time_remaining == 0 %}{{ time_remaining }} days{% elif time_remaining == 1 %}{{ time_remaining }} day{% else %}{{ time_remaining }} days{% endif %}</p>
+                <p class="info-email">{% if contract.time_remaining.days == 0 %}{{ contract.time_remaining.days }} days{% elif contract.time_remaining.days == 1 %}{{ contract.time_remaining.days }} day{% else %}{{ contract.time_remaining.days }} days{% endif %}</p>
             </div>
+            {% endif %}
             {% endif %}
 
             <div class="info-row">

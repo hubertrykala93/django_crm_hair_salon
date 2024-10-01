@@ -1,5 +1,6 @@
 from django.db import models
 from payments.models import PaymentMethod
+from datetime import timedelta
 
 
 class Currency(models.Model):
@@ -10,7 +11,7 @@ class Currency(models.Model):
         verbose_name_plural = "Currencies"
 
     def __str__(self):
-        return str(self.pk)
+        return self.name
 
 
 class PaymentFrequency(models.Model):
@@ -21,7 +22,7 @@ class PaymentFrequency(models.Model):
         verbose_name_plural = "Payments Frequency"
 
     def __str__(self):
-        return str(self.pk)
+        return self.name
 
 
 class JobType(models.Model):
@@ -177,6 +178,12 @@ class Contract(models.Model):
     def save(self, *args, **kwargs):
         if self.end_date and self.start_date:
             self.time_remaining = self.end_date - self.start_date
+
+            if self.time_remaining < timedelta(days=0):
+                self.status = EmploymentStatus.objects.get(name="Inactive")
+
+            else:
+                self.status = EmploymentStatus.objects.get(name="Active")
 
         else:
             self.time_remaining = None

@@ -2,6 +2,7 @@ from django import forms
 from .models import ContractType, Contract, Benefit, SalaryPeriod, SalaryBenefit, SportBenefit, HealthBenefit, \
     InsuranceBenefit, DevelopmentBenefit, JobType, EmploymentStatus, JobPosition, Currency, PaymentFrequency
 from payments.models import PaymentMethod
+from django.core.exceptions import ValidationError
 
 
 class AdminCurrencyForm(forms.ModelForm):
@@ -184,3 +185,14 @@ class AdminContractForm(forms.ModelForm):
         self.fields["status"].help_text = "Select the employment status."
         self.fields["status"].label = "Status"
         self.fields["status"].required = True
+
+    def clean_end_date(self):
+        start_date = self.cleaned_data.get("start_date")
+        end_date = self.cleaned_data.get("end_date")
+
+        if end_date < start_date:
+            raise ValidationError(
+                message="The Start Date cannot be earlier than the End Date.",
+            )
+
+        return end_date
