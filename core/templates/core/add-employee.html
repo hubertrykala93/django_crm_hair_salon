@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<form method="post" novalidate>
+    {% csrf_token %}
+    <h2>User Information</h2>
+    <div class="form-row">
+        <label for="email">Email</label>
+        <input type="text" id="email" name="email" placeholder="Email Address">
+    </div>
+    <div class="form-row">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Password">
+    </div>
+    <div class="form-row">
+        <label for="repassword">Confirm Password</label>
+        <input type="password" id="repassword" name="repassword" placeholder="Confirm Password">
+    </div>
+    <button type="submit" class="btn btn-summit-btn">Next</button>
+</form>
+{% endblock %}

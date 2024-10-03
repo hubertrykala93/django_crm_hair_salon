@@ -17,8 +17,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
 </head>
 <body>
-    {% include 'header.html' %}
-
     <main>
         {% if messages %}
         {% include 'messages.html' %}
@@ -27,10 +25,5 @@
         {% block content %}
         {% endblock %}
     </main>
-
-    {% include 'footer.html' %}
-
-    {% block extra_scripts %}
-    {% endblock %}
 </body>
 </html>

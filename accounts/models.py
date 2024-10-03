@@ -50,7 +50,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     date_joined = models.DateTimeField(default=now)
     username = models.CharField(max_length=1000, default=uuid4, unique=True)
     email = models.EmailField(max_length=255, unique=True, blank=False, null=False)
-    is_verified = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
@@ -95,8 +94,12 @@ class User(AbstractBaseUser, PermissionsMixin):
                 basic_info.save()
 
                 # Creating Employment Status for Contract
-                status = EmploymentStatus.objects.get(name="Active")
-                contract.status = status
+                if not EmploymentStatus.objects.filter(name="Active").exists():
+                    status = EmploymentStatus.objects.create(name="Active")
+                    status.save()
+
+                else:
+                    contract.status = EmploymentStatus.objects.get(name="Active")
 
                 # Creating and Saving Benefits for Contract
                 benefits = Benefit.objects.create()
@@ -118,9 +121,14 @@ class User(AbstractBaseUser, PermissionsMixin):
 
                 # Creating CryptoTransfer
                 crypto_transfer = CryptoTransfer.objects.create(name=f"Crypto Transfer for {self.username}", user=self)
-                cryptocurrency = CryptoCurrency.objects.get(code="BTC")
-                crypto_transfer.cryptocurrency = cryptocurrency
-                crypto_transfer.save()
+
+                if not CryptoCurrency.objects.filter(name="Bitcoin").exists():
+                    cryptocurrency = CryptoCurrency.objects.create(name="Bitcoin", code="BTC")
+                    cryptocurrency.save()
+
+                else:
+                    crypto_transfer.cryptocurrency = CryptoCurrency.objects.get(name="Bitcoin")
+                    crypto_transfer.save()
 
                 # Saving Profile with Basic Information, Contact Information, Employment Information
                 profile.save()

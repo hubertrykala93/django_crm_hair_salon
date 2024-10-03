@@ -18,13 +18,9 @@ class AdminRegisterForm(forms.ModelForm):
         label="Password", required=True,
         widget=forms.PasswordInput
     )
-    is_verified = forms.BooleanField(
-        help_text="Check if the user should be verified.",
-        required=False
-    )
     is_active = forms.BooleanField(
         help_text="Check if the user should be active.",
-        required=True
+        required=False,
     )
     is_staff = forms.BooleanField(
         help_text="Check if the user should be staff.",
@@ -147,7 +143,7 @@ class AdminProfileImageForm(forms.ModelForm):
     )
     alt = forms.CharField(
         widget=forms.Textarea,
-        required=True,
+        required=False,
     )
 
     class Meta:
@@ -305,11 +301,6 @@ def clean_email(self):
     if not User.objects.filter(email=email).exists():
         raise ValidationError(
             message=f"A user with the email address '{email}' does not exist.",
-        )
-
-    if User.objects.filter(email=email).exists() and not User.objects.get(email=email).is_verified:
-        raise ValidationError(
-            message=f"Your account has not been verified yet. To reset the password, you must first verify your account.",
         )
 
     return email

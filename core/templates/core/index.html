@@ -3,10 +3,15 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-<section class="user-authentication">
-    <div class="container">
-        <form method="post" novalidate>
-            <h2>Login to Your Account</h2>
+<div class="login-container">
+    <div class="left-side">
+        <form class="login-form" method="post" novalidate>
+            <div class="login-form-header">
+                <h2>Login to Your Account</h2>
+            </div>
+            <div class="login-form-question">
+                <a href="{% url 'choose-method' %}">Forgot your password?</a>
+            </div>
             {% csrf_token %}
 
             <div class="form-row">
@@ -32,10 +37,10 @@
             </div>
 
             <button class="btn form-submit-btn" type="submit">Login</button>
-            <div class="form-questions">
-                <a href="{% url 'choose-method' %}">Forgot your password?</a>
-            </div>
         </form>
     </div>
-</section>
+    <div class="right-side">
+        <img class="login-icon" src="media/home/login-icon.png" alt="Login icon">
+    </div>
+</div>
 {% endblock %}

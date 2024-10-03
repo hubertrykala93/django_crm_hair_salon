@@ -1,140 +1,17 @@
 from django.shortcuts import render, redirect, reverse
-from .forms import RegisterForm, PasswordResetForm, OneTimePasswordForm, ChangePasswordForm, \
+from .forms import PasswordResetForm, OneTimePasswordForm, ChangePasswordForm, \
     UpdateContactInformationForm, UpdatePasswordForm, UpdateBasicInformationForm
 from payments.forms import UpdateBankTransferForm, UpdateCryptoTransferForm, UpdatePrepaidTransferForm, \
     UpdatePayPalTransferForm
 from django.contrib import messages
 from .models import User, OneTimePassword
-from django.contrib.auth.hashers import make_password
 from django.contrib.auth import logout, update_session_auth_hash
 from django.contrib.auth.decorators import user_passes_test, login_required
 from django.core.mail import EmailMultiAlternatives
-from django.contrib.sites.shortcuts import get_current_site
 from django.utils.html import strip_tags
 from django.template.loader import render_to_string
-from django.utils.encoding import force_bytes, force_str
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from .tokens import token_generator
-from datetime import date, datetime
-from payments.models import BankTransfer, PrepaidTransfer, PaymentMethod, CryptoTransfer, CryptoCurrency
-
-
-@user_passes_test(test_func=lambda user: not user.is_authenticated, login_url="dashboard")
-def register(request):
-    if request.method == "POST":
-        form = RegisterForm(data=request.POST)
-
-        if form.is_valid():
-            user = User(
-                email=request.POST["email"]
-
-            )
-            password = make_password(
-                password=request.POST["password"]
-            )
-            user.password = password
-            user.save()
-
-            try:
-                html_message = render_to_string(
-                    template_name="accounts/account-activation-email.html",
-                    context={
-                        "user": user,
-                        "domain": get_current_site(request=request),
-                        "uid": urlsafe_base64_encode(s=force_bytes(s=user.pk)),
-                        "token": token_generator.make_token(user=user)
-                    },
-                    request=request,
-                )
-                plain_message = strip_tags(html_message)
-
-                message = EmailMultiAlternatives(
-                    subject="Account Activation Request",
-                    body=plain_message,
-                    to=[user.email],
-                )
-                message.attach_alternative(content=html_message, mimetype="text/html")
-                message.send()
-
-                user.save()
-
-                messages.success(
-                    request=request,
-                    message="Your account has been successfully created. Please check your email to activate it.",
-                )
-
-                return redirect(to="register")
-
-            except Exception as e:
-                messages.error(
-                    request=request,
-                    message="Registration failed. Please try again.",
-                )
-
-                return redirect(to="register")
-
-        else:
-            if len(request.POST["password"]) != 0 and len(request.POST["repassword"]) == 0:
-                messages.error(
-                    request=request,
-                    message="To register an account, you also need to provide the Confirm Password.",
-                )
-
-    else:
-        form = RegisterForm()
-
-    return render(
-        request=request,
-        template_name="accounts/register.html",
-        context={
-            "title": "Register",
-            "form": form,
-        },
-    )
-
-
-def activate(request, uidb64, token):
-    try:
-        uid = force_str(s=urlsafe_base64_decode(s=uidb64))
-        user = User.objects.get(pk=int(uid))
-
-    except User.DoesNotExist:
-        messages.info(
-            request=request,
-            message="Your account does not exist, please register.",
-        )
-
-        return redirect(to="register")
-
-    if user:
-        if not user.is_verified:
-
-            if token_generator.check_token(user=user, token=token):
-                user.is_verified = True
-                user.save()
-
-                messages.success(
-                    request=request,
-                    message="Your account has been activated, you can now log in."
-                )
-
-            else:
-                user.delete()
-
-                messages.info(
-                    request=request,
-                    message="Your activation link has expired. Please create your account again.",
-                )
-
-                return redirect(to="register")
-
-        else:
-            messages.info(
-                request=request,
-                message="Your account has already been activated, you can log in.",
-            )
-
-    return redirect(to="home")
+from datetime import datetime
+from payments.models import CryptoCurrency
 
 
 @user_passes_test(test_func=lambda user: not user.is_authenticated, login_url="dashboard")
@@ -278,7 +155,7 @@ def change_password(request):
                             f"You can now log in.",
                 )
 
-                return redirect(to="home")
+                return redirect(to="index")
 
             except User.DoesNotExist:
                 messages.info(
@@ -410,9 +287,7 @@ def payment_messages(request, instance, updated_fields, save_method, contract):
     method_name = instance.name.split(sep=" ")[0].lower() + " " + instance.name.split(sep=" ")[1].lower()
 
     if updated_fields and save_method:
-        print("Updated Fields and Save Method")
         if contract.payment_method:
-            print("Contract has Payment Method")
 
             if instance.name != contract.payment_method.name:
                 contract.payment_method = instance
@@ -424,7 +299,6 @@ def payment_messages(request, instance, updated_fields, save_method, contract):
                 )
 
         else:
-            print("Contract has not Payment Method")
             contract.payment_method = instance
             contract.save()
 
@@ -434,9 +308,7 @@ def payment_messages(request, instance, updated_fields, save_method, contract):
             )
 
     elif updated_fields and not save_method:
-        print("Updated Fields and not Save Method")
         if contract.payment_method:
-            print("Contract has Payment Method")
             if instance.name == contract.payment_method.name:
                 contract.payment_method = None
                 contract.save()
@@ -452,9 +324,7 @@ def payment_messages(request, instance, updated_fields, save_method, contract):
         )
 
     elif not updated_fields and save_method:
-        print("Not Updated Fields and Save Method")
         if contract.payment_method:
-            print("Contract has Payment Method")
 
             if instance.name != contract.payment_method.name:
                 contract.payment_method = instance
@@ -472,7 +342,6 @@ def payment_messages(request, instance, updated_fields, save_method, contract):
                 )
 
         else:
-            print("Contract has not Payment Method")
             contract.payment_method = instance
             contract.save()
 
@@ -482,12 +351,8 @@ def payment_messages(request, instance, updated_fields, save_method, contract):
             )
 
     else:
-        print("Not Updated Fields and not Save Method")
         if contract.payment_method:
-            print(instance.name == contract.payment_method.name)
-            print("Contract has Payment Method")
             if instance.name != contract.payment_method.name:
-                print("Instance Name != Contract Payment Method Name")
                 messages.info(
                     request=request,
                     message="No changes have been made.",
@@ -610,7 +475,7 @@ def handle_crypto_transfer(request):
     )
 
 
-@login_required(login_url="home")
+@login_required(login_url="index")
 def settings(request):
     update_password_form = UpdatePasswordForm()
     update_basic_information_form = UpdateBasicInformationForm(
@@ -721,8 +586,8 @@ def settings(request):
     )
 
 
-@login_required(login_url="home")
+@login_required(login_url="index")
 def log_out(request):
     logout(request=request)
 
-    return redirect(to="home")
+    return redirect(to="index")

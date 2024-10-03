@@ -19,20 +19,20 @@ class BankTransfer(PaymentMethod):
     bank_name = models.CharField(max_length=100)
     iban = models.CharField(max_length=10)
     swift = models.CharField(max_length=20, null=True)
-    account_number = models.CharField(max_length=50, unique=True)
+    account_number = models.CharField(max_length=50, unique=True, null=True)
 
     class Meta:
         verbose_name = "Bank Transfer"
         verbose_name_plural = "Bank Transfers"
 
     def __str__(self):
-        return self.account_number
+        return str(self.account_number)
 
 
 class PrepaidTransfer(PaymentMethod):
     user = models.OneToOneField(to="accounts.User", on_delete=models.CASCADE, null=True)
     owner_name = models.CharField(max_length=255, null=True)
-    card_number = models.CharField(max_length=100, unique=True)
+    card_number = models.CharField(max_length=100, unique=True, null=True)
     expiration_date = models.DateField(null=True)
 
     class Meta:
@@ -40,7 +40,7 @@ class PrepaidTransfer(PaymentMethod):
         verbose_name_plural = "Prepaid Transfers"
 
     def __str__(self):
-        return self.card_number
+        return str(self.card_number)
 
 
 class PayPalTransfer(PaymentMethod):

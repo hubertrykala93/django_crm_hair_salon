@@ -1,5 +1,5 @@
 import os
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth import authenticate, login
@@ -21,29 +21,50 @@ def index(request):
                 password=request.POST["password"],
             )
 
-            if user.is_verified:
-                if user is not None:
-                    if "remember" in request.POST:
-                        request.session["user_id"] = user.id
-                        request.session.set_expiry(value=1000000)
-                        request.session.modified = True
+            if user is not None:
+                if "remember" in request.POST:
+                    request.session["user_id"] = user.id
+                    request.session.set_expiry(value=1000000)
+                    request.session.modified = True
 
-                    login(
+                login(
+                    request=request,
+                    user=user,
+                )
+
+                required_basic_fields = (
+                        user.profile.basic_information.firstname is not None and
+                        user.profile.basic_information.lastname is not None and
+                        user.profile.basic_information.date_of_birth is not None
+                )
+
+                required_contact_fields = (
+                        user.profile.contact_information.phone_number is not None and
+                        user.profile.contact_information.country is not None and
+                        user.profile.contact_information.province is not None and
+                        user.profile.contact_information.city is not None and
+                        user.profile.contact_information.postal_code is not None and
+                        user.profile.contact_information.street is not None and
+                        user.profile.contact_information.house_number is not None
+                )
+
+                if not required_basic_fields or not required_contact_fields or not user.profile.contract.payment_method:
+                    messages.warning(
                         request=request,
-                        user=user,
+                        message=f"To receive transfers and have access to full functionality, complete the information in the <strong><a href='{request.build_absolute_uri(reverse(viewname='settings'))}'>Settings</a></strong> tab and set up a payment method.",
                     )
 
-                    messages.success(
-                        request=request,
-                        message="You have been logged in successfully.",
-                    )
+                messages.success(
+                    request=request,
+                    message="You have been logged in successfully.",
+                )
 
-                    return redirect(to="dashboard")
+                return redirect(to="dashboard")
 
             else:
                 messages.info(
                     request=request,
-                    message="Your account has not been activated yet. Please activate your account to log in.",
+                    message="Your account is inactive, the administrator needs to activate your account.",
                 )
 
     else:
@@ -51,7 +72,7 @@ def index(request):
 
     return render(
         request=request,
-        template_name="accounts/login.html",
+        template_name="core/index.html",
         context={
             "title": "Login",
             "form": form,
@@ -59,14 +80,30 @@ def index(request):
     )
 
 
-@login_required(login_url="home")
+@login_required(login_url="index")
 def dashboard(request):
     return render(
         request=request,
         template_name="core/dashboard.html",
         context={
             "title": "Dashboard",
+            "users": User.objects.all().exclude(email="admin@gmail.com").order_by("-date_joined"),
         },
+    )
+
+
+@login_required(login_url="index")
+@user_passes_test(test_func=lambda user: user.is_staff, login_url="dashboard")
+def add_employee(request):
+    if request.method == "POST":
+        pass
+
+    return render(
+        request=request,
+        template_name="core/add-employee.html",
+        context={
+            "title": "Add Employee",
+        }
     )
 
 

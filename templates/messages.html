@@ -1,5 +1,5 @@
 {% for message in messages %}
 <div class="message message-{{ message.tags }}">
-    <p>{{ message }}</p>
+    <p>{{ message|safe }}</p>
 </div>
 {% endfor %}

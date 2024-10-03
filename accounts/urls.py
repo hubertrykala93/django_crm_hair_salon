@@ -3,16 +3,6 @@ from . import views as accounts_views
 
 urlpatterns = [
     path(
-        route="register",
-        view=accounts_views.register,
-        name="register"
-    ),
-    path(
-        route="activate/<uidb64>/<token>",
-        view=accounts_views.activate,
-        name="activate"
-    ),
-    path(
         route="choose-method",
         view=accounts_views.password_reset_method,
         name="choose-method"

@@ -17,7 +17,6 @@ class AdminUser(admin.ModelAdmin):
         "username",
         "password",
         "email",
-        "is_verified",
         "is_active",
         "is_staff",
         "is_superuser",
@@ -35,7 +34,6 @@ class AdminUser(admin.ModelAdmin):
         (
             "Permissions", {
                 "fields": [
-                    "is_verified",
                     "is_active",
                     "is_staff",
                     "is_superuser",
