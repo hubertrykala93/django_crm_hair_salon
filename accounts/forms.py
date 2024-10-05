@@ -263,7 +263,7 @@ class PasswordResetForm(forms.Form):
     )
 
     def clean_mobile(self):
-        mobile = self.cleaned_data.get("mobile")
+        mobile = self.cleaned_data.get("mobile").strip()
 
         if "email" and "mobile" in self.data:
             if not mobile:
@@ -278,32 +278,31 @@ class PasswordResetForm(forms.Form):
 
         return mobile
 
+    def clean_email(self):
+        email = self.cleaned_data.get("email").strip()
 
-def clean_email(self):
-    email = self.cleaned_data.get("email")
+        if not email:
+            raise ValidationError(
+                message="Email is required.",
+            )
 
-    if not email:
-        raise ValidationError(
-            message="Email is required.",
-        )
+        if len(email) > 255:
+            raise ValidationError(
+                message="The e-mail address cannot be longer than 255 characters.",
+            )
 
-    if len(email) > 255:
-        raise ValidationError(
-            message="The e-mail address cannot be longer than 255 characters.",
-        )
+        if not re.match(pattern=r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)",
+                        string=email):
+            raise ValidationError(
+                message="The e-mail address format is invalid.",
+            )
 
-    if not re.match(pattern=r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)",
-                    string=email):
-        raise ValidationError(
-            message="The e-mail address format is invalid.",
-        )
+        if not User.objects.filter(email=email).exists():
+            raise ValidationError(
+                message=f"A user with the email address '{email}' does not exist.",
+            )
 
-    if not User.objects.filter(email=email).exists():
-        raise ValidationError(
-            message=f"A user with the email address '{email}' does not exist.",
-        )
-
-    return email
+        return email
 
 
 class OneTimePasswordForm(forms.Form):

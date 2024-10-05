@@ -3,57 +3,51 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-<div class="container">
-    <!-- Header -->
-    <div class="header-dashboard">
-        <div class="header-search">
-            <form method="get" novalidate>
-                <div class="search">
-                    <input type="text" name="search" placeholder="Search here..." class="search-bar">
-                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                </div>
+<section class="dashboard">
+    <div class="container">
+        <div class="dashboard-head">
+            <form method="get">
+                <input type="text" name="search" placeholder="Search here...">
             </form>
-        </div>
-        <div class="header-icons">
-            <a href="#" class="icon-message"><i class="fa-solid fa-envelope"></i></a>
-            <a href="#" class="icon-notification"><i class="fa-sharp fa-solid fa-bell"></i></a>
 
-            {% if request.user.is_staff %}
-            <a href="{% url 'add-employee' %}"><button type="submit" class="btn btn-submit">+ Add Employee</button></a>
-            {% endif %}
+            <ul>
+                <li><a href="#"><i class="fa-solid fa-envelope"></i></a></li>
+                <li><a href="#"><i class="fa-sharp fa-solid fa-bell"></i></a></li>
+            </ul>
+
+            <a href="?user-information">
+                <button type="submit" class="btn btn-submit">+ Add Employee</button>
+            </a>
+        </div>
+        <div class="dashboard-logo">
+            <a href="{% url 'dashboard' %}" class="logo">
+                <img src="media/home/logo.png" alt="Elegance hair studio logo">
+            </a>
+        </div>
+        <div class="dashboard-menu">
+            <div>
+                <a href="{% url 'dashboard' %}"><i class="fa-solid fa-house"></i>Dashboard</a>
+                <a href="?employees"><i class="fa-solid fa-users"></i>Employees</a>
+                <a href="?services"><i class="fa-solid fa-scissors"></i>Services</a>
+                <a href="?appointments"><i class="fa-solid fa-calendar-check"></i>Appointments</a>
+                <a href="?appointment-history"><i class="fa-solid fa-calendar-days"></i>Appointment History</a>
+                <a href="?finance"><i class="fa-solid fa-coins"></i>Finance</a>
+                <a href="?analytics"><i class="fa-solid fa-chart-pie"></i>Analytics</a>
+                <a href="?client-reviews"><i class="fa-solid fa-magnifying-glass"></i>Client Reviews</a>
+                <a href="?discounts"><i class="fa-solid fa-percent"></i>Discounts</a>
+                <a href="?calendar-management"><i class="fa-solid fa-list-check"></i>Calendar Management</a>
+            </div>
+
+            <div>
+                <a href="{% url 'settings' %}"><i class="fa-solid fa-gear"></i>Settings</a>
+                <a href="{% url 'contact-us' %}"><i class="fa-solid fa-circle-question"></i>Help</a>
+                <a href="{% url 'logout' %}"><i class="fa-solid fa-right-from-bracket"></i>Logout</a>
+            </div>
+        </div>
+
+        <div class="dashboard-content">
+            Content
         </div>
     </div>
-
-    <div class="vertical-line"></div>
-
-    <!-- Side Menu -->
-    <div class="menu-dashboard">
-        <div class="menu-logo">
-            <img src="media/home/logo.png" alt="Elegance hair studio logo">
-        </div>
-        <div class="main-menu menu-items">
-            <a href="{% url 'dashboard' %}"><i class="fa-solid fa-house"></i>Dashboard</a>
-            <a href="?employees"><i class="fa-solid fa-users"></i>Employees</a>
-            <a href="?services"><i class="fa-solid fa-scissors"></i>Services</a>
-            <a href="?appointments"><i class="fa-solid fa-calendar-check"></i>Appointments</a>
-            <a href="?appointment-history"><i class="fa-solid fa-calendar-days"></i>Appointment History</a>
-            <a href="?finance"><i class="fa-solid fa-coins"></i>Finance</a>
-            <a href="?analytics"><i class="fa-solid fa-chart-pie"></i>Analytics</a>
-            <a href="?client-reviews"><i class="fa-solid fa-magnifying-glass"></i>Client Reviews</a>
-            <a href="?promotions-and-discounts"><i class="fa-solid fa-percent"></i>Promotions and Discounts</a>
-            <a href="?calendar-management"><i class="fa-solid fa-list-check"></i>Calendar Management</a>
-        </div>
-
-        <hr class="menu-separator">
-
-        <div class="settings-menu menu-items">
-            <a href="{% url 'settings' %}"><i class="fa-solid fa-gear"></i>Settings</a>
-            <a href="{% url 'contact-us' %}"><i class="fa-solid fa-circle-question"></i>Help</a>
-            <a href="{% url 'logout' %}"><i class="fa-solid fa-right-from-bracket"></i>Logout</a>
-        </div>
-    </div>
-    <div class="content">
-        Employess
-    </div>
-</div>
+</section>
 {% endblock %}

@@ -42,7 +42,7 @@ def forgot_password(request):
         form = PasswordResetForm(data=request.POST)
 
         if form.is_valid():
-            user = User.objects.get(email=request.POST["email"])
+            user = User.objects.get(email=form.cleaned_data.get("email"))
 
             if not OneTimePassword.objects.filter(user=user).exists():
                 otp = OneTimePassword(user=user)
@@ -72,7 +72,7 @@ def forgot_password(request):
 
                     messages.success(
                         request=request,
-                        message=f"We have sent the password to the provided email address '{request.POST['email']}'. Please check your inbox.",
+                        message=f"We have sent the password to the provided email address '{form.cleaned_data.get('email')}'. Please check your inbox.",
                     )
 
                     return redirect(f"{reverse('confirm-password')}?method={request.GET['method']}&email={user.email}")
@@ -140,38 +140,45 @@ def change_password(request):
         )
 
         if form.is_valid():
-            try:
-                user = User.objects.get(email=request.GET["email"])
-                otp = OneTimePassword.objects.get(user=user)
-
-                user.set_password(raw_password=request.POST["password"])
-                user.save()
-
-                otp.delete()
-
-                messages.success(
-                    request=request,
-                    message=f"The password for the account '{user.email}' has been successfully changed. "
-                            f"You can now log in.",
+            if request.POST["password"] != request.POST["repassword"]:
+                form.add_error(
+                    field="repassword",
+                    error="Confirm Password does not match.",
                 )
 
-                return redirect(to="index")
+            else:
+                try:
+                    user = User.objects.get(email=request.GET["email"])
+                    otp = OneTimePassword.objects.get(user=user)
 
-            except User.DoesNotExist:
-                messages.info(
-                    request=request,
-                    message=f"A user with the email address '{request.GET['email']}' does not exist."
-                )
+                    user.set_password(raw_password=request.POST["password"])
+                    user.save()
 
-                return redirect(to="register")
+                    otp.delete()
 
-            except OneTimePassword.DoesNotExist:
-                messages.info(
-                    request=request,
-                    message=f"The One Time Password for the user '{request.GET['email']}' does not exist.",
-                )
+                    messages.success(
+                        request=request,
+                        message=f"The password for the account '{user.email}' has been successfully changed. "
+                                f"You can now log in.",
+                    )
 
-                return redirect(to="forgot-password")
+                    return redirect(to="index")
+
+                except User.DoesNotExist:
+                    messages.info(
+                        request=request,
+                        message=f"A user with the email address '{request.GET['email']}' does not exist."
+                    )
+
+                    return redirect(to="register")
+
+                except OneTimePassword.DoesNotExist:
+                    messages.info(
+                        request=request,
+                        message=f"The One Time Password for the user '{request.GET['email']}' does not exist.",
+                    )
+
+                    return redirect(to="forgot-password")
 
     else:
         form = ChangePasswordForm()
@@ -186,7 +193,6 @@ def change_password(request):
     )
 
 
-# Update Password
 def handle_update_password(request):
     password = request.POST["password"]
 
@@ -198,6 +204,7 @@ def handle_update_password(request):
                 request=request,
                 message="You cannot change to the previous password; please create a new one.",
             )
+            
         else:
             user.set_password(raw_password=password)
             user.save()
@@ -251,7 +258,6 @@ def update_fields(instance, changes):
     return updated_fields
 
 
-# Update Basic Information
 def handle_profile_data(request):
     data = request.POST.copy()
 

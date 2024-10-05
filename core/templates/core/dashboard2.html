@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Side Menu -->
+    <div class="menu-dashboard">
+        <div class="main-menu menu-items">
+            <a href="{% url 'dashboard' %}" class="menu-link {% if not request.GET %}active{% endif %}"><i class="fa-solid fa-house"></i>Dashboard</a>
+            <a href="?employees" class="menu-link {% if 'employees' in request.GET %}active{% endif %}"><i class="fa-solid fa-users"></i>Employees</a>
+            <a href="?services" class="menu-link {% if 'services' in request.GET %}active{% endif %}"><i class="fa-solid fa-scissors"></i>Services</a>
+            <a href="?appointments {% if 'appointments' in request.GET %}active{% endif %}" class="menu-link"><i class="fa-solid fa-calendar-check"></i>Appointments</a>
+            <a href="?appointment-history {% if 'appointment-history' in request.GET %}active{% endif %}" class="menu-link"><i class="fa-solid fa-calendar-days"></i>Appointment History</a>
+            <a href="?finance" class="menu-link {% if 'finance' in request.GET %}active{% endif %}"><i class="fa-solid fa-coins"></i>Finance</a>
+            <a href="?analytics" class="menu-link {% if 'analytics' in request.GET %}active{% endif %}"><i class="fa-solid fa-chart-pie"></i>Analytics</a>
+            <a href="?client-reviews" class="menu-link {% if 'client-reviews' in request.GET %}active{% endif %}"><i class="fa-solid fa-magnifying-glass"></i>Client Reviews</a>
+            <a href="?discounts" class="menu-link {% if 'discounts' in request.GET %}active{% endif %}"><i class="fa-solid fa-percent"></i>Discounts</a>
+            <a href="?calendar-management" class="menu-link {% if 'calendar-mangement' in request.GET %}active{% endif %}"><i class="fa-solid fa-list-check"></i>Calendar Management</a>
+        </div>
+
+        <hr class="menu-separator">
+
+        <div class="settings-menu menu-items">
+            <a href="{% url 'settings' %}" class="menu-link"><i class="fa-solid fa-gear"></i>Settings</a>
+            <a href="{% url 'contact-us' %}" class="menu-link"><i class="fa-solid fa-circle-question"></i>Help</a>
+            <a href="{% url 'logout' %}"><i class="fa-solid fa-right-from-bracket"></i>Logout</a>
+        </div>
+    </div>
+
+    <hr class="vertical-line">
+</div>
+{% endblock %}

@@ -1,8 +1,0 @@
-<nav>
-    <ul>
-        {% if user.is_authenticated %}
-        <li><a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Dashboard</a></li>
-        <li><a href="{% url 'settings' %}" class="{% if request.resolver_match.url_name == 'settings' %}active{% endif %}">Settings</a></li>
-        {% endif %}
-    </ul>
-</nav>

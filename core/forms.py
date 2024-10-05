@@ -21,7 +21,7 @@ class LoginForm(forms.Form):
     )
 
     def clean_email(self):
-        email = self.cleaned_data.get("email")
+        email = self.cleaned_data.get("email").strip()
 
         if len(email) > 255:
             raise ValidationError(
@@ -42,7 +42,7 @@ class LoginForm(forms.Form):
         return email
 
     def clean_password(self):
-        email = self.cleaned_data.get("email")
+        email = self.cleaned_data.get("email").strip()
         password = self.cleaned_data.get("password")
 
         if User.objects.filter(email=email).exists():
@@ -84,7 +84,7 @@ class ContactUsForm(forms.Form):
     )
 
     def clean_firstname(self):
-        firstname = self.cleaned_data.get("firstname")
+        firstname = self.cleaned_data.get("firstname").strip()
 
         if len(firstname) < 2:
             raise ValidationError(
@@ -104,7 +104,7 @@ class ContactUsForm(forms.Form):
         return firstname
 
     def clean_lastname(self):
-        lastname = self.cleaned_data.get("lastname")
+        lastname = self.cleaned_data.get("lastname").strip()
 
         if len(lastname) < 2:
             raise ValidationError(
@@ -123,8 +123,24 @@ class ContactUsForm(forms.Form):
 
         return lastname
 
+    def clean_email(self):
+        email = self.cleaned_data.get("email").strip()
+
+        if len(email) > 255:
+            raise ValidationError(
+                message="The e-mail address cannot be longer than 255 characters.",
+            )
+
+        if not re.match(pattern=r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)",
+                        string=email):
+            raise ValidationError(
+                message="The e-mail address format is invalid.",
+            )
+
+        return email
+
     def clean_subject(self):
-        subject = self.cleaned_data.get("subject")
+        subject = self.cleaned_data.get("subject").strip()
 
         if len(subject) < 10:
             raise ValidationError(
@@ -139,7 +155,7 @@ class ContactUsForm(forms.Form):
         return subject
 
     def clean_message(self):
-        message = self.cleaned_data.get("message")
+        message = self.cleaned_data.get("message").strip()
 
         if len(message) < 20:
             raise ValidationError(
