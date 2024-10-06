@@ -1,0 +1,51 @@
+<aside class="menu">
+    <a href="{% url 'dashboard' %}" class="logo">
+        <img src="media/home/logo.png" alt="Elegance hair studio logo">
+    </a>
+    <ul>
+        <li>
+            <a href="{% url 'dashboard' %}" class="{% if not request.GET %}active{% endif %}"><i class="fa-solid fa-gauge-high"></i>Dashboard</a>
+        </li>
+        <li>
+            <a href="?employees"><i class="fa-solid fa-users"></i>Employees</a>
+        </li>
+        <li>
+            <a href="?services"><i class="fa-solid fa-scissors"></i>Services</a>
+        </li>
+        <li>
+            <a href="?appointments"><i class="fa-solid fa-calendar-check"></i>Appointments</a>
+        </li>
+        <li>
+            <a href="?appointment-history"><i class="fa-solid fa-calendar-days"></i>Appointment History</a>
+        </li>
+        <li>
+            <a href="?finance"><i class="fa-solid fa-coins"></i>Finance</a>
+        </li>
+        <li>
+            <a href="?analytics"><i class="fa-solid fa-chart-pie"></i>Analytics</a>
+        </li>
+        <li>
+            <a href="?client-reviews"><i class="fa-solid fa-magnifying-glass"></i>Client Reviews</a>
+        </li>
+        <li>
+            <a href="?discounts"><i class="fa-solid fa-percent"></i>Discounts</a>
+        </li>
+        <li>
+            <a href="?calendar-management"><i class="fa-solid fa-list-check"></i>Calendar Management</a>
+        </li>
+    </ul>
+
+    <hr class="divider">
+
+    <ul>
+        <li>
+            <a href="{% url 'settings' %}"><i class="fa-solid fa-gear"></i>Settings</a>
+        </li>
+        <li>
+            <a href="{% url 'contact-us' %}"><i class="fa-solid fa-circle-question"></i>Help</a>
+        </li>
+        <li>
+            <a href="{% url 'logout' %}"><i class="fa-solid fa-right-from-bracket"></i>Logout</a>
+        </li>
+    </ul>
+</aside>

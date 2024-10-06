@@ -1,0 +1,17 @@
+<div class="header">
+    <form method="get" class="header-form">
+        <input type="text" name="search" placeholder="Search here...">
+        <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+    </form>
+
+    <ul class="header-icons">
+        <li><a href="#"><i class="fa-solid fa-envelope"></i></a></li>
+        <li><a href="#"><i class="fa-sharp fa-solid fa-bell"></i></a></li>
+    </ul>
+
+    {% if request.user.is_staff %}
+    <a href="?user-information">
+        <button type="submit" class="btn btn-submit">+ Add Employee</button>
+    </a>
+    {% endif %}
+</div>

@@ -511,7 +511,7 @@ class UpdateBasicInformationForm(forms.Form):
     )
 
     def clean_firstname(self):
-        firstname = self.cleaned_data.get("firstname")
+        firstname = self.cleaned_data.get("firstname").strip()
 
         if len(firstname) < 2:
             raise ValidationError(
@@ -531,7 +531,7 @@ class UpdateBasicInformationForm(forms.Form):
         return firstname
 
     def clean_lastname(self):
-        lastname = self.cleaned_data.get("lastname")
+        lastname = self.cleaned_data.get("lastname").strip()
 
         if len(lastname) < 2:
             raise ValidationError(
@@ -551,7 +551,7 @@ class UpdateBasicInformationForm(forms.Form):
         return lastname
 
     def clean_date_of_birth(self):
-        date_of_birth = self.cleaned_data.get("date_of_birth")
+        date_of_birth = self.cleaned_data.get("date_of_birth").strip()
 
         try:
             date_object = datetime.strptime(date_of_birth, '%Y-%m-%d').date()
@@ -574,7 +574,7 @@ class UpdateBasicInformationForm(forms.Form):
         return date_of_birth
 
     def clean_biography(self):
-        biography = self.cleaned_data.get("biography")
+        biography = self.cleaned_data.get("biography").strip()
 
         if biography:
             if len(biography) < 10:
@@ -636,7 +636,7 @@ class UpdateContactInformationForm(forms.Form):
         super(UpdateContactInformationForm, self).__init__(*args, **kwargs)
 
     def clean_phone_number(self):
-        phone_number = self.cleaned_data.get("phone_number")
+        phone_number = self.cleaned_data.get("phone_number").strip()
 
         if not re.compile(r"^\d{8,15}$").match(phone_number):
             raise ValidationError(
@@ -652,7 +652,7 @@ class UpdateContactInformationForm(forms.Form):
         return phone_number
 
     def clean_country(self):
-        country = self.cleaned_data.get("country")
+        country = self.cleaned_data.get("country").strip()
 
         if len(country) < 4:
             raise ValidationError(
@@ -665,7 +665,7 @@ class UpdateContactInformationForm(forms.Form):
             )
 
     def clean_province(self):
-        province = self.cleaned_data.get("province")
+        province = self.cleaned_data.get("province").strip()
 
         if len(province) < 3:
             raise ValidationError(
@@ -680,7 +680,7 @@ class UpdateContactInformationForm(forms.Form):
         return province
 
     def clean_city(self):
-        city = self.cleaned_data.get("city")
+        city = self.cleaned_data.get("city").strip()
 
         if len(city) > 85:
             raise ValidationError(
@@ -690,7 +690,7 @@ class UpdateContactInformationForm(forms.Form):
         return city
 
     def clean_postal_code(self):
-        postal_code = self.cleaned_data.get("postal_code")
+        postal_code = self.cleaned_data.get("postal_code").strip()
 
         if len(postal_code) < 3:
             raise ValidationError(
@@ -705,7 +705,7 @@ class UpdateContactInformationForm(forms.Form):
         return postal_code
 
     def clean_street(self):
-        street = self.cleaned_data.get("street")
+        street = self.cleaned_data.get("street").strip()
 
         if len(street) > 58:
             raise ValidationError(
@@ -715,7 +715,7 @@ class UpdateContactInformationForm(forms.Form):
         return street
 
     def clean_house_number(self):
-        house_number = self.cleaned_data.get("house_number")
+        house_number = self.cleaned_data.get("house_number").strip()
 
         if len(house_number) > 10:
             raise ValidationError(
@@ -725,7 +725,7 @@ class UpdateContactInformationForm(forms.Form):
         return house_number
 
     def clean_apartment_number(self):
-        apartment_number = self.cleaned_data.get("apartment_number")
+        apartment_number = self.cleaned_data.get("apartment_number").strip()
 
         if apartment_number:
             if len(apartment_number) > 10:

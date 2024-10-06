@@ -105,6 +105,7 @@ def dashboard(request):
         template_name="core/dashboard.html",
         context={
             "title": "Dashboard",
+            "users": User.objects.all().exclude(email="admin@gmail.com").exclude(email="hubert.rykala@gmail.com"),
         },
     )
 

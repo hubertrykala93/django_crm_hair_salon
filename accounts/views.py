@@ -204,7 +204,7 @@ def handle_update_password(request):
                 request=request,
                 message="You cannot change to the previous password; please create a new one.",
             )
-            
+
         else:
             user.set_password(raw_password=password)
             user.save()
@@ -509,7 +509,14 @@ def settings(request):
             )
 
             if update_password_form.is_valid():
-                handle_update_password(request=request)
+                if request.POST["password"] != request.POST["repassword"]:
+                    update_password_form.add_error(
+                        field="repassword",
+                        error="Confirm Password does not match.",
+                    )
+
+                else:
+                    handle_update_password(request=request)
 
         if "basic-information" in request.POST:
             update_basic_information_form = UpdateBasicInformationForm(data=request.POST)
