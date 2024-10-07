@@ -105,6 +105,97 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--white);
 }
 
+/* Main */
+.app {
+    display: grid;
+    grid-template-columns: 350px auto;
+}
+
+/* Dashboard */
+/* Aside */
+aside {
+    padding: var(--gap-400);
+    border-right: 1px solid var(--border-color);
+    background-color: var(--white);
+}
+
+.logo {
+    display: block;
+    margin-bottom: 50px;
+}
+
+.logo img {
+    max-width: 70%;
+    margin: auto;
+    display: block;
+}
+
+aside ul li + li {
+    margin-top: 8px;
+}
+
+aside ul li a {
+    display: inline-flex;
+    align-items: center;
+    width: 100%;
+    padding: 10px 15px;
+    border-radius: var(--radius);
+    transition: background-color .3s, color .3s;
+    font-size: 14px;
+}
+
+aside ul li a:hover,
+aside ul li a:focus-visible,
+aside ul li a.active {
+    color: var(--white);
+    background-color: var(--primary-color);
+}
+
+aside ul li a i {
+    margin-right: 10px;
+}
+
+.divider {
+    margin: 30px 0;
+    border: 1px solid var(--border-color);
+}
+
+/* Dashboard */
+/* Header */
+.header {
+    display: flex;
+    align-items: center;
+    padding: var(--gap-400);
+    background-color: var(--white);
+}
+
+.header-form {
+    position: relative;
+    width: 300px;
+}
+
+.header-form input {
+    width: 100%;
+    padding-left: 30px !important;
+}
+
+.header-form button {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
+    color: var(--text-color);
+}
+
+.header-icons {
+    display: flex;
+    margin: 0 35px 0 auto;
+}
+
+.header-icons li + li {
+    margin-left: 20px;
+}
+
 /* Forms */
 form .form-row {
     display: flex;
@@ -122,6 +213,9 @@ form .form-row + .form-row {
     margin-top: 15px;
 }
 
+form input::placeholder {
+    color: #9c9c9c;
+}
 form input[type="text"],
 form input[type="password"] {
     width: 100%;
@@ -254,92 +348,8 @@ form .form-error {
 }
 
 /* Dashboard */
-.app {
-    display: grid;
-    grid-template-columns: 350px auto;
-}
-
-aside {
-    padding: var(--gap-400);
-    border-right: 1px solid var(--border-color);
-    background-color: var(--white);
-}
-
-.logo {
-    display: block;
-    margin-bottom: 50px;
-}
-
-.logo img {
-    max-width: 70%;
-    margin: auto;
-    display: block;
-}
-
-aside ul li + li {
-    margin-top: 8px;
-}
-
-aside ul li a {
-    display: inline-flex;
-    align-items: center;
-    width: 100%;
-    padding: 10px 15px;
-    border-radius: var(--radius);
-    transition: background-color .3s, color .3s;
-    font-size: 14px;
-}
-
-aside ul li a:hover,
-aside ul li a:focus-visible,
-aside ul li a.active {
-    color: var(--white);
-    background-color: var(--primary-color);
-}
-
-aside ul li a i {
-    margin-right: 10px;
-}
-
-.divider {
-    margin: 30px 0;
-    border: 1px solid var(--border-color);
-}
-
-.header {
-    display: flex;
-    align-items: center;
-    padding: var(--gap-400);
-    background-color: var(--white);
-}
-
-.header-form {
-    position: relative;
-    width: 300px;
-}
-
-.header-form input {
-    width: 100%;
-    padding-left: 30px !important;
-}
-
-.header-form button {
-    position: absolute;
-    top: 50%;
-    left: 10px;
-    transform: translateY(-50%);
-    color: var(--text-color);
-}
-
-.header-icons {
-    display: flex;
-    margin: 0 35px 0 auto;
-}
-
-.header-icons li + li {
-    margin-left: 20px;
-}
-
+/* Content */
+/* Employees */
 .content {
     padding: var(--gap-400);
 }
@@ -358,7 +368,8 @@ table {
 }
 
 table thead {
-    background-color: var(--border-color);
+    background-color: var(--primary-color);
+    color: var(--white);
 }
 
 table td {
@@ -380,4 +391,38 @@ table td, table th {
 
 .table-buttons a {
     margin: 0 5px;
+}
+
+/* Dashboard */
+/* Content */
+/* Add Employee */
+.form-button {
+    margin-top: 30px;
+}
+
+.tabs ul {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: var(--gap-400);
+}
+
+.tabs ul li a.hover,
+.tabs ul li a.focus-visible,
+.tabs ul li a.active {
+    color: var(--primary-color);
+}
+
+.circle {
+    width: 60px;
+    height: 60px;
+    background-color: white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid var(--text-color);
+}
+
+.circle i {
+    font-size: 25px;
 }

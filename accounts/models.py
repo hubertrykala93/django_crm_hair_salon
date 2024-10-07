@@ -274,13 +274,14 @@ def delete_instances(sender, instance, **kwargs):
     if hasattr(instance, "profile"):
         if hasattr(instance.profile, "basic_information"):
             if hasattr(instance.profile.basic_information, "profile_image"):
-                image_path = instance.profile.basic_information.profile_image.image.path
+                if instance.profile.basic_information.profile_image is not None:
+                    image_path = instance.profile.basic_information.profile_image.image.path
 
-                if "default_profile_image" not in image_path:
-                    if os.path.isfile(path=image_path):
-                        os.remove(path=image_path)
+                    if "default_profile_image" not in image_path:
+                        if os.path.isfile(path=image_path):
+                            os.remove(path=image_path)
 
-                instance.profile.basic_information.profile_image.delete()
+                    instance.profile.basic_information.profile_image.delete()
 
             instance.profile.basic_information.delete()
 

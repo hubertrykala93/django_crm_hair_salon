@@ -9,37 +9,11 @@
         {% include 'header.html' %}
         <div class="content">
             {% if 'employees' in request.GET %}
-            <h1 class="content-header">
-                Employees
-            </h1>
-
-            <table>
-                <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Country</th>
-                    <th>Province</th>
-                    <th>City</th>
-                    <th>Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for user in users %}
-                <tr>
-                    <td>{{ user.profile.basic_information.firstname }} {{ user.profile.basic_information.lastname }}</td>
-                    <td>{{ user.profile.contact_information.country }}</td>
-                    <td>{{ user.profile.contact_information.province }}</td>
-                    <td>{{ user.profile.contact_information.city }}</td>
-                    <td class="table-buttons">
-                        <a href="?employee-edit={{ user.id }}"><i class="fa-solid fa-user-pen"></i></a>
-                        <a href="?employee-delete={{ user.id }}"><i class="fa-regular fa-trash-can"></i></a>
-                    </td>
-                </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+            {% include 'core/employees.html' %}
+            {% elif 'register-employee' in request.GET %}
+            {% include 'core/register-employee.html' %}
+            {% endif %}
         </div>
-        {% endif %}
     </div>
 </div>
 {% endblock %}
