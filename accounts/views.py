@@ -152,6 +152,7 @@ def change_password(request):
                     otp = OneTimePassword.objects.get(user=user)
 
                     user.set_password(raw_password=request.POST["password"])
+                    user.is_active = True
                     user.save()
 
                     otp.delete()

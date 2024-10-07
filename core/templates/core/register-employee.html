@@ -1,11 +1,15 @@
 <div class="tabs">
     <ul>
         <li class="circle">
-            <a href="?register-employee" {% if 'register-employee' in request.GET and not request.GET.tab %}class="active"{% endif %}><i class="icon fa-solid fa-user"></i></a>
+            {% if not request.GET.tab %}
+            <a href="?register-employee" {% if not request.GET.tab %}class="active"{% endif %}><i class="icon fa-solid fa-user"></i></a>
+            {% else %}
+            <span><i class="icon fa-solid fa-user"></i></span>
+            {% endif %}
         </li>
 
         <li class="circle">
-            {% if request.session.registered_user %}
+            {% if request.GET.tab == 'basic-information' %}
             <a href="?register-employee={{ request.session.registered_user }}&tab=basic-information" {% if request.GET.tab == 'basic-information' %}class="active"{% endif %}><i class="icon fa-solid fa-circle-info"></i></a>
             {% else %}
             <span><i class="icon fa-solid fa-circle-info"></i></span>
@@ -13,7 +17,7 @@
         </li>
 
         <li class="circle">
-            {% if request.session.basic_information %}
+            {% if request.GET.tab == 'contact-information' %}
             <a href="?register-employee={{ request.session.registered_user }}&basic-information={{ request.session.basic_information }}&tab=contact-information" {% if request.GET.tab == 'contact-information' %}class="active"{% endif %}><i class="icon fa-solid fa-address-card"></i></a>
             {% else %}
             <span><i class="icon fa-solid fa-address-card"></i></span>
@@ -21,7 +25,7 @@
         </li>
 
         <li class="circle">
-            {% if request.session.contact_information %}
+            {% if request.GET.tab == 'contract-information' %}
             <a href="?register-employee={{ request.session.registered_user }}&basic-information={{ request.session.basic_information }}&contact-information={{ request.session.contact_information }}&tab=contract-information" {% if request.GET.tab == 'contract-information' %}class="active"{% endif %}><i class="icon fa-solid fa-file-signature"></i></a>
             {% else %}
             <i class="icon fa-solid fa-file-signature"></i>
@@ -29,7 +33,15 @@
         </li>
 
         <li class="circle">
-            {% if register_form.is_valid %}
+            {% if request.GET.tab == 'benefits-information' %}
+            <a href="?register-employee&tab=benefits" {% if request.GET.tab == 'benefits-information' %}class="active"{% endif %}><i class="fa-solid fa-notes-medical"></i></a>
+            {% else %}
+            <span><i class="fa-solid fa-notes-medical"></i></span>
+            {% endif %}
+        </li>
+
+        <li class="circle">
+            {% if request.GET.tab == 'payment-information' %}
             <a href="?register-employee&tab=payment-information" {% if request.GET.tab == 'payment-information' %}class="active"{% endif %}><i class="icon fa-solid fa-credit-card"></i></a>
             {% else %}
             <i class="icon fa-solid fa-credit-card"></i>
@@ -50,24 +62,6 @@
             <input type="text" id="email" name="email" placeholder="Email Address" {% if register_form.email.value %}value="{{ register_form.email.value }}"{% elif registered_user.email %}value="{{ registered_user.email }}"{% endif %}>
             {% if register_form.email.errors %}
             {% for error in register_form.email.errors %}
-            <span class="form-error">{{ error }}</span>
-            {% endfor %}
-            {% endif %}
-        </div>
-        <div class="form-row">
-            <label for="password">Password *</label>
-            <input type="password" id="password" name="password" placeholder="Password" {% if register_form.password.value %}value="{{ register_form.password.value }}" {% endif %}>
-            {% if register_form.password.errors %}
-            {% for error in register_form.password.errors %}
-            <span class="form-error">{{ error }}</span>
-            {% endfor %}
-            {% endif %}
-        </div>
-        <div class="form-row">
-            <label for="repassword">Confirm Password *</label>
-            <input type="password" id="repassword" name="repassword" placeholder="Confirm Password">
-            {% if register_form.repassword.errors %}
-            {% for error in register_form.repassword.errors %}
             <span class="form-error">{{ error }}</span>
             {% endfor %}
             {% endif %}

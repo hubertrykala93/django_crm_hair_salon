@@ -9,6 +9,8 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from .forms import LoginForm, ContactUsForm
 from accounts.forms import RegisterForm, BasicInformationForm, ContactInformationForm
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.html import strip_tags
 
 
 @user_passes_test(test_func=lambda user: not user.is_authenticated, login_url="dashboard")
@@ -29,7 +31,7 @@ def index(request):
             if not user.is_active:
                 messages.info(
                     request=request,
-                    message="Your account is inactive, the administrator needs to activate your account.",
+                    message=f"Your account is inactive. If you were registered by an administrator, check your inbox and follow the steps provided in the email. If not, please <strong><a href='{request.build_absolute_uri(reverse(viewname='contact-us'))}'>contact</a></strong> the administrator directly.",
                 )
 
                 return redirect(to="index")
@@ -106,7 +108,7 @@ def register_employee(request, form):
     )
     user.is_active = False
 
-    user.set_password(raw_password=request.POST["password"])
+    user.set_password(raw_password=user.generate_password())
     user.save()
 
     request.session["registered_user"] = user.id
@@ -170,14 +172,45 @@ def dashboard(request):
     if request.method == "POST":
         if 'register-employee' in request.POST:
             register_form = RegisterForm(data=request.POST)
+
             if register_form.is_valid():
                 register_employee(
                     request=request,
                     form=register_form
                 )
 
-                return redirect(to=reverse(
-                    viewname="dashboard") + f"?register-employee={request.session['registered_user'] if request.session.get('registered_user') else ''}&tab=basic-information")
+                try:
+                    html_message = render_to_string(
+                        template_name="core/account-registration-email.html",
+                        context={
+                            "email": register_form.cleaned_data.get("email"),
+                            "domain": get_current_site(request=request),
+                        }
+                    )
+
+                    plain_message = strip_tags(html_message)
+
+                    message = EmailMultiAlternatives(
+                        subject="Account Registration Request",
+                        body=plain_message,
+                        from_email=os.environ.get("EMAIL_FROM"),
+                        to=[register_form.cleaned_data.get("email")],
+                    )
+
+                    message.attach_alternative(
+                        content=html_message,
+                        mimetype="text/html",
+                    )
+                    message.send()
+
+                    return redirect(to=reverse(
+                        viewname="dashboard") + f"?register-employee={request.session['registered_user'] if request.session.get('registered_user') else ''}&tab=basic-information")
+
+                except Exception as e:
+                    messages.error(
+                        request=request,
+                        message="Failed to send the registration email, please try again.",
+                    )
 
         if "basic-information" in request.POST:
             basic_information_form = BasicInformationForm(
@@ -206,7 +239,7 @@ def dashboard(request):
                 )
 
                 return redirect(to=reverse(
-                    viewname="dashboard") + f"?register-employee={request.session['registered_user'] if request.session.get('registered_user') else ''}&basic-information={request.session['basic_information'] if request.session.get('basic_information') else ''}&contact-information={request.session['contact_information'] if request.session.get('contact-information') else ''}&tab=contract-information")
+                    viewname="dashboard") + f"?register-employee={request.session['registered_user'] if request.session.get('registered_user') else ''}&basic-information={request.session['basic_information'] if request.session.get('basic_information') else ''}&contact-information={request.session['contact_information'] if request.session.get('contact_information') else ''}&tab=contract-information")
 
     return render(
         request=request,
@@ -222,7 +255,6 @@ def dashboard(request):
     )
 
 
-@user_passes_test(test_func=lambda user: not user.is_authenticated, login_url="dashboard")
 def contact_us(request):
     form = ContactUsForm(data=request.POST or None)
 

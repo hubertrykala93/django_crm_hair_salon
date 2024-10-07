@@ -165,21 +165,10 @@ class RegisterForm(forms.ModelForm):
             "required": "Email is required.",
         }
     )
-    password = forms.CharField(
-        error_messages={
-            "required": "Password is required.",
-        },
-        widget=forms.PasswordInput,
-
-    )
-    repassword = forms.CharField(
-        widget=forms.PasswordInput,
-        required=False,
-    )
 
     class Meta:
         model = User
-        fields = ["email", "password", "repassword"]
+        fields = ["email"]
 
     def clean_email(self):
         email = self.cleaned_data.get("email").strip()

@@ -9,6 +9,8 @@ from django.db.models.signals import pre_delete
 import random as rnd
 from contracts.models import Contract, Benefit, EmploymentStatus
 from payments.models import BankTransfer, PrepaidTransfer, PayPalTransfer, CryptoTransfer, CryptoCurrency
+import secrets
+import string
 
 
 class CustomUserManager(UserManager):
@@ -66,6 +68,12 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return str(self.pk)
+
+    def generate_password(self):
+        alphabet = string.ascii_letters + string.digits + string.punctuation
+        password = ''.join(secrets.choice(seq=alphabet) for _ in range(12))
+
+        return password
 
     def save(self, *args, **kwargs):
         super(User, self).save(*args, **kwargs)

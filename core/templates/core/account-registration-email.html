@@ -1,0 +1,18 @@
+<h3>Dear {{ email }},</h3>
+
+<p>Your account on the Elegance Hair Studio platform has been created.</p>
+
+<p>Please follow the steps below to activate your account:</p>
+
+<ol>
+  <li>Click on the link <a href="{% if request.is_secure %}https{% else %}http://{% endif %}{{ domain }}{% url 'forgot-password' %}?method=email" target="_blank">here</a>.</li>
+  <li>Change your password.</li>
+  <li>Once your password is updated, your account will be activated, and you can log in.</li>
+</ol>
+
+<p>
+  <strong>
+    Best regards, <br>
+    The Elegance Hair Studio Team
+  </strong>
+</p>
