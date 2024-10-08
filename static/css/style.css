@@ -209,6 +209,14 @@ form .form-row label {
     font-size: 13px;
 }
 
+form select {
+    width: 100%;
+    height: 35px;
+    padding: 0 15px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border-color);
+}
+
 form .form-row + .form-row {
     margin-top: 15px;
 }
@@ -225,13 +233,9 @@ form input[type="password"] {
     border: 1px solid var(--border-color);
 }
 
-form .form-checkbox {
-    display: inline-flex;
-    align-items: center;
-}
-
 form .form-checkbox input {
     margin-right: 5px;
+    transform: translateY(1.5px);
 }
 
 form .form-submit-btn {
@@ -244,6 +248,11 @@ form .form-error {
     font-size: 12px;
     margin-top: 5px;
     color: var(--error-color);
+}
+
+.form-flex {
+    display: flex;
+    justify-content: space-around;
 }
 
 /* Messages */

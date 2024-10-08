@@ -862,11 +862,10 @@ class ContactInformationForm(forms.ModelForm):
                 message="Invalid phone number format. Please enter a valid number with the country code (e.g., 11234567890 for the USA).",
             )
 
-        if self.instance.phone_number != phone_number:
-            if ProfileContactInformation.objects.filter(phone_number=phone_number).exists():
-                raise ValidationError(
-                    message="This phone number is already in use; please enter a different one.",
-                )
+        if ProfileContactInformation.objects.filter(phone_number=phone_number).exists():
+            raise ValidationError(
+                message="This phone number is already in use; please enter a different one.",
+            )
 
         return phone_number
 
@@ -947,6 +946,7 @@ class ContactInformationForm(forms.ModelForm):
 
     def clean_apartment_number(self):
         apartment_number = self.cleaned_data.get("apartment_number").strip()
+        print(f"Apartment Number -> {apartment_number}")
 
         if apartment_number:
             if len(apartment_number) > 10:

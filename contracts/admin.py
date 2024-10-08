@@ -1,10 +1,9 @@
 from django.contrib import admin
-from .models import Contract, Benefit, SalaryPeriod, SalaryBenefit, SportBenefit, HealthBenefit, InsuranceBenefit, \
-    DevelopmentBenefit, JobType, JobPosition, EmploymentStatus, ContractType, Currency, PaymentFrequency
-from .forms import AdminContractForm, AdminBenefitForm, AdminSalaryPeriodForm, AdminSalaryBenefitForm, \
-    AdminSportBenefitForm, AdminHealthBenefitForm, AdminInsuranceBenefitForm, AdminDevelopmentBenefitForm, \
-    AdminJobTypeForm, AdminContractTypeForm, AdminEmploymentStatusForm, AdminJobPositionForm, AdminCurrencyForm, \
-    AdminPaymentFrequencyForm
+from .models import Contract, Benefit, SportBenefit, HealthBenefit, InsuranceBenefit, DevelopmentBenefit, JobType, \
+    JobPosition, EmploymentStatus, ContractType, Currency, PaymentFrequency
+from .forms import AdminContractForm, AdminBenefitForm, AdminSportBenefitForm, AdminHealthBenefitForm, \
+    AdminInsuranceBenefitForm, AdminDevelopmentBenefitForm, AdminJobTypeForm, AdminContractTypeForm, \
+    AdminEmploymentStatusForm, AdminJobPositionForm, AdminCurrencyForm, AdminPaymentFrequencyForm
 
 
 @admin.register(Currency)
@@ -12,6 +11,7 @@ class AdminCurrency(admin.ModelAdmin):
     list_display = [
         "id",
         "name",
+        "slug",
     ]
     form = AdminCurrencyForm
     fieldsets = (
@@ -30,6 +30,7 @@ class AdminPaymentFrequency(admin.ModelAdmin):
     list_display = [
         "id",
         "name",
+        "slug",
     ]
     form = AdminPaymentFrequencyForm
     fieldsets = (
@@ -48,6 +49,7 @@ class AdminJobType(admin.ModelAdmin):
     list_display = [
         "id",
         "name",
+        "slug",
     ]
     form = AdminJobTypeForm
     fieldsets = (
@@ -61,63 +63,12 @@ class AdminJobType(admin.ModelAdmin):
     )
 
 
-@admin.register(SalaryPeriod)
-class AdminSalaryPeriod(admin.ModelAdmin):
-    list_display = [
-        "id",
-        "name",
-    ]
-    form = AdminSalaryPeriodForm
-    fieldsets = (
-        (
-            "Period Name", {
-                "fields": [
-                    "name",
-                ],
-            },
-        ),
-    )
-
-
-@admin.register(SalaryBenefit)
-class AdminSalaryBenefit(admin.ModelAdmin):
-    list_display = [
-        "id",
-        "date_of_award",
-        "amount",
-        "period",
-    ]
-    form = AdminSalaryBenefitForm
-    fieldsets = (
-        (
-            "Dates", {
-                "fields": [
-                    "date_of_award",
-                ],
-            },
-        ),
-        (
-            "Amount", {
-                "fields": [
-                    "amount",
-                ],
-            },
-        ),
-        (
-            "Period", {
-                "fields": [
-                    "period",
-                ],
-            },
-        ),
-    )
-
-
 @admin.register(SportBenefit)
 class AdminSportBenefit(admin.ModelAdmin):
     list_display = [
         "id",
         "name",
+        "slug",
     ]
     form = AdminSportBenefitForm
     fieldsets = (
@@ -136,6 +87,7 @@ class AdminHealthBenefit(admin.ModelAdmin):
     list_display = [
         "id",
         "name",
+        "slug",
     ]
     form = AdminHealthBenefitForm
     fieldsets = (
@@ -154,6 +106,7 @@ class AdminInsuranceBenefit(admin.ModelAdmin):
     list_display = [
         "id",
         "name",
+        "slug",
     ]
     form = AdminInsuranceBenefitForm
     fieldsets = (
@@ -172,6 +125,7 @@ class AdminDevelopmentBenefit(admin.ModelAdmin):
     list_display = [
         "id",
         "name",
+        "slug",
     ]
     form = AdminDevelopmentBenefitForm
     fieldsets = (
@@ -189,7 +143,6 @@ class AdminDevelopmentBenefit(admin.ModelAdmin):
 class AdminBenefit(admin.ModelAdmin):
     list_display = [
         "id",
-        "get_salary_benefits",
         "get_sport_benefits",
         "get_health_benefits",
         "get_insurance_benefits",
@@ -197,13 +150,6 @@ class AdminBenefit(admin.ModelAdmin):
     ]
     form = AdminBenefitForm
     fieldsets = (
-        (
-            "Salary Benefits", {
-                "fields": [
-                    "salary_benefits",
-                ],
-            },
-        ),
         (
             "Sport Benefits", {
                 "fields": [
@@ -233,12 +179,6 @@ class AdminBenefit(admin.ModelAdmin):
             },
         ),
     )
-
-    def get_salary_benefits(self, obj):
-        if obj.salary_benefits:
-            return ", ".join([str(b.amount) for b in obj.salary_benefits.all()])
-
-    get_salary_benefits.short_description = "Salary Benefits"
 
     def get_sport_benefits(self, obj):
         if obj.sport_benefits:
@@ -270,6 +210,7 @@ class AdminContractType(admin.ModelAdmin):
     list_display = [
         "id",
         "name",
+        "slug",
     ]
     form = AdminContractTypeForm
     fieldsets = (
@@ -285,7 +226,7 @@ class AdminContractType(admin.ModelAdmin):
 
 @admin.register(JobPosition)
 class AdminJobPosition(admin.ModelAdmin):
-    list_display = ["id", "name"]
+    list_display = ["id", "name", "slug"]
     form = AdminJobPositionForm
     fieldsets = (
         (
@@ -300,7 +241,7 @@ class AdminJobPosition(admin.ModelAdmin):
 
 @admin.register(EmploymentStatus)
 class AdminEmploymentStatus(admin.ModelAdmin):
-    list_display = ["id", "name"]
+    list_display = ["id", "name", "slug"]
     form = AdminEmploymentStatusForm
     fieldsets = (
         (

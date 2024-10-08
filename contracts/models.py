@@ -1,10 +1,12 @@
 from django.db import models
 from payments.models import PaymentMethod
 from datetime import timedelta
+from django.utils.text import slugify
 
 
 class Currency(models.Model):
     name = models.CharField(max_length=50, null=True, blank=True, unique=True)
+    slug = models.SlugField(max_length=50, unique=True, null=True)
 
     class Meta:
         verbose_name = "Currency"
@@ -13,9 +15,16 @@ class Currency(models.Model):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+
+        super(Currency, self).save(*args, **kwargs)
+
 
 class PaymentFrequency(models.Model):
     name = models.CharField(max_length=100, unique=True)
+    slug = models.SlugField(max_length=100, unique=True, null=True)
 
     class Meta:
         verbose_name = "Payment Frequency"
@@ -24,9 +33,16 @@ class PaymentFrequency(models.Model):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+
+        super(PaymentFrequency, self).save(*args, **kwargs)
+
 
 class JobType(models.Model):
     name = models.CharField(max_length=100, null=True, blank=True, unique=True)
+    slug = models.SlugField(max_length=100, unique=True, null=True)
 
     class Meta:
         verbose_name = "Job Type"
@@ -35,33 +51,16 @@ class JobType(models.Model):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
 
-class SalaryPeriod(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-
-    class Meta:
-        verbose_name = "Salary Period"
-        verbose_name_plural = "Salary Periods"
-
-    def __str__(self):
-        return self.name
-
-
-class SalaryBenefit(models.Model):
-    date_of_award = models.DateField(null=True, blank=True)
-    amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    period = models.ForeignKey(to=SalaryPeriod, on_delete=models.SET_NULL, null=True, blank=True)
-
-    class Meta:
-        verbose_name = "Salary Benefit"
-        verbose_name_plural = "Salary Benefits"
-
-    def __str__(self):
-        return str(self.pk)
+        super(JobType, self).save(*args, **kwargs)
 
 
 class SportBenefit(models.Model):
     name = models.CharField(max_length=100, null=True, unique=True)
+    slug = models.SlugField(max_length=100, unique=True, null=True)
 
     class Meta:
         verbose_name = "Sport Benefit"
@@ -70,9 +69,16 @@ class SportBenefit(models.Model):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+
+        super(SportBenefit, self).save(*args, **kwargs)
+
 
 class HealthBenefit(models.Model):
     name = models.CharField(max_length=100, null=True, unique=True)
+    slug = models.SlugField(max_length=100, unique=True, null=True)
 
     class Meta:
         verbose_name = "Health Benefit"
@@ -81,9 +87,16 @@ class HealthBenefit(models.Model):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+
+        super(HealthBenefit, self).save(*args, **kwargs)
+
 
 class InsuranceBenefit(models.Model):
     name = models.CharField(max_length=100, null=True, unique=True)
+    slug = models.SlugField(max_length=100, unique=True, null=True)
 
     class Meta:
         verbose_name = "Insurance Benefit"
@@ -92,9 +105,16 @@ class InsuranceBenefit(models.Model):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+
+        super(InsuranceBenefit, self).save(*args, **kwargs)
+
 
 class DevelopmentBenefit(models.Model):
     name = models.CharField(max_length=100, null=True, unique=True)
+    slug = models.SlugField(max_length=100, unique=True, null=True)
 
     class Meta:
         verbose_name = "Development Benefit"
@@ -103,9 +123,14 @@ class DevelopmentBenefit(models.Model):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+
+        super(DevelopmentBenefit, self).save(*args, **kwargs)
+
 
 class Benefit(models.Model):
-    salary_benefits = models.ManyToManyField(to=SalaryBenefit)
     sport_benefits = models.ManyToManyField(to=SportBenefit)
     health_benefits = models.ManyToManyField(to=HealthBenefit)
     insurance_benefits = models.ManyToManyField(to=InsuranceBenefit)
@@ -121,6 +146,7 @@ class Benefit(models.Model):
 
 class ContractType(models.Model):
     name = models.CharField(max_length=100, unique=True)
+    slug = models.SlugField(max_length=100, unique=True, null=True)
 
     class Meta:
         verbose_name = "Contract Type"
@@ -129,9 +155,16 @@ class ContractType(models.Model):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+
+        super(ContractType, self).save(*args, **kwargs)
+
 
 class JobPosition(models.Model):
     name = models.CharField(max_length=200, unique=True)
+    slug = models.SlugField(max_length=200, unique=True, null=True)
 
     class Meta:
         verbose_name = "Job Position"
@@ -140,9 +173,16 @@ class JobPosition(models.Model):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+
+        super(JobPosition, self).save(*args, **kwargs)
+
 
 class EmploymentStatus(models.Model):
     name = models.CharField(max_length=100, unique=True)
+    slug = models.SlugField(max_length=100, unique=True, null=True)
 
     class Meta:
         verbose_name = "Employment Status"
@@ -150,6 +190,12 @@ class EmploymentStatus(models.Model):
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+
+        super(EmploymentStatus, self).save(*args, **kwargs)
 
 
 class Contract(models.Model):

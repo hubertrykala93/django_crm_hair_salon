@@ -4,11 +4,14 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth import authenticate, login
 from accounts.models import User
+from contracts.models import ContractType, JobPosition, JobType, PaymentFrequency, EmploymentStatus, Currency, \
+    SportBenefit, HealthBenefit, InsuranceBenefit, DevelopmentBenefit
 from django.contrib import messages
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from .forms import LoginForm, ContactUsForm
 from accounts.forms import RegisterForm, BasicInformationForm, ContactInformationForm
+from contracts.forms import ContractForm, BenefitsForm
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.html import strip_tags
 
@@ -100,58 +103,58 @@ def index(request):
     )
 
 
-@login_required(login_url="index")
-@user_passes_test(test_func=lambda user: user.is_staff, login_url="dashboard")
-def register_employee(request, form):
-    user = User(
-        email=form.cleaned_data.get("email"),
-    )
-    user.is_active = False
-
-    user.set_password(raw_password=user.generate_password())
-    user.save()
-
-    request.session["registered_user"] = user.id
-    request.session.modified = True
-
-
-@login_required(login_url="index")
-@user_passes_test(test_func=lambda user: user.is_staff, login_url="dashboard")
-def update_basic_information(request, form):
-    user = User.objects.get(pk=request.session["registered_user"])
-
-    if user.profile.basic_information:
-        user.profile.basic_information.firstname = form.cleaned_data.get("firstname")
-        user.profile.basic_information.lastname = form.cleaned_data.get("lastname")
-        user.profile.basic_information.date_of_birth = form.cleaned_data.get("date_of_birth")
-
-    user.profile.basic_information.save()
-    user.profile.save()
-
-    request.session["basic_information"] = user.profile.basic_information.id
-    request.session.modified = True
+# @login_required(login_url="index")
+# @user_passes_test(test_func=lambda user: user.is_staff, login_url="dashboard")
+# def register_employee(request, form):
+#     user = User(
+#         email=form.cleaned_data.get("email"),
+#     )
+#     user.is_active = False
+#
+#     user.set_password(raw_password=user.generate_password())
+#     user.save()
+#
+#     request.session["registered_user"] = user.id
+#     request.session.modified = True
 
 
-@login_required(login_url="index")
-@user_passes_test(test_func=lambda user: user.is_staff, login_url="dashboard")
-def update_contact_information(request, form):
-    user = User.objects.get(pk=request.session["registered_user"])
+# @login_required(login_url="index")
+# @user_passes_test(test_func=lambda user: user.is_staff, login_url="dashboard")
+# def update_basic_information(request, form):
+#     user = User.objects.get(pk=request.session["registered_user"])
+#
+#     if user.profile.basic_information:
+#         user.profile.basic_information.firstname = form.cleaned_data.get("firstname")
+#         user.profile.basic_information.lastname = form.cleaned_data.get("lastname")
+#         user.profile.basic_information.date_of_birth = form.cleaned_data.get("date_of_birth")
+#
+#     user.profile.basic_information.save()
+#     user.profile.save()
+#
+#     request.session["basic_information"] = user.profile.basic_information.id
+#     request.session.modified = True
 
-    if user.profile.contact_information:
-        user.profile.contact_information.phone_number = form.cleaned_data.get("phone_number")
-        user.profile.contact_information.country = form.cleaned_data.get("country")
-        user.profile.contact_information.province = form.cleaned_data.get("province")
-        user.profile.contact_information.city = form.cleaned_data.get("city")
-        user.profile.contact_information.postal_code = form.cleaned_data.get("postal_code")
-        user.profile.contact_information.street = form.cleaned_data.get("street")
-        user.profile.contact_information.house_number = form.cleaned_data.get("house_number")
-        user.profile.contact_information.apartment_number = form.cleaned_data.get("apartment_number")
 
-    user.profile.contact_information.save()
-    user.profile.save()
-
-    request.session["contact_information"] = user.profile.contact_information.id
-    request.session.modified = True
+# @login_required(login_url="index")
+# @user_passes_test(test_func=lambda user: user.is_staff, login_url="dashboard")
+# def update_contact_information(request, form):
+#     user = User.objects.get(pk=request.session["registered_user"])
+#
+#     if user.profile.contact_information:
+#         user.profile.contact_information.phone_number = form.cleaned_data.get("phone_number")
+#         user.profile.contact_information.country = form.cleaned_data.get("country")
+#         user.profile.contact_information.province = form.cleaned_data.get("province")
+#         user.profile.contact_information.city = form.cleaned_data.get("city")
+#         user.profile.contact_information.postal_code = form.cleaned_data.get("postal_code")
+#         user.profile.contact_information.street = form.cleaned_data.get("street")
+#         user.profile.contact_information.house_number = form.cleaned_data.get("house_number")
+#         user.profile.contact_information.apartment_number = form.cleaned_data.get("apartment_number")
+#
+#     user.profile.contact_information.save()
+#     user.profile.save()
+#
+#     request.session["contact_information"] = user.profile.contact_information.id
+#     request.session.modified = True
 
 
 @login_required(login_url="index")
@@ -159,58 +162,51 @@ def dashboard(request):
     register_form = RegisterForm()
     basic_information_form = BasicInformationForm()
     contact_information_form = ContactInformationForm()
-
-    registered_user = None
-
-    if request.session.get("registered_user"):
-        try:
-            registered_user = User.objects.get(pk=request.session["registered_user"])
-
-        except User.DoesNotExist:
-            pass
+    contract_information_form = ContractForm()
 
     if request.method == "POST":
         if 'register-employee' in request.POST:
             register_form = RegisterForm(data=request.POST)
 
             if register_form.is_valid():
-                register_employee(
-                    request=request,
-                    form=register_form
-                )
+                request.session["user"] = {
+                    "email": register_form.cleaned_data.get("email"),
+                }
+                return redirect(to=reverse(
+                    viewname="dashboard") + f"?register-employee&tab=basic-information")
 
-                try:
-                    html_message = render_to_string(
-                        template_name="core/account-registration-email.html",
-                        context={
-                            "email": register_form.cleaned_data.get("email"),
-                            "domain": get_current_site(request=request),
-                        }
-                    )
-
-                    plain_message = strip_tags(html_message)
-
-                    message = EmailMultiAlternatives(
-                        subject="Account Registration Request",
-                        body=plain_message,
-                        from_email=os.environ.get("EMAIL_FROM"),
-                        to=[register_form.cleaned_data.get("email")],
-                    )
-
-                    message.attach_alternative(
-                        content=html_message,
-                        mimetype="text/html",
-                    )
-                    message.send()
-
-                    return redirect(to=reverse(
-                        viewname="dashboard") + f"?register-employee={request.session['registered_user'] if request.session.get('registered_user') else ''}&tab=basic-information")
-
-                except Exception as e:
-                    messages.error(
-                        request=request,
-                        message="Failed to send the registration email, please try again.",
-                    )
+                # try:
+                #     html_message = render_to_string(
+                #         template_name="core/account-registration-email.html",
+                #         context={
+                #             "email": register_form.cleaned_data.get("email"),
+                #             "domain": get_current_site(request=request),
+                #         }
+                #     )
+                #
+                #     plain_message = strip_tags(html_message)
+                #
+                #     message = EmailMultiAlternatives(
+                #         subject="Account Registration Request",
+                #         body=plain_message,
+                #         from_email=os.environ.get("EMAIL_FROM"),
+                #         to=[register_form.cleaned_data.get("email")],
+                #     )
+                #
+                #     message.attach_alternative(
+                #         content=html_message,
+                #         mimetype="text/html",
+                #     )
+                #     message.send()
+                #
+                #     return redirect(to=reverse(
+                #         viewname="dashboard") + f"?register-employee&tab=basic-information")
+                #
+                # except Exception as e:
+                #     messages.error(
+                #         request=request,
+                #         message="Failed to send the registration email, please try again.",
+                #     )
 
         if "basic-information" in request.POST:
             basic_information_form = BasicInformationForm(
@@ -218,28 +214,168 @@ def dashboard(request):
             )
 
             if basic_information_form.is_valid():
-                update_basic_information(
-                    request=request,
-                    form=basic_information_form
-                )
-
-            return redirect(to=reverse(
-                viewname="dashboard") + f"?register-employee={request.session['registered_user'] if request.session.get('registered_user') else ''}&basic-information={request.session['basic_information'] if request.session.get('basic_information') else ''}&tab=contact-information")
+                request.session["basic_information"] = {
+                    "firstname": basic_information_form.cleaned_data.get("firstname"),
+                    "lastname": basic_information_form.cleaned_data.get("lastname"),
+                    "date_of_birth": basic_information_form.cleaned_data.get("date_of_birth"),
+                }
+                return redirect(to=reverse(viewname="dashboard") + f"?register-employee&tab=contact-information")
 
         if "contact-information" in request.POST:
             contact_information_form = ContactInformationForm(
                 data=request.POST,
-                instance=registered_user.profile.contact_information,
             )
 
             if contact_information_form.is_valid():
-                update_contact_information(
-                    request=request,
-                    form=contact_information_form,
-                )
+                request.session["contact_information"] = {
+                    "phone_number": contact_information_form.cleaned_data.get("phone_number"),
+                    "country": contact_information_form.cleaned_data.get("country"),
+                    "province": contact_information_form.cleaned_data.get("province"),
+                    "city": contact_information_form.cleaned_data.get("city"),
+                    "postal_code": contact_information_form.cleaned_data.get("postal_code"),
+                    "street": contact_information_form.cleaned_data.get("street"),
+                    "house_number": contact_information_form.cleaned_data.get("house_number"),
+                }
 
-                return redirect(to=reverse(
-                    viewname="dashboard") + f"?register-employee={request.session['registered_user'] if request.session.get('registered_user') else ''}&basic-information={request.session['basic_information'] if request.session.get('basic_information') else ''}&contact-information={request.session['contact_information'] if request.session.get('contact_information') else ''}&tab=contract-information")
+                if contact_information_form.cleaned_data.get("apartment_number"):
+                    request.session["contact_information"].update(
+                        {
+                            "apartment_number": contact_information_form.cleaned_data.get("apartment_number")
+                        }
+                    )
+                return redirect(to=reverse(viewname="dashboard") + f"?register-employee&tab=contract-information")
+
+        if "contract-information" in request.POST:
+            data = request.POST.copy()
+
+            if request.POST.get("contract_type"):
+                contract_type_instance = ContractType.objects.get(slug=request.POST["contract_type"])
+                data["contract_type"] = contract_type_instance.pk
+
+            if request.POST.get("job_type"):
+                job_type_instance = JobType.objects.get(slug=request.POST["job_type"])
+                data["job_type"] = job_type_instance.pk
+
+            if request.POST.get("job_position"):
+                job_position_instance = JobPosition.objects.get(slug=request.POST["job_position"])
+                data["job_position"] = job_position_instance.pk
+
+            if request.POST.get("payment_frequency"):
+                payment_frequency_instance = PaymentFrequency.objects.get(slug=request.POST["payment_frequency"])
+                data["payment_frequency"] = payment_frequency_instance.pk
+
+            if request.POST.get("status"):
+                status_instance = EmploymentStatus.objects.get(slug=request.POST["status"])
+                data["status"] = status_instance.pk
+
+            if request.POST.get("currency"):
+                currency_instance = Currency.objects.get(slug=request.POST["currency"])
+                data["currency"] = currency_instance.pk
+
+            contract_information_form = ContractForm(
+                data=data,
+            )
+
+            if contract_information_form.is_valid():
+                request.session["contract_information"] = {
+                    "contract_type": contract_information_form.cleaned_data.get("contract_type").pk,
+                    "job_type": contract_information_form.cleaned_data.get("job_type").pk,
+                    "job_position": contract_information_form.cleaned_data.get("job_position").pk,
+                    "payment_frequency": contract_information_form.cleaned_data.get("payment_frequency").pk,
+                    "status": contract_information_form.cleaned_data.get("status").pk,
+                    "currency": contract_information_form.cleaned_data.get("currency").pk,
+                    "start_date": contract_information_form.cleaned_data.get("start_date"),
+                    "salary": float(contract_information_form.cleaned_data.get("salary")),
+                }
+
+                if contract_information_form.cleaned_data.get("work_hours_per_week"):
+                    request.session["contract_information"].update(
+                        {
+                            "work_hours_per_week": contract_information_form.cleaned_data.get("work_hours_per_week"),
+                        }
+                    )
+
+                if contract_information_form.cleaned_data.get("end_date"):
+                    request.session["contract_information"].update(
+                        {
+                            "end_date": contract_information_form.cleaned_data.get("end_date"),
+                        }
+                    )
+
+                return redirect(to=reverse(viewname="dashboard") + f"?register-employee&tab=benefits-information")
+
+        if "benefits-information" in request.POST:
+            data = request.POST.copy()
+
+            if "sport_benefits" in request.POST:
+                sport_benefits_ids = []
+
+                for sport_benefit in data.getlist("sport_benefits"):
+                    sport_benefits_ids.append(SportBenefit.objects.get(slug=sport_benefit).pk)
+
+                data.setlist("sport_benefits", sport_benefits_ids)
+
+            if "health_benefits" in request.POST:
+                health_benefits_ids = []
+
+                for health_benefit in data.getlist("health_benefits"):
+                    health_benefits_ids.append(HealthBenefit.objects.get(slug=health_benefit).pk)
+
+                data.setlist("health_benefits", health_benefits_ids)
+
+            if "insurance_benefits" in request.POST:
+                insurance_benefits_ids = []
+
+                for insurance_benefit in data.getlist("insurance_benefits"):
+                    insurance_benefits_ids.append(InsuranceBenefit.objects.get(slug=insurance_benefit).pk)
+
+                data.setlist("insurance_benefits", insurance_benefits_ids)
+
+            if "development_benefits" in request.POST:
+                development_benefits_ids = []
+
+                for development_benefit in data.getlist("development_benefits"):
+                    development_benefits_ids.append(DevelopmentBenefit.objects.get(slug=development_benefit).pk)
+
+                data.setlist("development_benefits", development_benefits_ids)
+
+            benefits_form = BenefitsForm(data=data)
+
+            if benefits_form.is_valid():
+                request.session["benefit_information"] = {}
+
+                if data.get("sport_benefits"):
+                    request.session["benefit_information"].update(
+                        {
+                            "sport_benefits": data.getlist("sport_benefits"),
+                        },
+                    )
+
+                if data.get("health_benefits"):
+                    request.session["benefit_information"].update(
+                        {
+                            "health_benefits": data.getlist("health_benefits"),
+                        },
+                    )
+
+                if data.get("insurance_benefits"):
+                    request.session["benefit_information"].update(
+                        {
+                            "insurance_benefits": data.getlist("insurance_benefits"),
+                        },
+                    )
+
+                if data.get("development_benefits"):
+                    request.session["benefit_information"].update(
+                        {
+                            "development_benefits": data.getlist("development_benefits"),
+                        },
+                    )
+
+                return redirect(to=reverse(viewname="dashboard") + f"?register-employee&tab=payment-information")
+
+        if "payment-information" in request.POST:
+            pass
 
     return render(
         request=request,
@@ -247,10 +383,20 @@ def dashboard(request):
         context={
             "title": "Dashboard",
             "users": User.objects.exclude(email__in=["admin@gmail.com", "hubert.rykala@gmail.com"]),
-            "registered_user": registered_user,
             "register_form": register_form,
             "basic_information_form": basic_information_form,
             "contact_information_form": contact_information_form,
+            "contract_information_form": contract_information_form,
+            "contract_types": ContractType.objects.all().order_by("name"),
+            "job_types": JobType.objects.all().order_by("name"),
+            "job_positions": JobPosition.objects.all().order_by("name"),
+            "payment_frequencies": PaymentFrequency.objects.all().order_by("name"),
+            "employment_statuses": EmploymentStatus.objects.all().order_by("name"),
+            "currencies": Currency.objects.all().order_by("name"),
+            "sport_benefits": SportBenefit.objects.all().order_by("name"),
+            "health_benefits": HealthBenefit.objects.all().order_by("name"),
+            "insurance_benefits": InsuranceBenefit.objects.all().order_by("name"),
+            "development_benefits": DevelopmentBenefit.objects.all().order_by("name"),
         },
     )
 
