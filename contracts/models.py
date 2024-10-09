@@ -226,7 +226,6 @@ class Contract(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.pk:
-            print("Not PK")
             self.status = EmploymentStatus.objects.get(name="Active")
 
         if self.end_date and self.start_date:

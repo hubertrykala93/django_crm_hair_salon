@@ -4,8 +4,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth import authenticate, login
 from accounts.models import User
-from contracts.models import ContractType, JobPosition, JobType, PaymentFrequency, EmploymentStatus, Currency, \
-    SportBenefit, HealthBenefit, InsuranceBenefit, DevelopmentBenefit, PaymentMethod
+from contracts.models import ContractType, JobPosition, JobType, PaymentFrequency, Currency, SportBenefit, \
+    HealthBenefit, InsuranceBenefit, DevelopmentBenefit
 from payments.models import CryptoCurrency
 from django.contrib import messages
 from django.core.mail import EmailMultiAlternatives
@@ -106,59 +106,6 @@ def index(request):
     )
 
 
-# @login_required(login_url="index")
-# @user_passes_test(test_func=lambda user: user.is_staff, login_url="dashboard")
-# def register_employee(request, form):
-#     user = User(
-#         email=form.cleaned_data.get("email"),
-#     )
-#     user.is_active = False
-#
-#     user.set_password(raw_password=user.generate_password())
-#     user.save()
-#
-#     request.session["registered_user"] = user.id
-#     request.session.modified = True
-
-
-# @login_required(login_url="index")
-# @user_passes_test(test_func=lambda user: user.is_staff, login_url="dashboard")
-# def update_basic_information(request, form):
-#     user = User.objects.get(pk=request.session["registered_user"])
-#
-#     if user.profile.basic_information:
-#         user.profile.basic_information.firstname = form.cleaned_data.get("firstname")
-#         user.profile.basic_information.lastname = form.cleaned_data.get("lastname")
-#         user.profile.basic_information.date_of_birth = form.cleaned_data.get("date_of_birth")
-#
-#     user.profile.basic_information.save()
-#     user.profile.save()
-#
-#     request.session["basic_information"] = user.profile.basic_information.id
-#     request.session.modified = True
-
-
-# @login_required(login_url="index")
-# @user_passes_test(test_func=lambda user: user.is_staff, login_url="dashboard")
-# def update_contact_information(request, form):
-#     user = User.objects.get(pk=request.session["registered_user"])
-#
-#     if user.profile.contact_information:
-#         user.profile.contact_information.phone_number = form.cleaned_data.get("phone_number")
-#         user.profile.contact_information.country = form.cleaned_data.get("country")
-#         user.profile.contact_information.province = form.cleaned_data.get("province")
-#         user.profile.contact_information.city = form.cleaned_data.get("city")
-#         user.profile.contact_information.postal_code = form.cleaned_data.get("postal_code")
-#         user.profile.contact_information.street = form.cleaned_data.get("street")
-#         user.profile.contact_information.house_number = form.cleaned_data.get("house_number")
-#         user.profile.contact_information.apartment_number = form.cleaned_data.get("apartment_number")
-#
-#     user.profile.contact_information.save()
-#     user.profile.save()
-#
-#     request.session["contact_information"] = user.profile.contact_information.id
-#     request.session.modified = True
-
 def save_employee(request):
     # User Saving
     user = User(
@@ -186,7 +133,6 @@ def save_employee(request):
         "job_type": JobType,
         "job_position": JobPosition,
         "payment_frequency": PaymentFrequency,
-        "status": EmploymentStatus,
         "currency": Currency,
     }
     contract_information_copy = request.session["contract_information"].copy()
@@ -224,6 +170,36 @@ def save_employee(request):
                 getattr(user.profile.contract.benefits, key).add(benefit)
 
     # Payment Method Saving
+    if "banktransfer" in request.session:
+        payment_method = user.banktransfer
+
+        for field, value in request.session["banktransfer"].items():
+            setattr(payment_method, field, value)
+            payment_method.save()
+
+        user.profile.contract.payment_method = payment_method
+        user.profile.contract.save()
+
+    if "prepaidtransfer" in request.session:
+        payment_method = user.prepaidtransfer
+
+        for field, value in request.session["prepaidtransfer"].items():
+            setattr(payment_method, field, value)
+            payment_method.save()
+
+        user.profile.contract.payment_method = payment_method
+        user.profile.contract.save()
+
+    if "paypaltransfer" in request.session:
+        payment_method = user.paypaltransfer
+
+        for field, value in request.session["paypaltransfer"].items():
+            setattr(payment_method, field, value)
+            payment_method.save()
+
+        user.profile.contract.payment_method = payment_method
+        user.profile.contract.save()
+
     if "cryptotransfer" in request.session:
         payment_method = user.cryptotransfer
         payment_method.wallet_address = request.session["cryptotransfer"]["wallet_address"]
@@ -231,6 +207,15 @@ def save_employee(request):
 
         user.profile.contract.payment_method = payment_method
         user.profile.contract.save()
+
+    # keys_to_keep = ["_auth_user_id", "_auth_user_backend", "_auth_user_hash"]
+    #
+    # session_backup = {key: request.session[key] for key in keys_to_keep if key in request.session}
+    # request.session.clear()
+    #
+    # request.session.update(session_backup)
+    #
+    # request.session.modified = True
 
 
 def send_registration_request(request):
@@ -346,10 +331,6 @@ def dashboard(request):
                 payment_frequency_instance = PaymentFrequency.objects.get(slug=request.POST["payment_frequency"])
                 data["payment_frequency"] = payment_frequency_instance.pk
 
-            if request.POST.get("status"):
-                status_instance = EmploymentStatus.objects.get(slug=request.POST["status"])
-                data["status"] = status_instance.pk
-
             if request.POST.get("currency"):
                 currency_instance = Currency.objects.get(slug=request.POST["currency"])
                 data["currency"] = currency_instance.pk
@@ -364,7 +345,6 @@ def dashboard(request):
                     "job_type": contract_information_form.cleaned_data.get("job_type").pk,
                     "job_position": contract_information_form.cleaned_data.get("job_position").pk,
                     "payment_frequency": contract_information_form.cleaned_data.get("payment_frequency").pk,
-                    "status": contract_information_form.cleaned_data.get("status").pk,
                     "currency": contract_information_form.cleaned_data.get("currency").pk,
                     "start_date": contract_information_form.cleaned_data.get("start_date"),
                     "salary": float(contract_information_form.cleaned_data.get("salary")),
@@ -463,19 +443,66 @@ def dashboard(request):
             bank_transfer_form = BankTransferForm(data=request.POST)
 
             if bank_transfer_form.is_valid():
-                pass
+                request.session["banktransfer"] = {
+                    "bank_name": bank_transfer_form.cleaned_data.get("bank_name"),
+                    "iban": bank_transfer_form.cleaned_data.get("iban"),
+                    "swift": bank_transfer_form.cleaned_data.get("swift"),
+                    "account_number": bank_transfer_form.cleaned_data.get("account_number"),
+                }
+                request.session.modified = True
+
+                save_employee(request=request)
+
+                send_registration_request(request=request)
+
+                messages.success(
+                    request=request,
+                    message="The new employee has been successfully added.",
+                )
+
+                return redirect(to=reverse(viewname="dashboard") + "?employees")
 
         if "prepaid-transfer" in request.POST:
             prepaid_transfer_form = PrepaidTransferForm(data=request.POST)
 
             if prepaid_transfer_form.is_valid():
-                pass
+                request.session["prepaidtransfer"] = {
+                    "owner_name": prepaid_transfer_form.cleaned_data.get("owner_name"),
+                    "card_number": prepaid_transfer_form.cleaned_data.get("card_number"),
+                    "expiration_date": prepaid_transfer_form.cleaned_data.get("expiration_date"),
+                }
+                request.session.modified = True
+
+                save_employee(request=request)
+
+                send_registration_request(request=request)
+
+                messages.success(
+                    request=request,
+                    message="The new employee has been successfully added.",
+                )
+
+                return redirect(to=reverse(viewname="dashboard") + "?employees")
 
         if "paypal-transfer" in request.POST:
             paypal_transfer_form = PayPalTransferForm(data=request.POST)
 
             if paypal_transfer_form.is_valid():
-                pass
+                request.session["paypaltransfer"] = {
+                    "paypal_email": paypal_transfer_form.cleaned_data.get("paypal_email"),
+                }
+                request.session.modified = True
+
+                save_employee(request=request)
+
+                send_registration_request(request=request)
+
+                messages.success(
+                    request=request,
+                    message="The new employee has been successfully added.",
+                )
+
+                return redirect(to=reverse(viewname="dashboard") + "?employees")
 
         if "crypto-transfer" in request.POST:
             data = request.POST.copy()
@@ -496,33 +523,6 @@ def dashboard(request):
                 send_registration_request(request=request)
 
                 save_employee(request=request)
-
-                # if "user" in request.session:
-                #     del request.session["user"]
-                #
-                # if "basic_information" in request.session:
-                #     del request.session["basic_information"]
-                #
-                # if "contact_information" in request.session:
-                #     del request.session["contact_information"]
-                #
-                # if "contract_information" in request.session:
-                #     del request.session["contract_information"]
-                #
-                # if "benefit_information" in request.session:
-                #     del request.session["benefit_information"]
-                #
-                # if "cryptotransfer" in request.session:
-                #     del request.session["cryptotransfer"]
-
-                keys_to_keep = ["_auth_user_id", "_auth_user_backend", "_auth_user_hash"]
-
-                session_backup = {key: request.session[key] for key in keys_to_keep if key in request.session}
-                request.session.clear()
-
-                request.session.update(session_backup)
-
-                request.session.modified = True
 
                 messages.success(
                     request=request,
@@ -549,7 +549,6 @@ def dashboard(request):
             "job_types": JobType.objects.all().order_by("name"),
             "job_positions": JobPosition.objects.all().order_by("name"),
             "payment_frequencies": PaymentFrequency.objects.all().order_by("name"),
-            "employment_statuses": EmploymentStatus.objects.all().order_by("name"),
             "currencies": Currency.objects.all().order_by("name"),
             "sport_benefits": SportBenefit.objects.all().order_by("name"),
             "health_benefits": HealthBenefit.objects.all().order_by("name"),

@@ -269,22 +269,6 @@
             {% endif %}
         </div>
         <div class="form-row">
-            <label for="status">Status *</label>
-            {% if employment_statuses %}
-            <select id="status" name="status">
-                <option value="">-----</option>
-                {% for status in employment_statuses %}
-                <option value="{{ status.slug }}" {% if request.POST.status == status.slug %}selected{% endif %}>{{ status }}</option>
-                {% endfor %}
-            </select>
-            {% endif %}
-            {% if contract_information_form.status.errors %}
-            {% for error in contract_information_form.status.errors %}
-            <span class="form-error">{{ error }}</span>
-            {% endfor %}
-            {% endif %}
-        </div>
-        <div class="form-row">
             <label for="work_hours_per_week">Work Hours per Week</label>
             <input type="text" id="work_hours_per_week" name="work_hours_per_week" placeholder="Work Hours per Week" {% if contract_information_form.work_hours_per_week.value %}value="{{ contract_information_form.work_hours_per_week.value }}"{% endif %}>
             {% if contract_information_form.work_hours_per_week.errors %}
