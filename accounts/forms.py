@@ -946,7 +946,6 @@ class ContactInformationForm(forms.ModelForm):
 
     def clean_apartment_number(self):
         apartment_number = self.cleaned_data.get("apartment_number").strip()
-        print(f"Apartment Number -> {apartment_number}")
 
         if apartment_number:
             if len(apartment_number) > 10:

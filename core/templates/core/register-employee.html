@@ -414,8 +414,163 @@
 
 {% elif request.GET.tab == 'payment-information' %}
 <div class="tab-content">
-    <h1 class="content-header">
-        Payment Information
-    </h1>
+    <div class="payment-tabs">
+        <ul>
+            <li class="circle">
+                <a href="?register-employee&tab=payment-information&method=bank-transfer" {% if request.GET.method == 'bank-transfer' %}class="active"{% endif %}><i class="fa-solid fa-money-check-dollar"></i></a>
+            </li>
+
+            <li class="circle">
+                <a href="?register-employee&tab=payment-information&method=prepaid-transfer" {% if request.GET.method == 'prepaid-transfer' %}class="active"{% endif %}><i class="fa-brands fa-cc-visa"></i></a>
+            </li>
+
+            <li class="circle">
+                <a href="?register-employee&tab=payment-information&method=paypal-transfer" {% if request.GET.method == 'paypal-transfer' %}class="active"{% endif %}><i class="fa-brands fa-paypal"></i></a>
+            </li>
+
+            <li class="circle">
+                <a href="?register-employee&tab=payment-information&method=crypto-transfer" {% if request.GET.method == 'crypto-transfer' %}class="active"{% endif %}><i class="fa-brands fa-bitcoin"></i></a>
+            </li>
+        </ul>
+    </div>
+
+    {% if request.GET.method == 'bank-transfer' %}
+    <form method="post" novalidate>
+        {% csrf_token %}
+        <h1 class="content-header">
+            Bank Transfer
+        </h1>
+        <div class="form-row">
+            <label for="bank_name">Bank Name *</label>
+            <input type="text" id="bank_name" name="bank_name" placeholder="Bank Name" {% if bank_transfer_form.bank_name.value %}value="{{ bank_transfer_form.bank_name.value }}"{% endif %}>
+            {% if bank_transfer_form.bank_name.errors %}
+            {% for error in bank_transfer_form.bank_name.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-row">
+            <label for="iban">IBAN *</label>
+            <input type="text" id="iban" name="iban" placeholder="IBAN" {% if bank_transfer_form.iban.value %}value="{{ bank_transfer_form.iban.value }}"{% endif %}>
+            {% if bank_transfer_form.iban.errors %}
+            {% for error in bank_transfer_form.iban.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-row">
+            <label for="swift">SWIFT *</label>
+            <input type="text" id="swift" name="swift" placeholder="SWIFT" {% if bank_transfer_form.swift.value %}value="{{ bank_transfer_form.swift.value }}"{% endif %}>
+            {% if bank_transfer_form.swift.errors %}
+            {% for error in bank_transfer_form.swift.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-row">
+            <label for="account_number">Account Number *</label>
+            <input type="text" id="account_number" name="account_number" placeholder="Account Number" {% if bank_transfer_form.account_number.value %}value="{{ bank_transfer_form.account_number.value }}"{% endif %}>
+            {% if bank_transfer_form.account_number.errors %}
+            {% for error in bank_transfer_form.account_number.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-button">
+            <button type="submit" class="btn btn-submit-btn" name="bank-transfer">Save</button>
+        </div>
+    </form>
+    {% elif request.GET.method == 'prepaid-transfer' %}
+    <form method="post" novalidate>
+        {% csrf_token %}
+        <h1 class="content-header">
+            Prepaid Transfer
+        </h1>
+        <div class="form-row">
+            <label for="owner_name">Owner Name *</label>
+            <input type="text" id="owner_name" name="owner_name" placeholder="Owner Name" {% if prepaid_transfer_form.owner_name.value %}value="{{ prepaid_transfer_form.owner_name.value }}"{% endif %}>
+            {% if prepaid_transfer_form.owner_name.errors %}
+            {% for error in prepaid_transfer_form.owner_name.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-row">
+            <label for="card_number">Card Number *</label>
+            <input type="text" id="card_number" name="card_number" placeholder="Card Number" {% if prepaid_transfer_form.card_number.value %}value="{{ prepaid_transfer_form.card_number.value }}"{% endif %}>
+            {% if prepaid_transfer_form.card_number.errors %}
+            {% for error in prepaid_transfer_form.card_number.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-row">
+            <label for="expiration_date">Expiration Date *</label>
+            <input type="text" id="expiration_date" name="expiration_date" placeholder="Expiration Date" {% if prepaid_transfer_form.expiration_date.value %}value="{{ prepaid_transfer_form.expiration_date.value }}"{% endif %}>
+            {% if prepaid_transfer_form.expiration_date.errors %}
+            {% for error in prepaid_transfer_form.expiration_date.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-button">
+            <button type="submit" class="btn btn-submit-btn" name="prepaid-transfer">Save</button>
+        </div>
+    </form>
+    {% elif request.GET.method == 'paypal-transfer' %}
+    <form method="post" novalidate>
+        {% csrf_token %}
+        <h1 class="content-header">
+            Paypal Transfer
+        </h1>
+        <div class="form-row">
+            <label for="paypal_email">PayPal Email *</label>
+            <input type="text" id="paypal_email" name="paypal_email" placeholder="PayPal Email" {% if paypal_transfer_form.paypal_email.value %}value="{{ paypal_transfer_form.paypal_email.value }}"{% endif %}>
+            {% if paypal_transfer_form.paypal_email.errors %}
+            {% for error in paypal_transfer_form.paypal_email.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-button">
+            <button type="submit" class="btn btn-submit-btn" name="paypal-transfer">Save</button>
+        </div>
+    </form>
+    {% else %}
+        <form method="post" novalidate>
+        {% csrf_token %}
+        <h1 class="content-header">
+            Crypto Transfer
+        </h1>
+        <div class="form-row">
+            <label for="contract_type">Cryptocurrency *</label>
+            {% if cryptocurrencies %}
+            <select id="cryptocurrency" name="cryptocurrency">
+                <option value="">-----</option>
+                {% for cryptocurrency in cryptocurrencies %}
+                <option value="{{ cryptocurrency.code }}" {% if request.POST.cryptocurrency == cryptocurrency.code %}selected{% endif %}>{{ cryptocurrency }}</option>
+                {% endfor %}
+            </select>
+            {% endif %}
+            {% if crypto_transfer_form.cryptocurrency.errors %}
+            {% for error in crypto_transfer_form.cryptocurrency.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-row">
+            <label for="wallet_address">Wallet Address *</label>
+            <input type="text" id="wallet_address" name="wallet_address" placeholder="Wallet Address" {% if crypto_transfer_form.wallet_address.value %}value="{{ crypto_transfer_form.wallet_address.value }}"{% endif %}>
+            {% if crypto_transfer_form.wallet_address.errors %}
+            {% for error in crypto_transfer_form.wallet_address.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-button">
+            <button type="submit" class="btn btn-submit-btn" name="crypto-transfer">Save</button>
+        </div>
+    </form>
+    {% endif %}
 </div>
 {% endif %}

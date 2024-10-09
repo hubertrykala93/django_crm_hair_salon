@@ -5,15 +5,18 @@ from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth import authenticate, login
 from accounts.models import User
 from contracts.models import ContractType, JobPosition, JobType, PaymentFrequency, EmploymentStatus, Currency, \
-    SportBenefit, HealthBenefit, InsuranceBenefit, DevelopmentBenefit
+    SportBenefit, HealthBenefit, InsuranceBenefit, DevelopmentBenefit, PaymentMethod
+from payments.models import CryptoCurrency
 from django.contrib import messages
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from .forms import LoginForm, ContactUsForm
 from accounts.forms import RegisterForm, BasicInformationForm, ContactInformationForm
 from contracts.forms import ContractForm, BenefitsForm
+from payments.forms import BankTransferForm, PrepaidTransferForm, PayPalTransferForm, CryptoTransferForm
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.html import strip_tags
+from datetime import datetime, date
 
 
 @user_passes_test(test_func=lambda user: not user.is_authenticated, login_url="dashboard")
@@ -156,6 +159,108 @@ def index(request):
 #     request.session["contact_information"] = user.profile.contact_information.id
 #     request.session.modified = True
 
+def save_employee(request):
+    # User Saving
+    user = User(
+        email=request.session["user"]["email"],
+    )
+    user.is_active = False
+    user.set_password(raw_password=user.generate_password())
+    user.save()
+
+    # Basic Information Saving
+    for field, value in request.session["basic_information"].items():
+        setattr(user.profile.basic_information, field, value)
+
+    user.profile.basic_information.save()
+
+    # Contact Information Saving
+    for field, value in request.session["contact_information"].items():
+        setattr(user.profile.contact_information, field, value)
+
+    user.profile.contact_information.save()
+
+    # Contract Saving
+    contract_mapping = {
+        "contract_type": ContractType,
+        "job_type": JobType,
+        "job_position": JobPosition,
+        "payment_frequency": PaymentFrequency,
+        "status": EmploymentStatus,
+        "currency": Currency,
+    }
+    contract_information_copy = request.session["contract_information"].copy()
+
+    for field, model in contract_mapping.items():
+        field_value = model.objects.get(pk=contract_information_copy[field])
+        setattr(user.profile.contract, field, field_value)
+        contract_information_copy.pop(field)
+
+    for date_field in ["start_date", "end_date"]:
+        date_value = datetime.strptime(contract_information_copy[date_field], "%Y-%m-%d")
+        setattr(user.profile.contract, date_field, date_value)
+
+        contract_information_copy.pop(date_field)
+
+    for field, value in contract_information_copy.items():
+        setattr(user.profile.contract, field, value)
+
+    user.profile.contract.save()
+
+    # Benefits Saving
+    benefits_mapping = {
+        "sport_benefits": SportBenefit,
+        "health_benefits": HealthBenefit,
+        "insurance_benefits": InsuranceBenefit,
+        "development_benefits": DevelopmentBenefit,
+    }
+
+    for key, model in benefits_mapping.items():
+        if request.session["benefit_information"].get(key):
+            benefit_ids = request.session["benefit_information"].get(key)
+
+            for id in benefit_ids:
+                benefit = model.objects.get(pk=id)
+                getattr(user.profile.contract.benefits, key).add(benefit)
+
+    # Payment Method Saving
+    if "cryptotransfer" in request.session:
+        payment_method = user.cryptotransfer
+        payment_method.wallet_address = request.session["cryptotransfer"]["wallet_address"]
+        payment_method.save()
+
+        user.profile.contract.payment_method = payment_method
+        user.profile.contract.save()
+
+
+def send_registration_request(request):
+    try:
+        html_message = render_to_string(
+            template_name="core/account-registration-email.html",
+            context={
+                "email": request.session["user"]["email"],
+                "domain": get_current_site(request=request),
+            },
+        )
+
+        plain_message = strip_tags(html_message)
+
+        message = EmailMultiAlternatives(
+            subject="Account Registration Request",
+            body=plain_message,
+            from_email=os.environ.get("EMAIL_FROM"),
+            to=[request.session["user"]["email"]],
+        )
+
+        message.attach_alternative(content=html_message, mimetype="text/html")
+        message.send()
+
+    except Exception as e:
+        messages.error(
+            request=request,
+            message="Failed to send the registration email, please try again.",
+        )
+
 
 @login_required(login_url="index")
 def dashboard(request):
@@ -163,6 +268,10 @@ def dashboard(request):
     basic_information_form = BasicInformationForm()
     contact_information_form = ContactInformationForm()
     contract_information_form = ContractForm()
+    bank_transfer_form = BankTransferForm()
+    prepaid_transfer_form = PrepaidTransferForm()
+    paypal_transfer_form = PayPalTransferForm()
+    crypto_transfer_form = CryptoTransferForm()
 
     if request.method == "POST":
         if 'register-employee' in request.POST:
@@ -172,41 +281,10 @@ def dashboard(request):
                 request.session["user"] = {
                     "email": register_form.cleaned_data.get("email"),
                 }
+                request.session.modified = True
+
                 return redirect(to=reverse(
                     viewname="dashboard") + f"?register-employee&tab=basic-information")
-
-                # try:
-                #     html_message = render_to_string(
-                #         template_name="core/account-registration-email.html",
-                #         context={
-                #             "email": register_form.cleaned_data.get("email"),
-                #             "domain": get_current_site(request=request),
-                #         }
-                #     )
-                #
-                #     plain_message = strip_tags(html_message)
-                #
-                #     message = EmailMultiAlternatives(
-                #         subject="Account Registration Request",
-                #         body=plain_message,
-                #         from_email=os.environ.get("EMAIL_FROM"),
-                #         to=[register_form.cleaned_data.get("email")],
-                #     )
-                #
-                #     message.attach_alternative(
-                #         content=html_message,
-                #         mimetype="text/html",
-                #     )
-                #     message.send()
-                #
-                #     return redirect(to=reverse(
-                #         viewname="dashboard") + f"?register-employee&tab=basic-information")
-                #
-                # except Exception as e:
-                #     messages.error(
-                #         request=request,
-                #         message="Failed to send the registration email, please try again.",
-                #     )
 
         if "basic-information" in request.POST:
             basic_information_form = BasicInformationForm(
@@ -219,6 +297,8 @@ def dashboard(request):
                     "lastname": basic_information_form.cleaned_data.get("lastname"),
                     "date_of_birth": basic_information_form.cleaned_data.get("date_of_birth"),
                 }
+                request.session.modified = True
+
                 return redirect(to=reverse(viewname="dashboard") + f"?register-employee&tab=contact-information")
 
         if "contact-information" in request.POST:
@@ -243,6 +323,8 @@ def dashboard(request):
                             "apartment_number": contact_information_form.cleaned_data.get("apartment_number")
                         }
                     )
+                    request.session.modified = True
+
                 return redirect(to=reverse(viewname="dashboard") + f"?register-employee&tab=contract-information")
 
         if "contract-information" in request.POST:
@@ -301,6 +383,7 @@ def dashboard(request):
                             "end_date": contract_information_form.cleaned_data.get("end_date"),
                         }
                     )
+                request.session.modified = True
 
                 return redirect(to=reverse(viewname="dashboard") + f"?register-employee&tab=benefits-information")
 
@@ -371,22 +454,97 @@ def dashboard(request):
                             "development_benefits": data.getlist("development_benefits"),
                         },
                     )
+                request.session.modified = True
 
-                return redirect(to=reverse(viewname="dashboard") + f"?register-employee&tab=payment-information")
+                return redirect(to=reverse(
+                    viewname="dashboard") + f"?register-employee&tab=payment-information&method=bank-transfer")
 
-        if "payment-information" in request.POST:
-            pass
+        if "bank-transfer" in request.POST:
+            bank_transfer_form = BankTransferForm(data=request.POST)
+
+            if bank_transfer_form.is_valid():
+                pass
+
+        if "prepaid-transfer" in request.POST:
+            prepaid_transfer_form = PrepaidTransferForm(data=request.POST)
+
+            if prepaid_transfer_form.is_valid():
+                pass
+
+        if "paypal-transfer" in request.POST:
+            paypal_transfer_form = PayPalTransferForm(data=request.POST)
+
+            if paypal_transfer_form.is_valid():
+                pass
+
+        if "crypto-transfer" in request.POST:
+            data = request.POST.copy()
+
+            if request.POST.get("cryptocurrency"):
+                cryptocurrency = CryptoCurrency.objects.get(code=data["cryptocurrency"]).pk
+                data["cryptocurrency"] = cryptocurrency
+
+            crypto_transfer_form = CryptoTransferForm(data=data)
+
+            if crypto_transfer_form.is_valid():
+                request.session["cryptotransfer"] = {
+                    "cryptocurrency": crypto_transfer_form.cleaned_data.get("cryptocurrency").code,
+                    "wallet_address": crypto_transfer_form.cleaned_data.get("wallet_address"),
+                }
+                request.session.modified = True
+
+                send_registration_request(request=request)
+
+                save_employee(request=request)
+
+                # if "user" in request.session:
+                #     del request.session["user"]
+                #
+                # if "basic_information" in request.session:
+                #     del request.session["basic_information"]
+                #
+                # if "contact_information" in request.session:
+                #     del request.session["contact_information"]
+                #
+                # if "contract_information" in request.session:
+                #     del request.session["contract_information"]
+                #
+                # if "benefit_information" in request.session:
+                #     del request.session["benefit_information"]
+                #
+                # if "cryptotransfer" in request.session:
+                #     del request.session["cryptotransfer"]
+
+                keys_to_keep = ["_auth_user_id", "_auth_user_backend", "_auth_user_hash"]
+
+                session_backup = {key: request.session[key] for key in keys_to_keep if key in request.session}
+                request.session.clear()
+
+                request.session.update(session_backup)
+
+                request.session.modified = True
+
+                messages.success(
+                    request=request,
+                    message="The new employee has been successfully added.",
+                )
+
+                return redirect(to=reverse(viewname="dashboard") + "?employees")
 
     return render(
         request=request,
         template_name="core/dashboard.html",
         context={
             "title": "Dashboard",
-            "users": User.objects.exclude(email__in=["admin@gmail.com", "hubert.rykala@gmail.com"]),
+            "users": User.objects.exclude(email="admin@gmail.com").order_by("-date_joined"),
             "register_form": register_form,
             "basic_information_form": basic_information_form,
             "contact_information_form": contact_information_form,
             "contract_information_form": contract_information_form,
+            "bank_transfer_form": bank_transfer_form,
+            "prepaid_transfer_form": prepaid_transfer_form,
+            "paypal_transfer_form": paypal_transfer_form,
+            "crypto_transfer_form": crypto_transfer_form,
             "contract_types": ContractType.objects.all().order_by("name"),
             "job_types": JobType.objects.all().order_by("name"),
             "job_positions": JobPosition.objects.all().order_by("name"),
@@ -397,6 +555,7 @@ def dashboard(request):
             "health_benefits": HealthBenefit.objects.all().order_by("name"),
             "insurance_benefits": InsuranceBenefit.objects.all().order_by("name"),
             "development_benefits": DevelopmentBenefit.objects.all().order_by("name"),
+            "cryptocurrencies": CryptoCurrency.objects.all().order_by("name"),
         },
     )
 

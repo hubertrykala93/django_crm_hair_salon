@@ -16,7 +16,7 @@ class PaymentMethod(models.Model):
 
 class BankTransfer(PaymentMethod):
     user = models.OneToOneField(to="accounts.User", on_delete=models.CASCADE, null=True)
-    bank_name = models.CharField(max_length=100)
+    bank_name = models.CharField(max_length=255)
     iban = models.CharField(max_length=10)
     swift = models.CharField(max_length=20, null=True)
     account_number = models.CharField(max_length=50, unique=True, null=True)

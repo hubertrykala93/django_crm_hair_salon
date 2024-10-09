@@ -421,6 +421,40 @@ table td, table th {
     color: var(--primary-color);
 }
 
+.payment-tabs ul {
+    display: flex;
+    justify-content: space-evenly;
+    margin-bottom: var(--gap-400);
+}
+
+.payment-tabs ul li a.hover,
+.payment-tabs ul li a.focus-visible,
+.payment-tabs ul li a.active {
+    color: var(--primary-color);
+}
+
+.payment-tabs .circle {
+    width: 30px;
+    height: 30px;
+    background-color: white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid var(--text-color);
+}
+
+.payment-tabs .circle i {
+    font-size: 15px;
+    margin-bottom: 3.5px;
+}
+
+.payment-tabs .circle .fa-cc-visa,
+.payment-tabs .circle .fa-money-check-dollar {
+    font-size: 12px;
+    margin-bottom: 7px;
+}
+
 .circle {
     width: 60px;
     height: 60px;

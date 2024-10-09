@@ -225,6 +225,10 @@ class Contract(models.Model):
         return str(self.pk)
 
     def save(self, *args, **kwargs):
+        if not self.pk:
+            print("Not PK")
+            self.status = EmploymentStatus.objects.get(name="Active")
+
         if self.end_date and self.start_date:
             self.time_remaining = self.end_date - self.start_date
 
