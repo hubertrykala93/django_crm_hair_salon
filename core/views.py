@@ -208,14 +208,21 @@ def save_employee(request):
         user.profile.contract.payment_method = payment_method
         user.profile.contract.save()
 
-    # keys_to_keep = ["_auth_user_id", "_auth_user_backend", "_auth_user_hash"]
-    #
-    # session_backup = {key: request.session[key] for key in keys_to_keep if key in request.session}
-    # request.session.clear()
-    #
-    # request.session.update(session_backup)
-    #
-    # request.session.modified = True
+    messages.success(
+        request=request,
+        message="The new employee has been successfully added.",
+    )
+
+
+def clean_session_after_employee_save(request):
+    keys_to_keep = ["_auth_user_id", "_auth_user_backend", "_auth_user_hash"]
+
+    session_backup = {key: request.session[key] for key in keys_to_keep if key in request.session}
+    request.session.clear()
+
+    request.session.update(session_backup)
+
+    request.session.modified = True
 
 
 def send_registration_request(request):
@@ -239,6 +246,11 @@ def send_registration_request(request):
 
         message.attach_alternative(content=html_message, mimetype="text/html")
         message.send()
+
+        messages.success(
+            request=request,
+            message="The account registration email has been sent successfully.",
+        )
 
     except Exception as e:
         messages.error(
@@ -455,10 +467,7 @@ def dashboard(request):
 
                 send_registration_request(request=request)
 
-                messages.success(
-                    request=request,
-                    message="The new employee has been successfully added.",
-                )
+                clean_session_after_employee_save(request=request)
 
                 return redirect(to=reverse(viewname="dashboard") + "?employees")
 
@@ -477,10 +486,7 @@ def dashboard(request):
 
                 send_registration_request(request=request)
 
-                messages.success(
-                    request=request,
-                    message="The new employee has been successfully added.",
-                )
+                clean_session_after_employee_save(request=request)
 
                 return redirect(to=reverse(viewname="dashboard") + "?employees")
 
@@ -497,10 +503,7 @@ def dashboard(request):
 
                 send_registration_request(request=request)
 
-                messages.success(
-                    request=request,
-                    message="The new employee has been successfully added.",
-                )
+                clean_session_after_employee_save(request=request)
 
                 return redirect(to=reverse(viewname="dashboard") + "?employees")
 
@@ -524,10 +527,7 @@ def dashboard(request):
 
                 save_employee(request=request)
 
-                messages.success(
-                    request=request,
-                    message="The new employee has been successfully added.",
-                )
+                clean_session_after_employee_save(request=request)
 
                 return redirect(to=reverse(viewname="dashboard") + "?employees")
 
