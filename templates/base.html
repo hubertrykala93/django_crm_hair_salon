@@ -22,8 +22,21 @@
     {% endif %}
 
     <main>
-    {% block content %}
-    {% endblock %}
+        {% block content %}
+        <div class="app">
+            {% if request.path != '/' and request.path != '/forget-password/' %}
+                {% include 'aside.html' %}
+                <div class="main">
+                    {% include 'header.html' %}
+                    {% endif %}
+                    {% block page_content %}
+                    {% endblock %}
+
+            {% if request.path != '/' and request.path != '/forget-password/' %}
+                </div>
+            {% endif %}
+        </div>
+        {% endblock %}
     </main>
 </body>
 </html>

@@ -1,0 +1,104 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    background-color: #ffffff;
+    color: #333;
+    padding: 15px;
+    line-height: 1.4;
+}
+
+h1 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #e49142;
+    margin-bottom: 10px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+}
+
+.header-left {
+    flex: 1;
+}
+
+.header-left h1 {
+    font-size: 22px;
+    color: #646464;
+}
+
+.contract-type {
+    font-size: 14px;
+    color: #e49142;
+    margin-top: 3px;
+}
+
+.logo {
+    max-width: 120px;
+    height: auto;
+}
+
+.divider {
+    border: 1px solid #646464;
+    margin: 10px 0;
+}
+
+.content {
+    display: flex;
+}
+
+.left-content {
+    display: block;
+}
+
+.right-content {
+    display: block;
+    flex: 1;
+    margin-left: 5px;
+}
+
+.right-content-flex {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    position: relative;
+}
+
+.contract-info:first-child {
+    flex-grow: 1;
+}
+
+.contract-info:last-child {
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.employee-data {
+    display: block;
+    padding: 10px;
+    border: 1px solid #646464;
+    margin-bottom: 5px;
+}
+
+.data-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.data-info label {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.data-info span {
+    font-size: 10px;
+    font-weight: 400;
+}

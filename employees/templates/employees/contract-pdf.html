@@ -1,0 +1,233 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Contract</title>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style_pdf.css' %}">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="header-left">
+            <h1>{{ firstname }} {{ lastname }}</h1>
+            <h2 class="contract-type">{{ contract_type }}</h2>
+        </div>
+        <div class="header-right">
+            <img src="{{ logo_url }}" alt="Logo" class="logo">
+        </div>
+    </header>
+
+    <div class="divider"></div>
+
+    <div class="content">
+        <div class="left-content">
+            <div class="employee-data">
+                <h1>Employee Information</h1>
+                <div class="data-info">
+                    <label>Phone Number</label>
+                    <span>{{ phone_number }}</span>
+                </div>
+                <div class="data-info">
+                    <label>Date of Birth</label>
+                    <span>{{ date_of_birth }}</span>
+                </div>
+            </div>
+            <div class="employee-data">
+                <h1>Residence Address</h1>
+                <div class="data-info">
+                    <label>Country</label>
+                    <span>{{ country }}</span>
+                </div>
+                <div class="data-info">
+                    <label>Province</label>
+                    <span>{{ province }}</span>
+                </div>
+                <div class="data-info">
+                    <label>City</label>
+                    <span>{{ city }}</span>
+                </div>
+                <div class="data-info">
+                    <label>Postal Code</label>
+                    <span>{{ postal_code }}</span>
+                </div>
+                <div class="data-info">
+                    <label>Street</label>
+                    <span>{{ street }}</span>
+                </div>
+                <div class="data-info">
+                    <label>House Number</label>
+                    <span>{{ house_number }}</span>
+                </div>
+                {% if apartment_number is not None %}
+                <div class="data-info">
+                    <label>Apartment Number</label>
+                    <span>{{ apartment_number }}</span>
+                </div>
+                {% endif %}
+            </div>
+            <div class="employee-data">
+                <h1>Payment Information</h1>
+                {% if payment_method == 'Bank Transfer' %}
+                <div class="data-info">
+                    <label>Payment Method</label>
+                    <span>{{ payment_method }}</span>
+                </div>
+                <div class="data-info">
+                    <label>Bank Name</label>
+                    <span>{{ bank_name }}</span>
+                </div>
+                <div class="data-info">
+                    <label>IBAN</label>
+                    <span>{{ iban }}</span>
+                </div>
+                <div class="data-info">
+                    <label>SWIFT</label>
+                    <span>{{ swift }}</span>
+                </div>
+                <div class="data-info">
+                    <label>Account Number</label>
+                    <span>{{ account_number }}</span>
+                </div>
+                {% elif payment_method == 'Prepaid Transfer' %}
+                <div class="data-info">
+                    <label>Payment Method</label>
+                    <span>{{ payment_method }}</span>
+                </div>
+                <div class="data-info">
+                    <label>Owner Name</label>
+                    <span>{{ owner_name }}</span>
+                </div>
+                <div class="data-info">
+                    <label>Card Number</label>
+                    <span>{{ card_number }}</span>
+                </div>
+                <div class="data-info">
+                    <label>Expiration Date</label>
+                    <span>{{ expiration_date }}</span>
+                </div>
+                {% elif payment_method == 'PayPal Transfer' %}
+                <div class="data-info">
+                    <label>Payment Method</label>
+                    <span>{{ payment_method }}</span>
+                </div>
+                <div class="data-info">
+                    <label>PayPal Email</label>
+                    <span>{{ paypal_email }}</span>
+                </div>
+                {% elif payment_method == 'Crypto Transfer' %}
+                <div class="data-info">
+                    <label>Payment Method</label>
+                    <span>{{ payment_method }}</span>
+                </div>
+                <div class="data-info">
+                    <label>Cryptocurrency</label>
+                    <span>{{ cryptocurrency }}</span>
+                </div>
+                <div class="data-info">
+                    <label>Wallet Address</label>
+                    <span>{{ wallet_address }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="right-content">
+            <div class="employee-data">
+                <h1>Contract Details</h1>
+                <div class="right-content-flex">
+                    <div class="contract-info">
+                        <div class="data-info">
+                            <label>Job Type</label>
+                            <span>{{ job_type }}</span>
+                        </div>
+                        <div class="data-info">
+                            <label>Start Date</label>
+                            <span>{{ start_date }}</span>
+                        </div>
+                        <div class="data-info">
+                            <label>Salary</label>
+                            <span>{{ salary }} {{ currency }}</span>
+                        </div>
+                        <div class="data-info">
+                            <label>Payment Frequency</label>
+                            <span>{{ payment_frequency }}</span>
+                        </div>
+                    </div>
+                    <div class="contract-info">
+                        <div class="data-info">
+                            <label>Position</label>
+                            <span>{{ job_position }}</span>
+                        </div>
+                        {% if end_date %}
+                        <div class="data-info">
+                            <label>End Date</label>
+                            <span>{{ end_date }}</span>
+                        </div>
+                        {% endif %}
+                        {% if work_hours_per_week %}
+                        <div class="data-info">
+                            <label>Weekly Working Hours</label>
+                            <span>{{ work_hours_per_week }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="employee-data">
+                <h1>Benefits</h1>
+
+                {% if not sport_benefits and not health_benefits and not insurance_benefits and not development_benefits %}
+                <div class="data-info">
+                    <span>No benefits have been assigned.</span>
+                </div>
+                {% else %}
+
+                {% if sport_benefits %}
+                <div class="data-info">
+                    <label>Sport Benefits</label>
+                    {% for sport_benefit in sport_benefits %}
+                    <span>{{ sport_benefit }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% if health_benefits %}
+                <div class="data-info">
+                    <label>Health Benefits</label>
+                    {% for health_benefit in health_benefits %}
+                    <span>{{ health_benefit }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% if insurance_benefits %}
+                <div class="data-info">
+                    <label>Insurance Benefits</label>
+                    {% for insurance_benefit in insurance_benefits %}
+                    <span>{{ insurance_benefit }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% if development_benefits %}
+                <div class="data-info">
+                    <label>Development Benefits</label>
+                    {% for development_benefit in development_benefits %}
+                    <span>{{ development_benefit }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

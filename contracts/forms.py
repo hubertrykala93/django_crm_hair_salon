@@ -214,10 +214,7 @@ class ContractForm(forms.ModelForm):
         },
         queryset=PaymentFrequency.objects.none(),
     )
-    work_hours_per_week = forms.IntegerField(
-        error_messages={
-            "invalid": "A number is required.",
-        },
+    work_hours_per_week = forms.CharField(
         required=False,
     )
     currency = forms.ModelChoiceField(
@@ -270,14 +267,20 @@ class ContractForm(forms.ModelForm):
         self.fields["currency"].queryset = Currency.objects.all()
 
     def clean_work_hours_per_week(self):
-        work_house_per_week = self.cleaned_data.get("work_hours_per_week")
+        work_hours_per_week = self.cleaned_data.get("work_hours_per_week", None)
 
-        if int(work_house_per_week) > 168:
-            raise ValidationError(
-                message="Work hours per week must be less than 168.",
-            )
+        if work_hours_per_week:
+            if not work_hours_per_week.isdigit():
+                raise ValidationError(
+                    message="A number is required.",
+                )
 
-        return work_house_per_week
+            if int(work_hours_per_week) > 168:
+                raise ValidationError(
+                    message="Work hours per week must be less than 168.",
+                )
+
+        return work_hours_per_week
 
     def clean_start_date(self):
         start_date = self.cleaned_data.get("start_date").strip()

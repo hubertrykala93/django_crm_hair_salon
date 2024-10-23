@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block page_content %}
+<div class="content">
+    {% if not request.GET %}
+    <h1 class="content-header">
+        Employees
+    </h1>
+    <table>
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Country</th>
+            <th>Province</th>
+            <th>City</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for employee in employees %}
+        <tr>
+            <td>{{ employee.profile.basic_information.firstname }} {{ employee.profile.basic_information.lastname }}
+            </td>
+            <td>{{ employee.profile.contact_information.country }}</td>
+            <td>{{ employee.profile.contact_information.province }}</td>
+            <td>{{ employee.profile.contact_information.city }}</td>
+            <td class="table-buttons">
+                <a href="?employee-edit={{ user.id }}"><i class="fa-solid fa-user-pen"></i></a>
+                <a href="{% url 'delete-employee' employee.pk %}"><i class="fa-regular fa-trash-can"></i></a>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    {% include 'employees/register-employee.html' %}
+    {% endif %}
+</div>
+{% endblock %}

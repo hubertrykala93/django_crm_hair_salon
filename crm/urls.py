@@ -25,6 +25,8 @@ urlpatterns = [
     path(route="", view=include(arg="accounts.urls")),
     path(route="", view=include(arg="core.urls")),
     path(route="", view=include(arg="invoices.urls")),
+    path(route="", view=include(arg="dashboard.urls")),
+    path(route="", view=include(arg="employees.urls"))
 ]
 
 if settings.DEBUG:

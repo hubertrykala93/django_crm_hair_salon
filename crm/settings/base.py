@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "contracts",
     "invoices",
     "payments",
+    "dashboard",
     "employees",
 ]
 

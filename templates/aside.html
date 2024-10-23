@@ -4,10 +4,10 @@
     </a>
     <ul>
         <li>
-            <a href="{% url 'dashboard' %}" class="{% if not request.GET %}active{% endif %}"><i class="fa-solid fa-gauge-high"></i>Dashboard</a>
+            <a href="{% url 'dashboard' %}" {% if request.resolver_match.url_name == 'dashboard' %}class="active"{% endif %}><i class="fa-solid fa-gauge-high"></i>Dashboard</a>
         </li>
         <li>
-            <a href="?employees"><i class="fa-solid fa-users"></i>Employees</a>
+            <a href="{% url 'employees' %}" {% if request.resolver_match.url_name == 'employees' %}class="active"{% endif %}><i class="fa-solid fa-users"></i>Employees</a>
         </li>
         <li>
             <a href="?services"><i class="fa-solid fa-scissors"></i>Services</a>
