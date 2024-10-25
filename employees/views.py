@@ -132,8 +132,6 @@ def generate_contract(request):
                 },
             )
 
-    print(context)
-
     html_string = render_to_string(
         template_name="employees/contract-pdf.html",
         context=context,
@@ -141,30 +139,7 @@ def generate_contract(request):
     pdf_file = HTML(string=html_string).write_pdf(
         stylesheets=[os.path.join(settings.BASE_DIR, "static/css/style_pdf.css")])
 
-    # response = HttpResponse(pdf_file, content_type="application/pdf")
-    # response = HttpResponse(html_string, content_type="text/html")
-    # response["Content-Disposition"] = 'inline; filename="document.pdf"'
-
-    # return response
     return pdf_file
-
-
-def delete_employee(request, pk):
-    try:
-        employee = User.objects.get(pk=pk)
-        employee.delete()
-
-        messages.success(
-            request=request,
-            message=f"The employee '{employee.profile.basic_information.firstname} {employee.profile.basic_information.lastname}' has been successfully deleted.",
-        )
-        return redirect(to="employees")
-
-    except User.DoesNotExist:
-        messages.info(
-            request=request,
-            message="The selected employee does not exist in the database.",
-        )
 
 
 def save_employee(request):
@@ -276,17 +251,6 @@ def save_employee(request):
     )
 
 
-def clean_session_after_employee_save(request):
-    keys_to_keep = ["_auth_user_id", "_auth_user_backend", "_auth_user_hash"]
-
-    session_backup = {key: request.session[key] for key in keys_to_keep if key in request.session}
-    request.session.clear()
-
-    request.session.update(session_backup)
-
-    request.session.modified = True
-
-
 def send_registration_request(request):
     try:
         html_message = render_to_string(
@@ -320,15 +284,26 @@ def send_registration_request(request):
         )
 
     except Exception as e:
-        print(e)
         messages.error(
             request=request,
             message="Failed to send the registration email, please try again.",
         )
 
 
+def clean_session_after_employee_save(request):
+    keys_to_keep = ["_auth_user_id", "_auth_user_backend", "_auth_user_hash"]
+
+    session_backup = {key: request.session[key] for key in keys_to_keep if key in request.session}
+    request.session.clear()
+
+    request.session.update(session_backup)
+
+    request.session.modified = True
+
+
 @login_required(login_url="index")
 def employees(request):
+    print(request.session.items())
     register_form = RegisterForm()
     basic_information_form = BasicInformationForm()
     contact_information_form = ContactInformationForm()
@@ -343,6 +318,8 @@ def employees(request):
             register_form = RegisterForm(data=request.POST)
 
             if register_form.is_valid():
+                request.session["registration_in_progress"] = True
+                request.session["registration_step"] = 1
                 request.session["user"] = {
                     "email": register_form.cleaned_data.get("email"),
                 }
@@ -357,6 +334,7 @@ def employees(request):
             )
 
             if basic_information_form.is_valid():
+                request.session["registration_step"] = 2
                 request.session["basic_information"] = {
                     "firstname": basic_information_form.cleaned_data.get("firstname"),
                     "lastname": basic_information_form.cleaned_data.get("lastname"),
@@ -372,6 +350,7 @@ def employees(request):
             )
 
             if contact_information_form.is_valid():
+                request.session["registration_step"] = 3
                 request.session["contact_information"] = {
                     "phone_number": contact_information_form.cleaned_data.get("phone_number"),
                     "country": contact_information_form.cleaned_data.get("country"),
@@ -420,6 +399,7 @@ def employees(request):
             )
 
             if contract_information_form.is_valid():
+                request.session["registration_step"] = 4
                 request.session["contract_information"] = {
                     "contract_type": contract_information_form.cleaned_data.get("contract_type").pk,
                     "job_type": contract_information_form.cleaned_data.get("job_type").pk,
@@ -485,6 +465,7 @@ def employees(request):
             benefits_form = BenefitsForm(data=data)
 
             if benefits_form.is_valid():
+                request.session["registration_step"] = 5
                 request.session["benefit_information"] = {}
 
                 if data.get("sport_benefits"):
@@ -523,6 +504,7 @@ def employees(request):
             bank_transfer_form = BankTransferForm(data=request.POST)
 
             if bank_transfer_form.is_valid():
+                request.session["registration_step"] = 6
                 request.session["banktransfer"] = {
                     "bank_name": bank_transfer_form.cleaned_data.get("bank_name"),
                     "iban": bank_transfer_form.cleaned_data.get("iban"),
@@ -625,3 +607,25 @@ def employees(request):
             "cryptocurrencies": CryptoCurrency.objects.all().order_by("name"),
         },
     )
+
+
+def edit_employee(request, pk):
+    pass
+
+
+def delete_employee(request, pk):
+    try:
+        employee = User.objects.get(pk=pk)
+        employee.delete()
+
+        messages.success(
+            request=request,
+            message=f"The employee '{employee.profile.basic_information.firstname} {employee.profile.basic_information.lastname}' has been successfully deleted.",
+        )
+        return redirect(to="employees")
+
+    except User.DoesNotExist:
+        messages.info(
+            request=request,
+            message="The selected employee does not exist in the database.",
+        )

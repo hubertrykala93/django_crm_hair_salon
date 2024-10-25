@@ -13,12 +13,18 @@ class LoginForm(forms.Form):
     password = forms.CharField(
         error_messages={
             "required": "Password is required.",
-        },
-        widget=forms.PasswordInput,
+        }
     )
     remember = forms.BooleanField(
         required=False,
     )
+
+    class Meta:
+        model = User
+        fields = [
+            "email",
+            "password",
+        ]
 
     def clean_email(self):
         email = self.cleaned_data.get("email").strip()
@@ -42,7 +48,7 @@ class LoginForm(forms.Form):
         return email
 
     def clean_password(self):
-        email = self.cleaned_data.get("email").strip()
+        email = self.data.get("email").strip()
         password = self.cleaned_data.get("password")
 
         if User.objects.filter(email=email).exists():
