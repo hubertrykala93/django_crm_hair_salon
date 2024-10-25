@@ -159,16 +159,17 @@ class AdminProfileImageForm(forms.ModelForm):
         ]
 
 
-class RegisterForm(forms.ModelForm):
+class RegisterForm(forms.Form):
     email = forms.CharField(
         error_messages={
             "required": "Email is required.",
         }
     )
 
-    class Meta:
-        model = User
-        fields = ["email"]
+    def __init__(self, *args, **kwargs):
+        self.instance = kwargs.pop("instance", None)
+
+        super(RegisterForm, self).__init__(*args, **kwargs)
 
     def clean_email(self):
         email = self.cleaned_data.get("email").strip()
@@ -184,50 +185,20 @@ class RegisterForm(forms.ModelForm):
                 message="The e-mail address format is invalid.",
             )
 
-        if User.objects.filter(email=email).exists():
-            raise ValidationError(
-                message=f"The user with the e-mail address '{email}' already exists.",
-            )
+        if self.instance is None:
+            if User.objects.filter(email=email).exists():
+                raise ValidationError(
+                    message=f"The user with the e-mail address '{email}' already exists.",
+                )
+
+        else:
+            if self.instance.email != email:
+                if User.objects.filter(email=email).exists():
+                    raise ValidationError(
+                        message=f"The user with the e-mail address '{email}' already exists.",
+                    )
 
         return email
-
-    # def clean_password(self):
-    #     password = self.cleaned_data.get("password")
-    #
-    #     if len(password) < 8:
-    #         raise ValidationError(
-    #             message="The password should consist of at least 8 characters.",
-    #         )
-    #
-    #     if len(password) > 255:
-    #         raise ValidationError(
-    #             message="The password cannot be longer than 255 characters.",
-    #         )
-    #
-    #     if not re.match(pattern="^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$", string=password):
-    #         raise ValidationError(
-    #             message="The password should contain at least one uppercase letter, one lowercase letter, one number, "
-    #                     "and one special character.",
-    #         )
-    #
-    #     return password
-    #
-    # def clean_repassword(self):
-    #     password = self.cleaned_data.get("password")
-    #     repassword = self.cleaned_data.get("repassword")
-    #
-    #     if password is not None:
-    #         if not repassword:
-    #             raise ValidationError(
-    #                 message="Confirm Password is required.",
-    #             )
-    #
-    #         if repassword != password:
-    #             raise ValidationError(
-    #                 message="Confirm Password does not match.",
-    #             )
-    #
-    #     return repassword
 
 
 class PasswordResetForm(forms.Form):
@@ -426,7 +397,7 @@ class UpdateProfileImageForm(forms.Form):
         return profile_image
 
 
-class BasicInformationForm(forms.ModelForm):
+class BasicInformationForm(forms.Form):
     firstname = forms.CharField(
         error_messages={
             "required": "Firstname is required.",
@@ -442,10 +413,6 @@ class BasicInformationForm(forms.ModelForm):
             "required": "Date of Birth is required.",
         }
     )
-
-    class Meta:
-        model = ProfileBasicInformation
-        exclude = ["biography", "profile_image"]
 
     def clean_firstname(self):
         firstname = self.cleaned_data.get("firstname").strip()
@@ -511,7 +478,7 @@ class BasicInformationForm(forms.ModelForm):
         return date_of_birth
 
 
-class ContactInformationForm(forms.ModelForm):
+class ContactInformationForm(forms.Form):
     phone_number = forms.CharField(
         error_messages={
             "required": "Phone Number is required.",
@@ -551,9 +518,10 @@ class ContactInformationForm(forms.ModelForm):
         required=False,
     )
 
-    class Meta:
-        model = ProfileContactInformation
-        fields = "__all__"
+    def __init__(self, *args, **kwargs):
+        self.instance = kwargs.pop("instance", None)
+
+        super(ContactInformationForm, self).__init__(*args, **kwargs)
 
     def clean_phone_number(self):
         phone_number = self.cleaned_data.get("phone_number").strip()
@@ -563,10 +531,18 @@ class ContactInformationForm(forms.ModelForm):
                 message="Invalid phone number format. Please enter a valid number with the country code (e.g., 11234567890 for the USA).",
             )
 
-        if ProfileContactInformation.objects.filter(phone_number=phone_number).exists():
-            raise ValidationError(
-                message="This phone number is already in use; please enter a different one.",
-            )
+        if self.instance is None:
+            if ProfileContactInformation.objects.filter(phone_number=phone_number).exists():
+                raise ValidationError(
+                    message="This phone number is already in use; please enter a different one.",
+                )
+
+        else:
+            if self.instance.phone_number != phone_number:
+                if ProfileContactInformation.objects.filter(phone_number=phone_number).exists():
+                    raise ValidationError(
+                        message=f"This phone number is already in use; please enter a different one.",
+                    )
 
         return phone_number
 
@@ -647,6 +623,7 @@ class ContactInformationForm(forms.ModelForm):
 
     def clean_apartment_number(self):
         apartment_number = self.cleaned_data.get("apartment_number").strip()
+        print(f"Apartment Number -> {apartment_number}")
 
         if apartment_number:
             if len(apartment_number) > 10:

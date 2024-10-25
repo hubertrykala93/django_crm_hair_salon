@@ -416,6 +416,7 @@ def benefits_information(request, form, data):
 
 @login_required(login_url="index")
 def employees(request):
+    # Register Employee
     register_form = RegisterForm()
     basic_information_form = BasicInformationForm()
     contact_information_form = ContactInformationForm()
@@ -595,14 +596,93 @@ def employees(request):
 
                 return redirect(to=reverse(viewname="employees"))
 
+    # Update Employee
+    updated_employee = None
+    update_email_form = RegisterForm()
+    update_basic_information_form = BasicInformationForm()
+    update_contact_information_form = ContactInformationForm()
+
     if "update-employee" in request.GET:
         try:
-            edited_employee = User.objects.get(pk=request.GET["update-employee"])
+            updated_employee = User.objects.get(pk=request.GET["update-employee"])
 
-            print(edited_employee.email)
+            if "update-employee" in request.POST:
+                update_email_form = RegisterForm(data=request.POST, instance=updated_employee)
 
-            print(request.GET)
-            print(request.POST)
+                if update_email_form.is_valid():
+                    if updated_employee.email != update_email_form.cleaned_data.get("email"):
+                        updated_employee.email = update_email_form.cleaned_data.get("email")
+
+                        updated_employee.save()
+
+                    return redirect(to=reverse(
+                        viewname="employees") + f"?update-employee={request.GET['update-employee']}&tab=basic-information")
+
+            if "update-basic-information" in request.POST:
+                update_basic_information_form = BasicInformationForm(data=request.POST)
+                instance = updated_employee.profile.basic_information
+
+                if update_basic_information_form.is_valid():
+                    cleaned_data = update_basic_information_form.cleaned_data
+                    fields_to_update = {}
+
+                    if cleaned_data.get("firstname") != instance.firstname:
+                        fields_to_update["firstname"] = cleaned_data.get("firstname")
+
+                    if cleaned_data.get("lastname") != instance.lastname:
+                        fields_to_update["lastname"] = cleaned_data.get("lastname")
+
+                    if cleaned_data.get("date_of_birth") != instance.date_of_birth.strftime("%Y-%m-%d"):
+                        fields_to_update["date_of_birth"] = cleaned_data.get("date_of_birth")
+
+                    for field, value in fields_to_update.items():
+                        setattr(instance, field, value)
+
+                    instance.save()
+
+                    return redirect(to=reverse(
+                        viewname="employees") + f"?update-employee={request.GET['update-employee']}&tab=contact-information")
+
+            if "update-contact-information" in request.POST:
+                print(request.POST)
+                update_contact_information_form = ContactInformationForm(
+                    data=request.POST,
+                    instance=updated_employee.profile.contact_information
+                )
+                instance = updated_employee.profile.contact_information
+
+                if update_contact_information_form.is_valid():
+                    cleaned_data = update_contact_information_form.cleaned_data
+                    fields_to_update = {}
+
+                    if cleaned_data.get("phone_number") != instance.phone_number:
+                        fields_to_update["phone_number"] = cleaned_data.get("phone_number")
+
+                    if cleaned_data.get("country") != instance.country:
+                        fields_to_update["country"] = cleaned_data.get("country")
+
+                    if cleaned_data.get("province") != instance.province:
+                        fields_to_update["province"] = cleaned_data.get("province")
+
+                    if cleaned_data.get("city") != instance.city:
+                        fields_to_update["city"] = cleaned_data.get("city")
+
+                    if cleaned_data.get("postal_code") != instance.postal_code:
+                        fields_to_update["postal_code"] = cleaned_data.get("postal_code")
+
+                    if cleaned_data.get("house_number") != instance.house_number:
+                        fields_to_update["house_number"] = cleaned_data.get("house_number")
+
+                    if cleaned_data.get("apartment_number") != instance.apartment_number:
+                        fields_to_update["apartment_number"] = cleaned_data.get("apartment_number")
+
+                    for key, value in fields_to_update.items():
+                        setattr(instance, key, value)
+
+                    instance.save()
+
+                    return redirect(to=reverse(
+                        viewname="employees") + f"?update-employee={request.GET['update-employee']}&tab=contract-information")
 
         except User.DoesNotExist:
             messages.error(
@@ -614,7 +694,7 @@ def employees(request):
         request=request,
         template_name="employees/employees.html",
         context={
-            "title": "Employees" if not request.GET else "Register Employee",
+            "title": "Employees" if not request.GET else "Register Employee" if "register-employee" in request.GET else "Update Employee",
             "employees": User.objects.exclude(email="admin@gmail.com").order_by("-date_joined"),
             "register_form": register_form,
             "basic_information_form": basic_information_form,
@@ -624,6 +704,10 @@ def employees(request):
             "prepaid_transfer_form": prepaid_transfer_form,
             "paypal_transfer_form": paypal_transfer_form,
             "crypto_transfer_form": crypto_transfer_form,
+            "updated_employee": updated_employee,
+            "update_email_form": update_email_form,
+            "update_basic_information_form": update_basic_information_form,
+            "update_contact_information_form": update_contact_information_form,
             "contract_types": ContractType.objects.all().order_by("name"),
             "job_types": JobType.objects.all().order_by("name"),
             "job_positions": JobPosition.objects.all().order_by("name"),
