@@ -27,7 +27,7 @@
             <td>{{ employee.profile.contact_information.province }}</td>
             <td>{{ employee.profile.contact_information.city }}</td>
             <td class="table-buttons">
-                <a href="?edit-employee={{ employee.pk }}"><i class="fa-solid fa-user-pen"></i></a>
+                <a href="?update-employee={{ employee.pk }}"><i class="fa-solid fa-user-pen"></i></a>
                 <a href="{% url 'delete-employee' employee.pk %}"><i class="fa-regular fa-trash-can"></i></a>
             </td>
         </tr>
@@ -37,8 +37,8 @@
     {% else %}
     {% if 'register-employee' in request.GET %}
     {% include 'employees/register-employee.html' %}
-    {% elif 'edit-employee' in request.GET %}
-    {% include 'employees/edit-employee.html' %}
+    {% elif 'update-employee' in request.GET %}
+    {% include 'employees/update-employee.html' %}
     {% endif %}
     {% endif %}
 </div>

@@ -54,28 +54,6 @@ def index(request):
                     user=auth_user,
                 )
 
-                required_basic_fields = (
-                        auth_user.profile.basic_information.firstname is not None and
-                        auth_user.profile.basic_information.lastname is not None and
-                        auth_user.profile.basic_information.date_of_birth is not None
-                )
-
-                required_contact_fields = (
-                        auth_user.profile.contact_information.phone_number is not None and
-                        auth_user.profile.contact_information.country is not None and
-                        auth_user.profile.contact_information.province is not None and
-                        auth_user.profile.contact_information.city is not None and
-                        auth_user.profile.contact_information.postal_code is not None and
-                        auth_user.profile.contact_information.street is not None and
-                        auth_user.profile.contact_information.house_number is not None
-                )
-
-                if not required_basic_fields or not required_contact_fields or not auth_user.profile.contract.payment_method:
-                    messages.warning(
-                        request=request,
-                        message=f"To receive transfers and have access to full functionality, complete the information in the <strong><a href='{request.build_absolute_uri(reverse(viewname='settings'))}'>Settings</a></strong> tab and set up a payment method.",
-                    )
-
                 messages.success(
                     request=request,
                     message="You have been logged in successfully.",

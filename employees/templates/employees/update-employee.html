@@ -50,12 +50,12 @@
     </ul>
 </div>
 
-{% if 'register-employee' in request.GET and not request.GET.tab %}
+{% if 'update-employee' in request.GET and not request.GET.tab %}
 <div class="tab-content">
     <form method="post" novalidate>
         {% csrf_token %}
         <h1 class="content-header">
-            Register Employee
+            Update Employee
         </h1>
         <div class="form-row">
             <label for="email" class="info-label">Email *</label>
@@ -67,7 +67,7 @@
             {% endif %}
         </div>
         <div class="form-button">
-            <button type="submit" class="btn btn-submit-btn" name="register-employee">Next</button>
+            <button type="submit" class="btn btn-submit-btn" name="eeemailo">Next</button>
         </div>
     </form>
 </div>
@@ -107,7 +107,7 @@
         {% endfor %}
         {% endif %}
         <div class="form-button">
-            <button type="submit" class="btn btn-submit-btn" name="basic-information">Next</button>
+            <button type="submit" class="btn btn-submit-btn" name="update-basic-information">Next</button>
         </div>
     </form>
 </div>

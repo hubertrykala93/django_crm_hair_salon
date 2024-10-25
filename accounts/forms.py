@@ -191,43 +191,43 @@ class RegisterForm(forms.ModelForm):
 
         return email
 
-    def clean_password(self):
-        password = self.cleaned_data.get("password")
-
-        if len(password) < 8:
-            raise ValidationError(
-                message="The password should consist of at least 8 characters.",
-            )
-
-        if len(password) > 255:
-            raise ValidationError(
-                message="The password cannot be longer than 255 characters.",
-            )
-
-        if not re.match(pattern="^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$", string=password):
-            raise ValidationError(
-                message="The password should contain at least one uppercase letter, one lowercase letter, one number, "
-                        "and one special character.",
-            )
-
-        return password
-
-    def clean_repassword(self):
-        password = self.cleaned_data.get("password")
-        repassword = self.cleaned_data.get("repassword")
-
-        if password is not None:
-            if not repassword:
-                raise ValidationError(
-                    message="Confirm Password is required.",
-                )
-
-            if repassword != password:
-                raise ValidationError(
-                    message="Confirm Password does not match.",
-                )
-
-        return repassword
+    # def clean_password(self):
+    #     password = self.cleaned_data.get("password")
+    #
+    #     if len(password) < 8:
+    #         raise ValidationError(
+    #             message="The password should consist of at least 8 characters.",
+    #         )
+    #
+    #     if len(password) > 255:
+    #         raise ValidationError(
+    #             message="The password cannot be longer than 255 characters.",
+    #         )
+    #
+    #     if not re.match(pattern="^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$", string=password):
+    #         raise ValidationError(
+    #             message="The password should contain at least one uppercase letter, one lowercase letter, one number, "
+    #                     "and one special character.",
+    #         )
+    #
+    #     return password
+    #
+    # def clean_repassword(self):
+    #     password = self.cleaned_data.get("password")
+    #     repassword = self.cleaned_data.get("repassword")
+    #
+    #     if password is not None:
+    #         if not repassword:
+    #             raise ValidationError(
+    #                 message="Confirm Password is required.",
+    #             )
+    #
+    #         if repassword != password:
+    #             raise ValidationError(
+    #                 message="Confirm Password does not match.",
+    #             )
+    #
+    #     return repassword
 
 
 class PasswordResetForm(forms.Form):
@@ -394,59 +394,6 @@ class ChangePasswordForm(forms.ModelForm):
         return repassword
 
 
-class UpdatePasswordForm(forms.Form):
-    password = forms.CharField(
-        required=False,
-    )
-    repassword = forms.CharField(
-        required=False,
-    )
-
-    def __init__(self, *args, **kwargs):
-        self.instance = kwargs.pop("instance", None)
-
-        super(UpdatePasswordForm, self).__init__(*args, **kwargs)
-
-    def clean_password(self):
-        password = self.cleaned_data.get("password")
-
-        if password:
-            if len(password) < 8:
-                raise ValidationError(
-                    message="The password should consist of at least 8 characters.",
-                )
-
-            if len(password) > 255:
-                raise ValidationError(
-                    message="The password cannot be longer than 255 characters.",
-                )
-
-            if not re.match(pattern="^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$", string=password):
-                raise ValidationError(
-                    message="The password should contain at least one uppercase letter, one lowercase letter, one number, "
-                            "and one special character.",
-                )
-
-        return password
-
-    def clean_repassword(self):
-        password = self.cleaned_data.get("password")
-        repassword = self.cleaned_data.get("repassword")
-
-        if password:
-            if not repassword:
-                raise ValidationError(
-                    message="Confirm Password is required.",
-                )
-
-            if repassword != password:
-                raise ValidationError(
-                    message="Confirm Password does not match.",
-                )
-
-        return repassword
-
-
 class UpdateProfileImageForm(forms.Form):
     profile_image = forms.ImageField(
         required=False,
@@ -477,252 +424,6 @@ class UpdateProfileImageForm(forms.Form):
                 )
 
         return profile_image
-
-
-class UpdateBasicInformationForm(forms.Form):
-    firstname = forms.CharField(
-        error_messages={
-            "required": "Firstname is required.",
-        },
-    )
-    lastname = forms.CharField(
-        error_messages={
-            "required": "Lastname is required.",
-        },
-    )
-    date_of_birth = forms.CharField(
-        error_messages={
-            "required": "Date of Birth is required.",
-        },
-    )
-    biography = forms.CharField(
-        required=False,
-    )
-
-    def clean_firstname(self):
-        firstname = self.cleaned_data.get("firstname").strip()
-
-        if len(firstname) < 2:
-            raise ValidationError(
-                message="The firstname should contain at least 2 characters.",
-            )
-
-        if len(firstname) > 50:
-            raise ValidationError(
-                message="The firstname should contain a maximum of 50 characters.",
-            )
-
-        if not firstname.isalpha():
-            raise ValidationError(
-                message="The firstname should consist of letters only.",
-            )
-
-        return firstname
-
-    def clean_lastname(self):
-        lastname = self.cleaned_data.get("lastname").strip()
-
-        if len(lastname) < 2:
-            raise ValidationError(
-                message="The lastname should contain at least 2 characters."
-            )
-
-        if len(lastname) > 100:
-            raise ValidationError(
-                message="The lastname should contain a maximum of 100 characters.",
-            )
-
-        if not lastname.isalpha():
-            raise ValidationError(
-                message="The lastname should consist of letters only.",
-            )
-
-        return lastname
-
-    def clean_date_of_birth(self):
-        date_of_birth = self.cleaned_data.get("date_of_birth").strip()
-
-        try:
-            date_object = datetime.strptime(date_of_birth, '%Y-%m-%d').date()
-
-        except ValueError:
-            raise ValidationError(
-                message="Date of Birth must be in the format YYYY-MM-DD.",
-            )
-
-        if date_object >= date.today():
-            raise ValidationError(
-                message="The date of birth cannot be greater than or equal to the current date.",
-            )
-
-        if not re.match(pattern="^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$", string=date_of_birth):
-            raise ValidationError(
-                message="Date must be in the format YYYY-MM-DD.",
-            )
-
-        return date_of_birth
-
-    def clean_biography(self):
-        biography = self.cleaned_data.get("biography").strip()
-
-        if biography:
-            if len(biography) < 10:
-                raise ValidationError(
-                    message="The biography should contain at least 10 characters.",
-                )
-
-            if len(biography) > 200:
-                raise ValidationError(
-                    message="The biography should contain a maximum of 200 characters.",
-                )
-
-        return biography
-
-
-class UpdateContactInformationForm(forms.Form):
-    phone_number = forms.CharField(
-        error_messages={
-            "required": "Phone Number is required.",
-        }
-    )
-    country = forms.CharField(
-        error_messages={
-            "required": "Country is required.",
-        }
-    )
-    province = forms.CharField(
-        error_messages={
-            "required": "Province is required.",
-        }
-    )
-    city = forms.CharField(
-        error_messages={
-            "required": "City is required.",
-        }
-    )
-    postal_code = forms.CharField(
-        error_messages={
-            "required": "Postal Code is required.",
-        }
-    )
-    street = forms.CharField(
-        error_messages={
-            "required": "Street is required.",
-        }
-    )
-    house_number = forms.CharField(
-        error_messages={
-            "required": "House Number is required.",
-        }
-    )
-    apartment_number = forms.CharField(
-        required=False,
-    )
-
-    def __init__(self, *args, **kwargs):
-        self.instance = kwargs.pop("instance", None)
-
-        super(UpdateContactInformationForm, self).__init__(*args, **kwargs)
-
-    def clean_phone_number(self):
-        phone_number = self.cleaned_data.get("phone_number").strip()
-
-        if not re.compile(r"^\d{8,15}$").match(phone_number):
-            raise ValidationError(
-                message="Invalid phone number format. Please enter a valid number with the country code (e.g., 11234567890 for the USA).",
-            )
-
-        if self.instance.phone_number != phone_number:
-            if ProfileContactInformation.objects.filter(phone_number=phone_number).exists():
-                raise ValidationError(
-                    message="This phone number is already in use; please enter a different one.",
-                )
-
-        return phone_number
-
-    def clean_country(self):
-        country = self.cleaned_data.get("country").strip()
-
-        if len(country) < 4:
-            raise ValidationError(
-                message="The country should contain at least 4 characters.",
-            )
-
-        if len(country) > 56:
-            raise ValidationError(
-                message="The country should contain a maximum of 56 characters.",
-            )
-
-    def clean_province(self):
-        province = self.cleaned_data.get("province").strip()
-
-        if len(province) < 3:
-            raise ValidationError(
-                message="The province should contain at least 3 characters.",
-            )
-
-        if len(province) > 23:
-            raise ValidationError(
-                message="The province should contain a maximum of 23 characters.",
-            )
-
-        return province
-
-    def clean_city(self):
-        city = self.cleaned_data.get("city").strip()
-
-        if len(city) > 85:
-            raise ValidationError(
-                message="The city should contain a maximum of 85 characters.",
-            )
-
-        return city
-
-    def clean_postal_code(self):
-        postal_code = self.cleaned_data.get("postal_code").strip()
-
-        if len(postal_code) < 3:
-            raise ValidationError(
-                message="The postal code should contain at least 3 characters.",
-            )
-
-        if len(postal_code) > 10:
-            raise ValidationError(
-                message="The postal code should contain a maximum of 10 characters.",
-            )
-
-        return postal_code
-
-    def clean_street(self):
-        street = self.cleaned_data.get("street").strip()
-
-        if len(street) > 58:
-            raise ValidationError(
-                message="The city should contain a maximum of 58 characters.",
-            )
-
-        return street
-
-    def clean_house_number(self):
-        house_number = self.cleaned_data.get("house_number").strip()
-
-        if len(house_number) > 10:
-            raise ValidationError(
-                message="The house number should contain a maximum of 10 characters.",
-            )
-
-        return house_number
-
-    def clean_apartment_number(self):
-        apartment_number = self.cleaned_data.get("apartment_number").strip()
-
-        if apartment_number:
-            if len(apartment_number) > 10:
-                raise ValidationError(
-                    message="The apartment number should contain a maximum of 10 characters.",
-                )
-
-        return apartment_number
 
 
 class BasicInformationForm(forms.ModelForm):

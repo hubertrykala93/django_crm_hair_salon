@@ -23,11 +23,6 @@ urlpatterns = [
         name="change-password"
     ),
     path(
-        route="settings",
-        view=accounts_views.settings,
-        name="settings"
-    ),
-    path(
         route="logout",
         view=accounts_views.log_out,
         name="logout"
