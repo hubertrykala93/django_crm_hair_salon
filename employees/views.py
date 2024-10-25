@@ -251,7 +251,7 @@ def save_employee(request):
     )
 
 
-def send_registration_request(request):
+def send_registration_email(request):
     try:
         html_message = render_to_string(
             template_name="employees/account-registration-email.html",
@@ -290,20 +290,8 @@ def send_registration_request(request):
         )
 
 
-def clean_session_after_employee_save(request):
-    keys_to_keep = ["_auth_user_id", "_auth_user_backend", "_auth_user_hash"]
-
-    session_backup = {key: request.session[key] for key in keys_to_keep if key in request.session}
-    request.session.clear()
-
-    request.session.update(session_backup)
-
-    request.session.modified = True
-
-
 @login_required(login_url="index")
 def employees(request):
-    print(request.session.items())
     register_form = RegisterForm()
     basic_information_form = BasicInformationForm()
     contact_information_form = ContactInformationForm()
@@ -319,7 +307,7 @@ def employees(request):
 
             if register_form.is_valid():
                 request.session["registration_in_progress"] = True
-                request.session["registration_step"] = 1
+
                 request.session["user"] = {
                     "email": register_form.cleaned_data.get("email"),
                 }
@@ -334,7 +322,6 @@ def employees(request):
             )
 
             if basic_information_form.is_valid():
-                request.session["registration_step"] = 2
                 request.session["basic_information"] = {
                     "firstname": basic_information_form.cleaned_data.get("firstname"),
                     "lastname": basic_information_form.cleaned_data.get("lastname"),
@@ -350,7 +337,6 @@ def employees(request):
             )
 
             if contact_information_form.is_valid():
-                request.session["registration_step"] = 3
                 request.session["contact_information"] = {
                     "phone_number": contact_information_form.cleaned_data.get("phone_number"),
                     "country": contact_information_form.cleaned_data.get("country"),
@@ -399,7 +385,6 @@ def employees(request):
             )
 
             if contract_information_form.is_valid():
-                request.session["registration_step"] = 4
                 request.session["contract_information"] = {
                     "contract_type": contract_information_form.cleaned_data.get("contract_type").pk,
                     "job_type": contract_information_form.cleaned_data.get("job_type").pk,
@@ -465,7 +450,6 @@ def employees(request):
             benefits_form = BenefitsForm(data=data)
 
             if benefits_form.is_valid():
-                request.session["registration_step"] = 5
                 request.session["benefit_information"] = {}
 
                 if data.get("sport_benefits"):
@@ -500,86 +484,58 @@ def employees(request):
                 return redirect(to=reverse(
                     viewname="employees") + f"?register-employee&tab=payment-information&method=bank-transfer")
 
-        if "bank-transfer" in request.POST:
-            bank_transfer_form = BankTransferForm(data=request.POST)
+        if "payment-information" in request.POST:
+            if request.POST["payment-information"] == "bank-transfer":
+                bank_transfer_form = BankTransferForm(data=request.POST)
 
-            if bank_transfer_form.is_valid():
-                request.session["registration_step"] = 6
-                request.session["banktransfer"] = {
-                    "bank_name": bank_transfer_form.cleaned_data.get("bank_name"),
-                    "iban": bank_transfer_form.cleaned_data.get("iban"),
-                    "swift": bank_transfer_form.cleaned_data.get("swift"),
-                    "account_number": bank_transfer_form.cleaned_data.get("account_number"),
-                }
-                request.session.modified = True
+                if bank_transfer_form.is_valid():
+                    request.session["banktransfer"] = {
+                        "bank_name": bank_transfer_form.cleaned_data.get("bank_name"),
+                        "iban": bank_transfer_form.cleaned_data.get("iban"),
+                        "swift": bank_transfer_form.cleaned_data.get("swift"),
+                        "account_number": bank_transfer_form.cleaned_data.get("account_number"),
+                    }
 
-                save_employee(request=request)
+            if request.POST["payment-information"] == "prepaid-transfer":
+                prepaid_transfer_form = PrepaidTransferForm(data=request.POST)
 
-                send_registration_request(request=request)
+                if prepaid_transfer_form.is_valid():
+                    request.session["prepaidtransfer"] = {
+                        "owner_name": prepaid_transfer_form.cleaned_data.get("owner_name"),
+                        "card_number": prepaid_transfer_form.cleaned_data.get("card_number"),
+                        "expiration_date": prepaid_transfer_form.cleaned_data.get("expiration_date"),
+                    }
 
-                clean_session_after_employee_save(request=request)
+            if request.POST["payment-information"] == "paypal-transfer":
+                paypal_transfer_form = PayPalTransferForm(data=request.POST)
 
-                return redirect(to=reverse(viewname="employees"))
+                if paypal_transfer_form.is_valid():
+                    request.session["paypaltransfer"] = {
+                        "paypal_email": paypal_transfer_form.cleaned_data.get("paypal_email"),
+                    }
 
-        if "prepaid-transfer" in request.POST:
-            prepaid_transfer_form = PrepaidTransferForm(data=request.POST)
+            if request.POST["payment-information"] == "crypto-transfer":
+                data = request.POST.copy()
 
-            if prepaid_transfer_form.is_valid():
-                request.session["prepaidtransfer"] = {
-                    "owner_name": prepaid_transfer_form.cleaned_data.get("owner_name"),
-                    "card_number": prepaid_transfer_form.cleaned_data.get("card_number"),
-                    "expiration_date": prepaid_transfer_form.cleaned_data.get("expiration_date"),
-                }
-                request.session.modified = True
+                if request.POST.get("cryptocurrency"):
+                    cryptocurrency = CryptoCurrency.objects.get(code=data["cryptocurrency"]).pk
+                    data["cryptocurrency"] = cryptocurrency
 
-                save_employee(request=request)
+                crypto_transfer_form = CryptoTransferForm(data=data)
 
-                send_registration_request(request=request)
+                if crypto_transfer_form.is_valid():
+                    request.session["cryptotransfer"] = {
+                        "cryptocurrency": crypto_transfer_form.cleaned_data.get("cryptocurrency").code,
+                        "wallet_address": crypto_transfer_form.cleaned_data.get("wallet_address"),
+                    }
 
-                clean_session_after_employee_save(request=request)
+            request.session.modified = True
 
-                return redirect(to=reverse(viewname="employees"))
+            send_registration_email(request=request)
 
-        if "paypal-transfer" in request.POST:
-            paypal_transfer_form = PayPalTransferForm(data=request.POST)
+            save_employee(request=request)
 
-            if paypal_transfer_form.is_valid():
-                request.session["paypaltransfer"] = {
-                    "paypal_email": paypal_transfer_form.cleaned_data.get("paypal_email"),
-                }
-                request.session.modified = True
-
-                save_employee(request=request)
-
-                send_registration_request(request=request)
-
-                clean_session_after_employee_save(request=request)
-
-                return redirect(to=reverse(viewname="employees"))
-
-        if "crypto-transfer" in request.POST:
-            data = request.POST.copy()
-
-            if request.POST.get("cryptocurrency"):
-                cryptocurrency = CryptoCurrency.objects.get(code=data["cryptocurrency"]).pk
-                data["cryptocurrency"] = cryptocurrency
-
-            crypto_transfer_form = CryptoTransferForm(data=data)
-
-            if crypto_transfer_form.is_valid():
-                request.session["cryptotransfer"] = {
-                    "cryptocurrency": crypto_transfer_form.cleaned_data.get("cryptocurrency").code,
-                    "wallet_address": crypto_transfer_form.cleaned_data.get("wallet_address"),
-                }
-                request.session.modified = True
-
-                send_registration_request(request=request)
-
-                save_employee(request=request)
-
-                clean_session_after_employee_save(request=request)
-
-                return redirect(to=reverse(viewname="employees"))
+            return redirect(to=reverse(viewname="employees"))
 
     return render(
         request=request,

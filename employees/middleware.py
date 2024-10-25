@@ -1,0 +1,26 @@
+class RegistrationCleanUpMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        registration_in_progress = request.session.get("registration_in_progress", False)
+
+        if registration_in_progress and not "register-employee" in request.GET:
+            keys = [
+                "registration_in_progress",
+                "user",
+                "basic_information",
+                "contact_information",
+                "contract_information",
+                "benefit_information",
+                "banktransfer",
+                "prepaidtransfer",
+                "paypaltransfer",
+                "cryptotransfer",
+            ]
+
+            for key in keys:
+                if request.session.get(key):
+                    request.session.pop(key)
+
+        return self.get_response(request)

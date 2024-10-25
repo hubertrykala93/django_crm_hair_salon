@@ -1,0 +1,199 @@
+<div class="tabs">
+    <ul>
+        <li class="circle">
+            {% if not request.GET.tab %}
+            <a href="?register-employee" {% if not request.GET.tab %}class="active"{% endif %}><i class="icon fa-solid fa-user"></i></a>
+            {% else %}
+            <span><i class="icon fa-solid fa-user"></i></span>
+            {% endif %}
+        </li>
+
+        <li class="circle">
+            {% if request.GET.tab == 'basic-information' %}
+            <a href="?register-employee&tab=basic-information" {% if request.GET.tab == 'basic-information' %}class="active"{% endif %}><i class="icon fa-solid fa-circle-info"></i></a>
+            {% else %}
+            <span><i class="icon fa-solid fa-circle-info"></i></span>
+            {% endif %}
+        </li>
+
+        <li class="circle">
+            {% if request.GET.tab == 'contact-information' %}
+            <a href="?register-employee&tab=contact-information" {% if request.GET.tab == 'contact-information' %}class="active"{% endif %}><i class="icon fa-solid fa-address-card"></i></a>
+            {% else %}
+            <span><i class="icon fa-solid fa-address-card"></i></span>
+            {% endif %}
+        </li>
+
+        <li class="circle">
+            {% if request.GET.tab == 'contract-information' %}
+            <a href="?register-employee&tab=contract-information" {% if request.GET.tab == 'contract-information' %}class="active"{% endif %}><i class="icon fa-solid fa-file-signature"></i></a>
+            {% else %}
+            <i class="icon fa-solid fa-file-signature"></i>
+            {% endif %}
+        </li>
+
+        <li class="circle">
+            {% if request.GET.tab == 'benefits-information' %}
+            <a href="?register-employee&tab=benefits-information" {% if request.GET.tab == 'benefits-information' %}class="active"{% endif %}><i class="fa-solid fa-notes-medical"></i></a>
+            {% else %}
+            <span><i class="fa-solid fa-notes-medical"></i></span>
+            {% endif %}
+        </li>
+
+        <li class="circle">
+            {% if request.GET.tab == 'payment-information' %}
+            <a href="?register-employee&tab=payment-information" {% if request.GET.tab == 'payment-information' %}class="active"{% endif %}><i class="icon fa-solid fa-credit-card"></i></a>
+            {% else %}
+            <i class="icon fa-solid fa-credit-card"></i>
+            {% endif %}
+        </li>
+    </ul>
+</div>
+
+{% if 'register-employee' in request.GET and not request.GET.tab %}
+<div class="tab-content">
+    <form method="post" novalidate>
+        {% csrf_token %}
+        <h1 class="content-header">
+            Register Employee
+        </h1>
+        <div class="form-row">
+            <label for="email" class="info-label">Email *</label>
+            <input type="text" id="email" name="email" placeholder="Email Address" {% if register_form.email.value %}value="{{ register_form.email.value }}"{% endif %}>
+            {% if register_form.email.errors %}
+            {% for error in register_form.email.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-button">
+            <button type="submit" class="btn btn-submit-btn" name="register-employee">Next</button>
+        </div>
+    </form>
+</div>
+
+{% elif request.GET.tab == 'basic-information' %}
+<div class="tab-content">
+    <form method="post" novalidate>
+        <h1 class="content-header">
+            Basic Information
+        </h1>
+        {% csrf_token %}
+        <div class="form-row">
+            <label for="firstname">Firstname *</label>
+            <input type="text" id="firstname" name="firstname" placeholder="Firstname" {% if basic_information_form.firstname.value %}value="{{ basic_information_form.firstname.value }}"{% endif %}>
+            {% if basic_information_form.firstname.errors %}
+            {% for error in basic_information_form.firstname.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-row">
+            <label for="lastname">Lastname *</label>
+            <input type="text" id="lastname" name="lastname" placeholder="Lastname" {% if basic_information_form.lastname.value %}value="{{ basic_information_form.lastname.value }}"{% endif %}>
+            {% if basic_information_form.lastname.errors %}
+            {% for error in basic_information_form.lastname.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-row">
+            <label for="date_of_birth">Date of Birth *</label>
+            <input type="text" id="date_of_birth" name="date_of_birth" placeholder="Date of Birth" {% if basic_information_form.date_of_birth.value %}value="{{ basic_information_form.date_of_birth.value }}"{% endif %}>
+        </div>
+        {% if basic_information_form.date_of_birth.errors %}
+        {% for error in basic_information_form.date_of_birth.errors %}
+        <span class="form-error">{{ error }}</span>
+        {% endfor %}
+        {% endif %}
+        <div class="form-button">
+            <button type="submit" class="btn btn-submit-btn" name="basic-information">Next</button>
+        </div>
+    </form>
+</div>
+
+{% elif request.GET.tab == 'contact-information' %}
+<div class="tab-content">
+    <form method="post" novalidate>
+        <h1 class="content-header">
+            Contact Information
+        </h1>
+        {% csrf_token %}
+        <div class="form-row">
+            <label for="phone_number">Phone Number *</label>
+            <input type="text" id="phone_number" name="phone_number" placeholder="Phone Number" {% if contact_information_form.phone_number.value %}value="{{ contact_information_form.phone_number.value }}"{% endif %}>
+            {% if contact_information_form.phone_number.errors %}
+            {% for error in contact_information_form.phone_number.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-row">
+            <label for="country">Country *</label>
+            <input type="text" id="country" name="country" placeholder="Country" {% if contact_information_form.country.value %}value="{{ contact_information_form.country.value }}"{% endif %}>
+            {% if contact_information_form.country.errors %}
+            {% for error in contact_information_form.country.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-row">
+            <label for="province">Province *</label>
+            <input type="text" id="province" name="province" placeholder="Province" {% if contact_information_form.province.value %}value="{{ contact_information_form.province.value }}"{% endif %}>
+            {% if contact_information_form.province.errors %}
+            {% for error in contact_information_form.province.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-row">
+            <label for="city">City *</label>
+            <input type="text" id="city" name="city" placeholder="City" {% if contact_information_form.city.value %}value="{{ contact_information_form.city.value }}"{% endif %}>
+            {% if contact_information_form.city.errors %}
+            {% for error in contact_information_form.city.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-row">
+            <label for="postal_code">Postal Code *</label>
+            <input type="text" id="postal_code" name="postal_code" placeholder="Postal Code" {% if contact_information_form.postal_code.value %}value="{{ contact_information_form.postal_code.value }}"{% endif %}>
+            {% if contact_information_form.postal_code.errors %}
+            {% for error in contact_information_form.postal_code.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-row">
+            <label for="street">Street *</label>
+            <input type="text" id="street" name="street" placeholder="Street" {% if contact_information_form.street.value %}value="{{ contact_information_form.street.value }}"{% endif %}>
+            {% if contact_information_form.street.errors %}
+            {% for error in contact_information_form.street.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-row">
+            <label for="house_number">House Number *</label>
+            <input type="text" id="house_number" name="house_number" placeholder="House Number" {% if contact_information_form.province.value %}value="{{ contact_information_form.house_number.value }}"{% endif %}>
+            {% if contact_information_form.house_number.errors %}
+            {% for error in contact_information_form.house_number.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-row">
+            <label for="apartment_number">Apartment Number</label>
+            <input type="text" id="apartment_number" name="apartment_number" placeholder="Apartment Number" {% if contact_information_form.apartment_number.value %}value="{{ contact_information_form.apartment_number.value }}"{% endif %}>
+            {% if contact_information_form.apartment_number.errors %}
+            {% for error in contact_information_form.apartment_number.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-button">
+            <button type="submit" class="btn btn-submit-btn" name="contact-information">Next</button>
+        </div>
+    </form>
+</div>
+{% endif %}

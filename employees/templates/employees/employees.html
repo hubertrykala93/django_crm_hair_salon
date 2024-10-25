@@ -38,6 +38,7 @@
     {% if 'register-employee' in request.GET %}
     {% include 'employees/register-employee.html' %}
     {% elif 'edit-employee' in request.GET %}
+    {% include 'employees/edit-employee.html' %}
     {% endif %}
     {% endif %}
 </div>

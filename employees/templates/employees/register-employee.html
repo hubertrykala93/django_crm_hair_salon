@@ -461,7 +461,7 @@
             {% endif %}
         </div>
         <div class="form-button">
-            <button type="submit" class="btn btn-submit-btn" name="bank-transfer">Save</button>
+            <button type="submit" class="btn btn-submit-btn" name="payment-information" value="bank-transfer">Save</button>
         </div>
     </form>
     {% elif request.GET.method == 'prepaid-transfer' %}
@@ -498,7 +498,7 @@
             {% endif %}
         </div>
         <div class="form-button">
-            <button type="submit" class="btn btn-submit-btn" name="prepaid-transfer">Save</button>
+            <button type="submit" class="btn btn-submit-btn" name="payment-information" value="prepaid-transfer">Save</button>
         </div>
     </form>
     {% elif request.GET.method == 'paypal-transfer' %}
@@ -517,7 +517,7 @@
             {% endif %}
         </div>
         <div class="form-button">
-            <button type="submit" class="btn btn-submit-btn" name="paypal-transfer">Save</button>
+            <button type="submit" class="btn btn-submit-btn" name="payment-information" value="paypal-transfer">Save</button>
         </div>
     </form>
     {% else %}
@@ -552,7 +552,7 @@
             {% endif %}
         </div>
         <div class="form-button">
-            <button type="submit" class="btn btn-submit-btn" name="crypto-transfer">Save</button>
+            <button type="submit" class="btn btn-submit-btn" name="payment-information" value="crypto-transfer">Save</button>
         </div>
     </form>
     {% endif %}
