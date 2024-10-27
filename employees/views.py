@@ -416,8 +416,8 @@ def benefits_information(request, form, data):
 
 @login_required(login_url="index")
 def employees(request):
-    print(request.session.items())
     # Register Employee
+    print(request.session["benefit_information"])
     register_form = RegisterForm()
     basic_information_form = BasicInformationForm()
     contact_information_form = ContactInformationForm()
@@ -467,30 +467,6 @@ def employees(request):
                     return result
 
             if "contract-information" in request.POST:
-                # data = request.POST.copy()
-                #
-                # if request.POST.get("contract_type"):
-                #     contract_type_instance = ContractType.objects.get(slug=request.POST["contract_type"])
-                #     data["contract_type"] = contract_type_instance.pk
-                #
-                # if request.POST.get("job_type"):
-                #     job_type_instance = JobType.objects.get(slug=request.POST["job_type"])
-                #     data["job_type"] = job_type_instance.pk
-                #
-                # if request.POST.get("job_position"):
-                #     job_position_instance = JobPosition.objects.get(slug=request.POST["job_position"])
-                #     data["job_position"] = job_position_instance.pk
-                #
-                # if request.POST.get("payment_frequency"):
-                #     payment_frequency_instance = PaymentFrequency.objects.get(slug=request.POST["payment_frequency"])
-                #     data["payment_frequency"] = payment_frequency_instance.pk
-                #
-                # if request.POST.get("currency"):
-                #     currency_instance = Currency.objects.get(slug=request.POST["currency"])
-                #     data["currency"] = currency_instance.pk
-
-                # contract_information_form = ContractForm(data=data)
-                print(f"Request POST -> {request.POST}")
                 contract_information_form = ContractForm(data=request.POST)
 
                 result = contract_information(request=request, form=contract_information_form)
@@ -773,11 +749,10 @@ def employees(request):
                 update_benefits_form = BenefitsForm(data=request.POST)
 
                 if update_benefits_form.is_valid():
-                    print("Form is Valid.")
+                    pass
 
                 else:
-                    print("Form is not Valid.")
-                    print(update_benefits_form.errors)
+                    pass
 
         except User.DoesNotExist:
             messages.error(

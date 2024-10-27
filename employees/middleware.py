@@ -4,8 +4,6 @@ class RegistrationCleanUpMiddleware:
 
     def __call__(self, request):
         registration_in_progress = request.session.get("registration_in_progress", False)
-        print(registration_in_progress)
-        print(request.GET)
 
         if registration_in_progress and not "register-employee" in request.GET:
             keys = [
