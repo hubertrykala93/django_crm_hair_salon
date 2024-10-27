@@ -67,6 +67,9 @@
             {% endif %}
         </div>
         <div class="form-button">
+            <a href="{% url 'employees' %}">
+                <button type="button" class="btn btn-submit-byn">Back</button>
+            </a>
             <button type="submit" class="btn btn-submit-btn" name="update-employee">Next</button>
         </div>
     </form>
@@ -76,7 +79,7 @@
 <div class="tab-content">
     <form method="post" novalidate>
         <h1 class="content-header">
-            Basic Information
+            Update Basic Information
         </h1>
         {% csrf_token %}
         <div class="form-row">
@@ -107,6 +110,9 @@
         {% endfor %}
         {% endif %}
         <div class="form-button">
+            <a href="{% url 'employees' %}?update-employee={{ updated_employee.pk }}">
+                <button type="button" class="btn btn-submit-btn">Back</button>
+            </a>
             <button type="submit" class="btn btn-submit-btn" name="update-basic-information">Next</button>
         </div>
     </form>
@@ -116,7 +122,7 @@
 <div class="tab-content">
     <form method="post" novalidate>
         <h1 class="content-header">
-            Contact Information
+            Update Contact Information
         </h1>
         {% csrf_token %}
         <div class="form-row">
@@ -192,8 +198,390 @@
             {% endif %}
         </div>
         <div class="form-button">
+            <a href="{% url 'employees' %}?update-employee={{ updated_employee.pk }}&tab=basic-information">
+                <button type="button" class="btn btn-submit-btn">Back</button>
+            </a>
             <button type="submit" class="btn btn-submit-btn" name="update-contact-information">Next</button>
         </div>
     </form>
+</div>
+
+{% elif request.GET.tab == 'contract-information' %}
+<div class="tab-content">
+    <form method="post" novalidate>
+        <h1 class="content-header">
+        Update Contract Information
+        </h1>
+        {% csrf_token %}
+        <div class="form-row">
+            <label for="contract_type">Contract Type</label>
+            {% if contract_types %}
+            <select id="contract_type" name="contract_type">
+                <option value="">-----</option>
+                {% for contract_type in contract_types %}
+                <option value="{{ contract_type.slug }}" {% if updated_employee.profile.contract.contract_type == contract_type %}selected{% endif %}>{{ contract_type }}</option>
+                {% endfor %}
+            </select>
+            {% endif %}
+            {% if update_contract_information_form.contract_type.errors %}
+            {% for error in update_contract_information_form.contract_type.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-row">
+            <label for="job_type">Job Type</label>
+            {% if job_types %}
+            <select id="job_type" name="job_type">
+                <option value="">-----</option>
+                {% for job_type in job_types %}
+                <option value="{{ job_type.slug }}" {% if updated_employee.profile.contract.job_type == job_type %}selected{% endif %}>{{ job_type }}</option>
+                {% endfor %}
+            </select>
+            {% endif %}
+            {% if update_contract_information_form.job_type.errors %}
+            {% for error in update_contract_information_form.job_type.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-row">
+            <label for="job_position">Job Position</label>
+            {% if job_positions %}
+            <select id="job_position" name="job_position">
+                <option value="">-----</option>
+                {% for job_position in job_positions %}
+                <option value="{{ job_position.slug }}" {% if updated_employee.profile.contract.job_position == job_position %}selected{% endif %}>{{ job_position }}</option>
+                {% endfor %}
+            </select>
+            {% endif %}
+            {% if update_contract_information_form.job_position.errors %}
+            {% for error in update_contract_information_form.job_position.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-row">
+            <label for="payment_frequency">Payment Frequency</label>
+            {% if payment_frequencies %}
+            <select id="payment_frequency" name="payment_frequency">
+                <option value="">-----</option>
+                {% for payment_frequency in payment_frequencies %}
+                <option value="{{ payment_frequency.slug }}" {% if updated_employee.profile.contract.payment_frequency == payment_frequency %}selected{% endif %}>{{ payment_frequency }}</option>
+                {% endfor %}
+            </select>
+            {% endif %}
+            {% if update_contract_information_form.payment_frequency.errors %}
+            {% for error in update_contract_information_form.payment_frequency.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-row">
+            <label for="work_hours_per_week">Work Hours per Week</label>
+            <input type="text" id="work_hours_per_week" name="work_hours_per_week" placeholder="Work Hours per Week" value="{% if update_contract_information_form.work_hours_per_week.errors %}{{ updated_employee.profile.contract.work_hours_per_week }}{% elif update_contract_information_form.work_hours_per_week.value %}{{ update_contract_information_form.work_hours_per_week.value }}{% else %}{% if updated_employee.profile.contract.work_hours_per_week is None %}{% else %}{{ updated_employee.profile.contract.work_hours_per_week }}{% endif %}{% endif %}">
+            {% if update_contract_information_form.work_hours_per_week.errors %}
+            {% for error in update_contract_information_form.work_hours_per_week.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-row">
+            <label for="currency">Currency</label>
+            {% if currencies %}
+            <select id="currency" name="currency">
+                <option value="">-----</option>
+                {% for currency in currencies %}
+                <option value="{{ currency.slug }}" {% if updated_employee.profile.contract.currency == currency %}selected{% endif %}>{{ currency }}</option>
+                {% endfor %}
+            </select>
+            {% endif %}
+            {% if update_contract_information_form.currency.errors %}
+            {% for error in update_contract_information_form.currency.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-row">
+            <label for="start_date">Start Date</label>
+            <input type="text" id="start_date" name="start_date" placeholder="Start Date" value="{% if updated_employee.profile.contract.start_date %}{{ updated_employee.profile.contract.start_date|date:'Y-m-d' }}{% endif %}">
+            {% if update_contract_information_form.start_date.errors %}
+            {% for error in update_contract_information_form.start_date.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-row">
+            <label for="end_date">End Date</label>
+            <input type="text" id="end_date" name="end_date" placeholder="End Date" value="{% if updated_employee.profile.contract.end_date %}{{ updated_employee.profile.contract.end_date|date:'Y-m-d' }}{% endif %}">
+            {% if update_contract_information_form.end_date.errors %}
+            {% for error in update_contract_information_form.end_date.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-row">
+            <label for="salary">Salary</label>
+            <input type="text" id="salary" name="salary" placeholder="Salary" value="{% if update_contract_information_form.salary.errors %}{{ updated_employee.profile.contract.salary }}{% elif update_contract_information_form.salary.value %}{{ update_contract_information_form.salary.value }}{% else %}{{ updated_employee.profile.contract.salary }}{% endif %}">
+            {% if update_contract_information_form.salary.errors %}
+            {% for error in update_contract_information_form.salary.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-button">
+            <a href="{% url 'employees' %}?update-employee={{ updated_employee.pk }}&tab=contact-information">
+                <button type="button" class="btn btn-submit-btn">Back</button>
+            </a>
+            <button type="submit" class="btn btn-submit-btn" name="update-contract-information">Next</button>
+        </div>
+    </form>
+</div>
+
+{% elif request.GET.tab == 'benefits-information' %}
+<div class="tab-content">
+    <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="form-flex">
+            <div class="form-block">
+                {% if sport_benefits %}
+                <div class="form-row">
+                    <h1 class="content-header">
+                        Sport Benefits
+                    </h1>
+                    {% for sport_benefit in sport_benefits %}
+                    <label class="form-checkbox" for="sport_benefit">
+                        <input type="checkbox" id="sport_benefit" name="sport_benefits" value="{{ sport_benefit.slug }}" {% if sport_benefit in updated_employee.profile.contract.benefits.sport_benefits.all %}checked{% endif %}>
+                        {{ sport_benefit }}
+                    </label>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% if health_benefits %}
+                <div class="form-row">
+                    <h1 class="content-header">
+                        Health Benefits
+                    </h1>
+                    {% for health_benefit in health_benefits %}
+                    <label class="form-checkbox" for="health_benefit">
+                        <input type="checkbox" id="health_benefit" name="health_benefits" value="{{ health_benefit.slug }}" {% if health_benefit in updated_employee.profile.contract.benefits.health_benefits.all %}checked{% endif %}>
+                        {{ health_benefit }}
+                    </label>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            <div class="form-block">
+                {% if insurance_benefits %}
+                <div class="form-row">
+                    <h1 class="content-header">
+                        Insurance Benefits
+                    </h1>
+                    {% for insurance_benefit in insurance_benefits %}
+                    <label for="insurance_benefit" class="form-checkbox">
+                        <input type="checkbox" id="insurance_benefit" name="insurance_benefits" value="{{ insurance_benefit.slug }}" {% if insurance_benefit in updated_employee.profile.contract.benefits.insurance_benefits.all %}checked{% endif %}>
+                        {{ insurance_benefit }}
+                    </label>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% if development_benefits %}
+                <div class="form-row">
+                    <h1 class="content-header">
+                        Development Benefits
+                    </h1>
+                    {% for development_benefit in development_benefits %}
+                    <label for="development_benefit" class="form-checkbox">
+                        <input type="checkbox" id="development_benefit" name="development_benefits" value="{{ development_benefit.slug }}" {% if development_benefit in updated_employee.profile.contract.benefits.development_benefits.all %}checked{% endif %}>
+                        {{ development_benefit }}
+                    </label>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="form-button">
+            <a href="{% url 'employees' %}?update-employee={{ updated_employee.pk }}&tab=contract-information">
+                <button type="button" class="btn btn-submit-btn">Back</button>
+            </a>
+            <button type="submit" class="btn btn-submit-btn" name="update-benefits-information">Next</button>
+        </div>
+    </form>
+</div>
+
+{% elif request.GET.tab == 'payment-information' %}
+<div class="tab-content">
+    <div class="payment-tabs">
+        <ul>
+            <li class="circle">
+                <a href="?register-employee&tab=payment-information&method=bank-transfer" {% if request.GET.method == 'bank-transfer' %}class="active"{% endif %}><i class="fa-solid fa-money-check-dollar"></i></a>
+            </li>
+
+            <li class="circle">
+                <a href="?register-employee&tab=payment-information&method=prepaid-transfer" {% if request.GET.method == 'prepaid-transfer' %}class="active"{% endif %}><i class="fa-brands fa-cc-visa"></i></a>
+            </li>
+
+            <li class="circle">
+                <a href="?register-employee&tab=payment-information&method=paypal-transfer" {% if request.GET.method == 'paypal-transfer' %}class="active"{% endif %}><i class="fa-brands fa-paypal"></i></a>
+            </li>
+
+            <li class="circle">
+                <a href="?register-employee&tab=payment-information&method=crypto-transfer" {% if request.GET.method == 'crypto-transfer' %}class="active"{% endif %}><i class="fa-brands fa-bitcoin"></i></a>
+            </li>
+        </ul>
+    </div>
+
+    {% if request.GET.method == 'bank-transfer' %}
+    <form method="post" novalidate>
+        {% csrf_token %}
+        <h1 class="content-header">
+            Bank Transfer
+        </h1>
+        <div class="form-row">
+            <label for="bank_name">Bank Name *</label>
+            <input type="text" id="bank_name" name="bank_name" placeholder="Bank Name" {% if bank_transfer_form.bank_name.value %}value="{{ bank_transfer_form.bank_name.value }}"{% endif %}>
+            {% if bank_transfer_form.bank_name.errors %}
+            {% for error in bank_transfer_form.bank_name.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-row">
+            <label for="iban">IBAN *</label>
+            <input type="text" id="iban" name="iban" placeholder="IBAN" {% if bank_transfer_form.iban.value %}value="{{ bank_transfer_form.iban.value }}"{% endif %}>
+            {% if bank_transfer_form.iban.errors %}
+            {% for error in bank_transfer_form.iban.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-row">
+            <label for="swift">SWIFT *</label>
+            <input type="text" id="swift" name="swift" placeholder="SWIFT" {% if bank_transfer_form.swift.value %}value="{{ bank_transfer_form.swift.value }}"{% endif %}>
+            {% if bank_transfer_form.swift.errors %}
+            {% for error in bank_transfer_form.swift.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-row">
+            <label for="account_number">Account Number *</label>
+            <input type="text" id="account_number" name="account_number" placeholder="Account Number" {% if bank_transfer_form.account_number.value %}value="{{ bank_transfer_form.account_number.value }}"{% endif %}>
+            {% if bank_transfer_form.account_number.errors %}
+            {% for error in bank_transfer_form.account_number.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-button">
+            <a href="{% url 'employees' %}?register-employee&tab=benefits-information">
+                <button type="button" class="btn btn-submit-btn">Back</button>
+            </a>
+            <button type="submit" class="btn btn-submit-btn" name="payment-information" value="bank-transfer">Save</button>
+        </div>
+    </form>
+    {% elif request.GET.method == 'prepaid-transfer' %}
+    <form method="post" novalidate>
+        {% csrf_token %}
+        <h1 class="content-header">
+            Prepaid Transfer
+        </h1>
+        <div class="form-row">
+            <label for="owner_name">Owner Name *</label>
+            <input type="text" id="owner_name" name="owner_name" placeholder="Owner Name" {% if prepaid_transfer_form.owner_name.value %}value="{{ prepaid_transfer_form.owner_name.value }}"{% endif %}>
+            {% if prepaid_transfer_form.owner_name.errors %}
+            {% for error in prepaid_transfer_form.owner_name.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-row">
+            <label for="card_number">Card Number *</label>
+            <input type="text" id="card_number" name="card_number" placeholder="Card Number" {% if prepaid_transfer_form.card_number.value %}value="{{ prepaid_transfer_form.card_number.value }}"{% endif %}>
+            {% if prepaid_transfer_form.card_number.errors %}
+            {% for error in prepaid_transfer_form.card_number.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-row">
+            <label for="expiration_date">Expiration Date *</label>
+            <input type="text" id="expiration_date" name="expiration_date" placeholder="Expiration Date" {% if prepaid_transfer_form.expiration_date.value %}value="{{ prepaid_transfer_form.expiration_date.value }}"{% endif %}>
+            {% if prepaid_transfer_form.expiration_date.errors %}
+            {% for error in prepaid_transfer_form.expiration_date.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-button">
+            <a href="{% url 'employees' %}?register-employee&tab=benefits-information">
+                <button type="button" class="btn btn-submit-btn">Back</button>
+            </a>
+            <button type="submit" class="btn btn-submit-btn" name="payment-information" value="prepaid-transfer">Save</button>
+        </div>
+    </form>
+    {% elif request.GET.method == 'paypal-transfer' %}
+    <form method="post" novalidate>
+        {% csrf_token %}
+        <h1 class="content-header">
+            Paypal Transfer
+        </h1>
+        <div class="form-row">
+            <label for="paypal_email">PayPal Email *</label>
+            <input type="text" id="paypal_email" name="paypal_email" placeholder="PayPal Email" {% if paypal_transfer_form.paypal_email.value %}value="{{ paypal_transfer_form.paypal_email.value }}"{% endif %}>
+            {% if paypal_transfer_form.paypal_email.errors %}
+            {% for error in paypal_transfer_form.paypal_email.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-button">
+            <a href="{% url 'employees' %}?register-employee&tab=benefits-information">
+                <button type="button" class="btn btn-submit-btn">Back</button>
+            </a>
+            <button type="submit" class="btn btn-submit-btn" name="payment-information" value="paypal-transfer">Save</button>
+        </div>
+    </form>
+    {% else %}
+        <form method="post" novalidate>
+        {% csrf_token %}
+        <h1 class="content-header">
+            Crypto Transfer
+        </h1>
+        <div class="form-row">
+            <label for="contract_type">Cryptocurrency *</label>
+            {% if cryptocurrencies %}
+            <select id="cryptocurrency" name="cryptocurrency">
+                <option value="">-----</option>
+                {% for cryptocurrency in cryptocurrencies %}
+                <option value="{{ cryptocurrency.code }}" {% if request.POST.cryptocurrency == cryptocurrency.code %}selected{% endif %}>{{ cryptocurrency }}</option>
+                {% endfor %}
+            </select>
+            {% endif %}
+            {% if crypto_transfer_form.cryptocurrency.errors %}
+            {% for error in crypto_transfer_form.cryptocurrency.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-row">
+            <label for="wallet_address">Wallet Address *</label>
+            <input type="text" id="wallet_address" name="wallet_address" placeholder="Wallet Address" {% if crypto_transfer_form.wallet_address.value %}value="{{ crypto_transfer_form.wallet_address.value }}"{% endif %}>
+            {% if crypto_transfer_form.wallet_address.errors %}
+            {% for error in crypto_transfer_form.wallet_address.errors %}
+            <span class="form-error">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-button">
+            <a href="{% url 'employees' %}?register-employee&tab=benefits-information">
+                <button type="button" class="btn btn-submit-btn">Back</button>
+            </a>
+            <button type="submit" class="btn btn-submit-btn" name="payment-information" value="crypto-transfer">Save</button>
+        </div>
+    </form>
+    {% endif %}
 </div>
 {% endif %}

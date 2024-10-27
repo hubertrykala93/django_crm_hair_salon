@@ -409,6 +409,10 @@ table td, table th {
     margin-top: 30px;
 }
 
+.form-button a {
+    margin-right: 10px;
+}
+
 .tabs ul {
     display: flex;
     justify-content: space-around;

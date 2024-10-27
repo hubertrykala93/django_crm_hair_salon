@@ -189,7 +189,7 @@ class AdminContractForm(forms.ModelForm):
         return end_date
 
 
-class ContractForm(forms.ModelForm):
+class ContractForm(forms.Form):
     contract_type = forms.ModelChoiceField(
         error_messages={
             "required": "Contract Type is required.",
@@ -243,21 +243,8 @@ class ContractForm(forms.ModelForm):
         },
     )
 
-    class Meta:
-        model = Contract
-        fields = [
-            "contract_type",
-            "job_type",
-            "job_position",
-            "start_date",
-            "end_date",
-            "salary",
-            "currency",
-            "payment_frequency",
-            "work_hours_per_week",
-        ]
-
     def __init__(self, *args, **kwargs):
+        self.instance = kwargs.pop("instance", None)
         super(ContractForm, self).__init__(*args, **kwargs)
 
         self.fields["contract_type"].queryset = ContractType.objects.all()

@@ -59,7 +59,7 @@
         </h1>
         <div class="form-row">
             <label for="email" class="info-label">Email *</label>
-            <input type="text" id="email" name="email" placeholder="Email Address" {% if register_form.email.value %}value="{{ register_form.email.value }}"{% endif %}>
+            <input type="text" id="email" name="email" placeholder="Email Address" {% if request.session.user %}{% if request.session.user.email %}value="{{ request.session.user.email }}"{% endif %}{% elif register_form.email.value %}value="{{ register_form.email.value }}"{% endif %}>
             {% if register_form.email.errors %}
             {% for error in register_form.email.errors %}
             <span class="form-error">{{ error }}</span>
@@ -67,6 +67,9 @@
             {% endif %}
         </div>
         <div class="form-button">
+            <a href="{% url 'employees' %}">
+                <button type="button" class="btn btn-submit-btn">Back</button>
+            </a>
             <button type="submit" class="btn btn-submit-btn" name="register-employee">Next</button>
         </div>
     </form>
@@ -81,7 +84,7 @@
         {% csrf_token %}
         <div class="form-row">
             <label for="firstname">Firstname *</label>
-            <input type="text" id="firstname" name="firstname" placeholder="Firstname" {% if basic_information_form.firstname.value %}value="{{ basic_information_form.firstname.value }}"{% endif %}>
+            <input type="text" id="firstname" name="firstname" placeholder="Firstname" {% if request.session.basic_information %}{% if request.session.basic_information.firstname %}value="{{ request.session.basic_information.firstname }}"{% endif %}{% elif basic_information_form.firstname.value %}value="{{ basic_information_form.firstname.value }}"{% endif %}>
             {% if basic_information_form.firstname.errors %}
             {% for error in basic_information_form.firstname.errors %}
             <span class="form-error">{{ error }}</span>
@@ -90,7 +93,7 @@
         </div>
         <div class="form-row">
             <label for="lastname">Lastname *</label>
-            <input type="text" id="lastname" name="lastname" placeholder="Lastname" {% if basic_information_form.lastname.value %}value="{{ basic_information_form.lastname.value }}"{% endif %}>
+            <input type="text" id="lastname" name="lastname" placeholder="Lastname" {% if request.session.basic_information %}{% if request.session.basic_information.lastname %}value="{{ request.session.basic_information.lastname }}"{% endif %}{% elif basic_information_form.lastname.value %}value="{{ basic_information_form.lastname.value }}"{% endif %}>
             {% if basic_information_form.lastname.errors %}
             {% for error in basic_information_form.lastname.errors %}
             <span class="form-error">{{ error }}</span>
@@ -99,7 +102,7 @@
         </div>
         <div class="form-row">
             <label for="date_of_birth">Date of Birth *</label>
-            <input type="text" id="date_of_birth" name="date_of_birth" placeholder="Date of Birth" {% if basic_information_form.date_of_birth.value %}value="{{ basic_information_form.date_of_birth.value }}"{% endif %}>
+            <input type="text" id="date_of_birth" name="date_of_birth" placeholder="Date of Birth" {% if request.session.basic_information %}{% if request.session.basic_information.date_of_birth %}value="{{ request.session.basic_information.date_of_birth }}"{% endif %}{% elif basic_information_form.date_of_birth.value %}value="{{ basic_information_form.date_of_birth.value }}"{% endif %}>
         </div>
         {% if basic_information_form.date_of_birth.errors %}
         {% for error in basic_information_form.date_of_birth.errors %}
@@ -107,6 +110,9 @@
         {% endfor %}
         {% endif %}
         <div class="form-button">
+            <a href="{% url 'employees' %}?register-employee">
+                <button type="button" class="btn btn-submit-btn">Back</button>
+            </a>
             <button type="submit" class="btn btn-submit-btn" name="basic-information">Next</button>
         </div>
     </form>
@@ -121,7 +127,7 @@
         {% csrf_token %}
         <div class="form-row">
             <label for="phone_number">Phone Number *</label>
-            <input type="text" id="phone_number" name="phone_number" placeholder="Phone Number" {% if contact_information_form.phone_number.value %}value="{{ contact_information_form.phone_number.value }}"{% endif %}>
+            <input type="text" id="phone_number" name="phone_number" placeholder="Phone Number" {% if request.session.contact_information %}{% if request.session.contact_information.phone_number %}value="{{ request.session.contact_information.phone_number }}"{% endif %}{% elif contact_information_form.phone_number.value %}value="{{ contact_information_form.phone_number.value }}"{% endif %}>
             {% if contact_information_form.phone_number.errors %}
             {% for error in contact_information_form.phone_number.errors %}
             <span class="form-error">{{ error }}</span>
@@ -130,7 +136,7 @@
         </div>
         <div class="form-row">
             <label for="country">Country *</label>
-            <input type="text" id="country" name="country" placeholder="Country" {% if contact_information_form.country.value %}value="{{ contact_information_form.country.value }}"{% endif %}>
+            <input type="text" id="country" name="country" placeholder="Country" {% if request.session.contact_information %}{% if request.session.contact_information.country %}value="{{ request.session.contact_information.country }}"{% endif %}{% elif contact_information_form.country.value %}value="{{ contact_information_form.country.value }}"{% endif %}>
             {% if contact_information_form.country.errors %}
             {% for error in contact_information_form.country.errors %}
             <span class="form-error">{{ error }}</span>
@@ -139,7 +145,7 @@
         </div>
         <div class="form-row">
             <label for="province">Province *</label>
-            <input type="text" id="province" name="province" placeholder="Province" {% if contact_information_form.province.value %}value="{{ contact_information_form.province.value }}"{% endif %}>
+            <input type="text" id="province" name="province" placeholder="Province" {% if request.session.contact_information %}{% if request.session.contact_information.province %}value="{{ request.session.contact_information.province }}"{% endif %}{% elif contact_information_form.province.value %}value="{{ contact_information_form.province.value }}"{% endif %}>
             {% if contact_information_form.province.errors %}
             {% for error in contact_information_form.province.errors %}
             <span class="form-error">{{ error }}</span>
@@ -148,7 +154,7 @@
         </div>
         <div class="form-row">
             <label for="city">City *</label>
-            <input type="text" id="city" name="city" placeholder="City" {% if contact_information_form.city.value %}value="{{ contact_information_form.city.value }}"{% endif %}>
+            <input type="text" id="city" name="city" placeholder="City" {% if request.session.contact_information %}{% if request.session.contact_information.city %}value="{{ request.session.contact_information.city }}"{% endif %}{% elif contact_information_form.city.value %}value="{{ contact_information_form.city.value }}"{% endif %}>
             {% if contact_information_form.city.errors %}
             {% for error in contact_information_form.city.errors %}
             <span class="form-error">{{ error }}</span>
@@ -157,7 +163,7 @@
         </div>
         <div class="form-row">
             <label for="postal_code">Postal Code *</label>
-            <input type="text" id="postal_code" name="postal_code" placeholder="Postal Code" {% if contact_information_form.postal_code.value %}value="{{ contact_information_form.postal_code.value }}"{% endif %}>
+            <input type="text" id="postal_code" name="postal_code" placeholder="Postal Code" {% if request.session.contact_information %}{% if request.session.contact_information.postal_code %}value="{{ request.session.contact_information.postal_code }}"{% endif %}{% elif contact_information_form.postal_code.value %}value="{{ contact_information_form.postal_code.value }}"{% endif %}>
             {% if contact_information_form.postal_code.errors %}
             {% for error in contact_information_form.postal_code.errors %}
             <span class="form-error">{{ error }}</span>
@@ -166,7 +172,7 @@
         </div>
         <div class="form-row">
             <label for="street">Street *</label>
-            <input type="text" id="street" name="street" placeholder="Street" {% if contact_information_form.street.value %}value="{{ contact_information_form.street.value }}"{% endif %}>
+            <input type="text" id="street" name="street" placeholder="Street" {% if request.session.contact_information %}{% if request.session.contact_information.street %}value="{{ request.session.contact_information.street }}"{% endif %}{% elif contact_information_form.street.value %}value="{{ contact_information_form.street.value }}"{% endif %}>
             {% if contact_information_form.street.errors %}
             {% for error in contact_information_form.street.errors %}
             <span class="form-error">{{ error }}</span>
@@ -175,7 +181,7 @@
         </div>
         <div class="form-row">
             <label for="house_number">House Number *</label>
-            <input type="text" id="house_number" name="house_number" placeholder="House Number" {% if contact_information_form.province.value %}value="{{ contact_information_form.house_number.value }}"{% endif %}>
+            <input type="text" id="house_number" name="house_number" placeholder="House Number" {% if request.session.contact_information %}{% if request.session.contact_information.house_number %}value="{{ request.session.contact_information.house_number }}"{% endif %}{% elif contact_information_form.house_number.value %}value="{{ contact_information_form.house_number.value }}"{% endif %}>
             {% if contact_information_form.house_number.errors %}
             {% for error in contact_information_form.house_number.errors %}
             <span class="form-error">{{ error }}</span>
@@ -184,7 +190,7 @@
         </div>
         <div class="form-row">
             <label for="apartment_number">Apartment Number</label>
-            <input type="text" id="apartment_number" name="apartment_number" placeholder="Apartment Number" {% if contact_information_form.apartment_number.value %}value="{{ contact_information_form.apartment_number.value }}"{% endif %}>
+            <input type="text" id="apartment_number" name="apartment_number" placeholder="Apartment Number" {% if request.session.contact_information %}{% if request.session.contact_information.apartment_number %}value="{{ request.session.contact_information.apartment_number }}"{% endif %}{% elif contact_information_form.apartment_number.value %}value="{{ contact_information_form.apartment_number.value }}"{% endif %}>
             {% if contact_information_form.apartment_number.errors %}
             {% for error in contact_information_form.apartment_number.errors %}
             <span class="form-error">{{ error }}</span>
@@ -192,6 +198,9 @@
             {% endif %}
         </div>
         <div class="form-button">
+            <a href="{% url 'employees' %}?register-employee&tab=basic-information">
+                <button type="button" class="btn btn-submit-btn">Back</button>
+            </a>
             <button type="submit" class="btn btn-submit-btn" name="contact-information">Next</button>
         </div>
     </form>
@@ -210,7 +219,7 @@
             <select id="contract_type" name="contract_type">
                 <option value="">-----</option>
                 {% for contract_type in contract_types %}
-                <option value="{{ contract_type.slug }}" {% if request.POST.contract_type == contract_type.slug %}selected{% endif %}>{{ contract_type }}</option>
+                <option value="{{ contract_type.pk }}" {% if request.session.contract_information %}{% if request.session.contract_information.contract_type %}{% if request.session.contract_information.contract_type == contract_type.pk %}selected{% endif %}{% endif %}{% elif request.POST.contract_type == contract_type.slug %}selected{% endif %}>{{ contract_type }}</option>
                 {% endfor %}
             </select>
             {% endif %}
@@ -226,7 +235,7 @@
             <select id="job_type" name="job_type">
                 <option value="">-----</option>
                 {% for job_type in job_types %}
-                <option value="{{ job_type.slug }}" {% if request.POST.job_type == job_type.slug %}selected{% endif %}>{{ job_type }}</option>
+                <option value="{{ job_type.slug }}" {% if request.session.contract_information %}{% if request.session.contract_information.job_type %}{% if request.session.contract_information.job_type == job_type.pk %}selected{% endif %}{% endif %}{% elif request.POST.job_type == job_type.slug %}selected{% endif %}>{{ job_type }}</option>
                 {% endfor %}
             </select>
             {% endif %}
@@ -242,7 +251,7 @@
             <select id="job_position" name="job_position">
                 <option value="">-----</option>
                 {% for job_position in job_positions %}
-                <option value="{{ job_position.slug }}" {% if request.POST.job_position == job_position.slug %}selected{% endif %}>{{ job_position }}</option>
+                <option value="{{ job_position.slug }}" {% if request.session.contract_information %}{% if request.session.contract_information.job_position %}{% if request.session.contract_information.job_position == job_position.pk %}selected{% endif %}{% endif %}{% elif request.POST.job_position == job_position.slug %}selected{% endif %}>{{ job_position }}</option>
                 {% endfor %}
             </select>
             {% endif %}
@@ -258,7 +267,7 @@
             <select id="payment_frequency" name="payment_frequency">
                 <option value="">-----</option>
                 {% for payment_frequency in payment_frequencies %}
-                <option value="{{ payment_frequency.slug }}" {% if request.POST.payment_frequency == payment_frequency.slug %}selected{% endif %}>{{ payment_frequency }}</option>
+                <option value="{{ payment_frequency.slug }}" {% if request.session.contract_information %}{% if request.session.contract_information.payment_frequency %}{% if request.session.contract_information.payment_frequency == payment_frequency.pk %}selected{% endif %}{% endif %}{% elif request.POST.payment_frequency == payment_frequency.slug %}selected{% endif %}>{{ payment_frequency }}</option>
                 {% endfor %}
             </select>
             {% endif %}
@@ -270,7 +279,7 @@
         </div>
         <div class="form-row">
             <label for="work_hours_per_week">Work Hours per Week</label>
-            <input type="text" id="work_hours_per_week" name="work_hours_per_week" placeholder="Work Hours per Week" {% if contract_information_form.work_hours_per_week.value %}value="{{ contract_information_form.work_hours_per_week.value }}"{% endif %}>
+            <input type="text" id="work_hours_per_week" name="work_hours_per_week" placeholder="Work Hours per Week" {% if request.session.contract_information %}{% if request.session.contract_information.work_hours_per_week %}value="{{ request.session.contract_information.work_hours_per_week }}"{% endif %}{% elif contract_information_form.work_hours_per_week.value %}value="{{ contract_information_form.work_hours_per_week.value }}"{% endif %}>
             {% if contract_information_form.work_hours_per_week.errors %}
             {% for error in contract_information_form.work_hours_per_week.errors %}
             <span class="form-error">{{ error }}</span>
@@ -283,7 +292,7 @@
             <select id="currency" name="currency">
                 <option value="">-----</option>
                 {% for currency in currencies %}
-                <option value="{{ currency.slug }}" {% if request.POST.currency == currency.slug %}selected{% endif %}>{{ currency }}</option>
+                <option value="{{ currency.slug }}" {% if request.session.contract_information %}{% if request.session.contract_information.currency %}{% if request.session.contract_information.currency == currency.pk %}selected{% endif %}{% endif %}{% elif request.POST.currency == currency.slug %}selected{% endif %}>{{ currency }}</option>
                 {% endfor %}
             </select>
             {% endif %}
@@ -295,7 +304,7 @@
         </div>
         <div class="form-row">
             <label for="start_date">Start Date *</label>
-            <input type="text" id="start_date" name="start_date" placeholder="Start Date" {% if contract_information_form.start_date.value %}value="{{ contract_information_form.start_date.value }}"{% endif %}>
+            <input type="text" id="start_date" name="start_date" placeholder="Start Date" {% if request.session.contract_information %}{% if request.session.contract_information.start_date %}value="{{ request.session.contract_information.start_date }}"{% endif %}{% elif contract_information_form.start_date.value %}value="{{ contract_information_form.start_date.value }}"{% endif %}>
             {% if contract_information_form.start_date.errors %}
             {% for error in contract_information_form.start_date.errors %}
             <span class="form-error">{{ error }}</span>
@@ -304,7 +313,7 @@
         </div>
         <div class="form-row">
             <label for="end_date">End Date</label>
-            <input type="text" id="end_date" name="end_date" placeholder="End Date" {% if contract_information_form.end_date.value %}value="{{ contract_information_form.end_date.value }}"{% endif %}>
+            <input type="text" id="end_date" name="end_date" placeholder="End Date" {% if request.session.contract_information %}{% if request.session.contract_information.end_date %}value="{{ request.session.contract_information.end_date }}"{% endif %}{% elif contract_information_form.end_date.value %}value="{{ contract_information_form.end_date.value }}"{% endif %}>
             {% if contract_information_form.end_date.errors %}
             {% for error in contract_information_form.end_date.errors %}
             <span class="form-error">{{ error }}</span>
@@ -313,7 +322,7 @@
         </div>
         <div class="form-row">
             <label for="salary">Salary *</label>
-            <input type="text" id="salary" name="salary" placeholder="Salary" {% if contract_information_form.salary.value %}value="{{ contract_information_form.salary.value }}"{% endif %}>
+            <input type="text" id="salary" name="salary" placeholder="Salary" {% if request.session.contract_information %}{% if request.session.contract_information.salary %}value="{{ request.session.contract_information.salary }}"{% endif %}{% elif contract_information_form.salary.value %}value="{{ contract_information_form.salary.value }}"{% endif %}>
             {% if contract_information_form.salary.errors %}
             {% for error in contract_information_form.salary.errors %}
             <span class="form-error">{{ error }}</span>
@@ -321,6 +330,9 @@
             {% endif %}
         </div>
         <div class="form-button">
+            <a href="{% url 'employees' %}?register-employee&tab=contact-information">
+                <button type="button" class="btn btn-submit-btn">Back</button>
+            </a>
             <button type="submit" class="btn btn-submit-btn" name="contract-information">Next</button>
         </div>
     </form>
@@ -339,7 +351,7 @@
                     </h1>
                     {% for sport_benefit in sport_benefits %}
                     <label class="form-checkbox" for="sport_benefit">
-                        <input type="checkbox" id="sport_benefit" name="sport_benefits" value="{{ sport_benefit.slug }}">
+                        <input type="checkbox" id="sport_benefit" name="sport_benefits" value="{{ sport_benefit.slug }}" {% if request.session.benefit_information %}{% if request.session.benefit_information.sport_benefits %}{% if sport_benefit.pk in request.session.benefit_information.sport_benefits %}checked{% endif %}{% endif %}{% endif %}>
                         {{ sport_benefit }}
                     </label>
                     {% endfor %}
@@ -353,7 +365,7 @@
                     </h1>
                     {% for health_benefit in health_benefits %}
                     <label class="form-checkbox" for="health_benefit">
-                        <input type="checkbox" id="health_benefit" name="health_benefits" value="{{ health_benefit.slug }}">
+                        <input type="checkbox" id="health_benefit" name="health_benefits" value="{{ health_benefit.slug }}" {% if request.session.benefit_information %}{% if request.session.benefit_information.health_benefits %}{% if health_benefit.pk in request.session.benefit_information.health_benefits %}checked{% endif %}{% endif %}{% endif %}>
                         {{ health_benefit }}
                     </label>
                     {% endfor %}
@@ -368,7 +380,7 @@
                     </h1>
                     {% for insurance_benefit in insurance_benefits %}
                     <label for="insurance_benefit" class="form-checkbox">
-                        <input type="checkbox" id="insurance_benefit" name="insurance_benefits" value="{{ insurance_benefit.slug }}">
+                        <input type="checkbox" id="insurance_benefit" name="insurance_benefits" value="{{ insurance_benefit.slug }}" {% if request.session.benefit_information %}{% if request.session.benefit_information.insurance_benefits %}{% if insurance_benefit.pk in request.session.benefit_information.insurance_benefits %}checked{% endif %}{% endif %}{% endif %}>
                         {{ insurance_benefit }}
                     </label>
                     {% endfor %}
@@ -382,7 +394,7 @@
                     </h1>
                     {% for development_benefit in development_benefits %}
                     <label for="development_benefit" class="form-checkbox">
-                        <input type="checkbox" id="development_benefit" name="development_benefits" value="{{ development_benefit.slug }}">
+                        <input type="checkbox" id="development_benefit" name="development_benefits" value="{{ development_benefit.slug }}" {% if request.session.benefit_information %}{% if request.session.benefit_information.development_benefits %}{% if development_benefit.pk in request.session.benefit_information.development_benefits %}checked{% endif %}{% endif %}{% endif %}>
                         {{ development_benefit }}
                     </label>
                     {% endfor %}
@@ -391,6 +403,9 @@
             </div>
         </div>
         <div class="form-button">
+            <a href="{% url 'employees' %}?register-employee&tab=contract-information">
+                <button type="button" class="btn btn-submit-btn">Back</button>
+            </a>
             <button type="submit" class="btn btn-submit-btn" name="benefits-information">Next</button>
         </div>
     </form>
@@ -461,6 +476,9 @@
             {% endif %}
         </div>
         <div class="form-button">
+            <a href="{% url 'employees' %}?register-employee&tab=benefits-information">
+                <button type="button" class="btn btn-submit-btn">Back</button>
+            </a>
             <button type="submit" class="btn btn-submit-btn" name="payment-information" value="bank-transfer">Save</button>
         </div>
     </form>
@@ -498,6 +516,9 @@
             {% endif %}
         </div>
         <div class="form-button">
+            <a href="{% url 'employees' %}?register-employee&tab=benefits-information">
+                <button type="button" class="btn btn-submit-btn">Back</button>
+            </a>
             <button type="submit" class="btn btn-submit-btn" name="payment-information" value="prepaid-transfer">Save</button>
         </div>
     </form>
@@ -517,6 +538,9 @@
             {% endif %}
         </div>
         <div class="form-button">
+            <a href="{% url 'employees' %}?register-employee&tab=benefits-information">
+                <button type="button" class="btn btn-submit-btn">Back</button>
+            </a>
             <button type="submit" class="btn btn-submit-btn" name="payment-information" value="paypal-transfer">Save</button>
         </div>
     </form>
@@ -552,6 +576,9 @@
             {% endif %}
         </div>
         <div class="form-button">
+            <a href="{% url 'employees' %}?register-employee&tab=benefits-information">
+                <button type="button" class="btn btn-submit-btn">Back</button>
+            </a>
             <button type="submit" class="btn btn-submit-btn" name="payment-information" value="crypto-transfer">Save</button>
         </div>
     </form>
