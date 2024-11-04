@@ -181,10 +181,11 @@ class AdminContractForm(forms.ModelForm):
         start_date = self.cleaned_data.get("start_date")
         end_date = self.cleaned_data.get("end_date")
 
-        if end_date < start_date:
-            raise ValidationError(
-                message="The Start Date cannot be earlier than the End Date.",
-            )
+        if start_date and end_date:
+            if end_date < start_date:
+                raise ValidationError(
+                    message="The Start Date cannot be earlier than the End Date.",
+                )
 
         return end_date
 
@@ -304,7 +305,7 @@ class ContractForm(forms.Form):
         return end_date
 
 
-class BenefitsForm(forms.ModelForm):
+class BenefitsForm(forms.Form):
     sport_benefits = forms.ModelMultipleChoiceField(
         required=False,
         queryset=SportBenefit.objects.none(),
@@ -321,10 +322,6 @@ class BenefitsForm(forms.ModelForm):
         required=False,
         queryset=DevelopmentBenefit.objects.none(),
     )
-
-    class Meta:
-        model = Benefit
-        fields = "__all__"
 
     def __init__(self, *args, **kwargs):
         super(BenefitsForm, self).__init__(*args, **kwargs)

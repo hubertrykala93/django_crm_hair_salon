@@ -351,7 +351,7 @@
                     </h1>
                     {% for sport_benefit in sport_benefits %}
                     <label class="form-checkbox" for="sport_benefit">
-                        <input type="checkbox" id="sport_benefit" name="sport_benefits" value="{{ sport_benefit.slug }}" {% if request.session.benefit_information %}{% if request.session.benefit_information.sport_benefits %}{% if sport_benefit.pk in request.session.benefit_information.sport_benefits %}checked{% endif %}{% endif %}{% endif %}>
+                        <input type="checkbox" id="sport_benefit" name="sport_benefits" value="{{ sport_benefit.pk }}" {% if request.session.benefit_information and request.session.benefit_information.sport_benefits %}{% if sport_benefit.pk|stringformat:'s' in request.session.benefit_information.sport_benefits %}checked{% endif %}{% endif %}>
                         {{ sport_benefit }}
                     </label>
                     {% endfor %}
@@ -365,7 +365,7 @@
                     </h1>
                     {% for health_benefit in health_benefits %}
                     <label class="form-checkbox" for="health_benefit">
-                        <input type="checkbox" id="health_benefit" name="health_benefits" value="{{ health_benefit.slug }}" {% if request.session.benefit_information %}{% if request.session.benefit_information.health_benefits %}{% if health_benefit.pk in request.session.benefit_information.health_benefits %}checked{% endif %}{% endif %}{% endif %}>
+                        <input type="checkbox" id="health_benefit" name="health_benefits" value="{{ health_benefit.pk }}" {% if request.session.benefit_information and request.session.benefit_information.health_benefits %}{% if health_benefit.pk|stringformat:'s' in request.session.benefit_information.health_benefits %}checked{% endif %}{% endif %}>
                         {{ health_benefit }}
                     </label>
                     {% endfor %}
@@ -380,7 +380,7 @@
                     </h1>
                     {% for insurance_benefit in insurance_benefits %}
                     <label for="insurance_benefit" class="form-checkbox">
-                        <input type="checkbox" id="insurance_benefit" name="insurance_benefits" value="{{ insurance_benefit.slug }}" {% if request.session.benefit_information %}{% if request.session.benefit_information.insurance_benefits %}{% if insurance_benefit.pk in request.session.benefit_information.insurance_benefits %}checked{% endif %}{% endif %}{% endif %}>
+                        <input type="checkbox" id="insurance_benefit" name="insurance_benefits" value="{{ insurance_benefit.pk }}" {% if request.session.benefit_information and request.session.benefit_information.insurance_benefits %}{% if insurance_benefit.pk|stringformat:'s' in request.session.benefit_information.insurance_benefits %}checked{% endif %}{% endif %}>
                         {{ insurance_benefit }}
                     </label>
                     {% endfor %}
@@ -394,7 +394,7 @@
                     </h1>
                     {% for development_benefit in development_benefits %}
                     <label for="development_benefit" class="form-checkbox">
-                        <input type="checkbox" id="development_benefit" name="development_benefits" value="{{ development_benefit.slug }}" {% if request.session.benefit_information %}{% if request.session.benefit_information.development_benefits %}{% if development_benefit.pk in request.session.benefit_information.development_benefits %}checked{% endif %}{% endif %}{% endif %}>
+                        <input type="checkbox" id="development_benefit" name="development_benefits" value="{{ development_benefit.pk }}" {% if request.session.benefit_information and request.session.benefit_information.development_benefits %}{% if development_benefit.pk|stringformat:'s' in request.session.benefit_information.development_benefits %}checked{% endif %}{% endif %}>
                         {{ development_benefit }}
                     </label>
                     {% endfor %}

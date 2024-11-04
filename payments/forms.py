@@ -172,7 +172,7 @@ class AdminTransactionForm(forms.ModelForm):
         self.fields["payment_method"].label = "Payment Method"
 
 
-class BankTransferForm(forms.ModelForm):
+class BankTransferForm(forms.Form):
     bank_name = forms.CharField(
         error_messages={
             "required": "Bank Name is required.",
@@ -194,9 +194,10 @@ class BankTransferForm(forms.ModelForm):
         }
     )
 
-    class Meta:
-        model = BankTransfer
-        exclude = ["name", "user"]
+    def __init__(self, *args, **kwargs):
+        self.instance = kwargs.pop("instance", None)
+
+        super(BankTransferForm, self).__init__(*args, **kwargs)
 
     def clean_bank_name(self):
         bank_name = self.cleaned_data.get("bank_name").strip()
@@ -276,15 +277,22 @@ class BankTransferForm(forms.ModelForm):
                 message="The account number should contain a maximum of 30 characters.",
             )
 
-        if BankTransfer.objects.filter(account_number=account_number).exists():
-            raise ValidationError(
-                message="This account number already exists; please provide a different one.",
-            )
+        if self.instance is None:
+            if BankTransfer.objects.filter(account_number=account_number).exists():
+                raise ValidationError(
+                    message="This account number already exists; please provide a different one.",
+                )
+        else:
+            if self.instance.account_number != account_number:
+                if BankTransfer.objects.filter(account_number=account_number).exists():
+                    raise ValidationError(
+                        message="This account number already exists; please provide a different one.",
+                    )
 
         return account_number
 
 
-class PrepaidTransferForm(forms.ModelForm):
+class PrepaidTransferForm(forms.Form):
     owner_name = forms.CharField(
         error_messages={
             "required": "Cardholder's name is required.",
@@ -304,9 +312,10 @@ class PrepaidTransferForm(forms.ModelForm):
         required=True,
     )
 
-    class Meta:
-        model = PrepaidTransfer
-        exclude = ["name", "user"]
+    def __init__(self, *args, **kwargs):
+        self.instance = kwargs.pop("instance", None)
+
+        super(PrepaidTransferForm, self).__init__(*args, **kwargs)
 
     def clean_owner_name(self):
         owner_name = self.cleaned_data.get("owner_name").strip()
@@ -325,6 +334,19 @@ class PrepaidTransferForm(forms.ModelForm):
             raise ValidationError(
                 message="The cardholder's name must consist of letters only.",
             )
+
+        if self.instance is None:
+            if PrepaidTransfer.objects.filter(owner_name=owner_name).exists():
+                raise ValidationError(
+                    message="The owner name is already in use, please enter a different one.",
+                )
+
+        else:
+            if self.instance.owner_name != owner_name:
+                if PrepaidTransfer.objects.filter(owner_name=owner_name).exists():
+                    raise ValidationError(
+                        message="The owner name is already in use, please enter a different one.",
+                    )
 
         return owner_name
 
@@ -345,6 +367,19 @@ class PrepaidTransferForm(forms.ModelForm):
             raise ValidationError(
                 message="The card number should contain a maximum of 16 characters.",
             )
+
+        if self.instance is None:
+            if PrepaidTransfer.objects.filter(card_number=card_number).exists():
+                raise ValidationError(
+                    message="The card number is already in use, please enter a different one.",
+                )
+
+        else:
+            if self.instance.card_number != card_number:
+                if PrepaidTransfer.objects.filter(card_number=card_number).exists():
+                    raise ValidationError(
+                        message="The card number is already in use, please enter a different one.",
+                    )
 
         return card_number
 
@@ -373,16 +408,17 @@ class PrepaidTransferForm(forms.ModelForm):
         return expiration_date
 
 
-class PayPalTransferForm(forms.ModelForm):
+class PayPalTransferForm(forms.Form):
     paypal_email = forms.CharField(
         error_messages={
             "required": "Paypal email address is required.",
         },
     )
 
-    class Meta:
-        model = PayPalTransfer
-        exclude = ["name", "user"]
+    def __init__(self, *args, **kwargs):
+        self.instance = kwargs.pop("instance", None)
+
+        super(PayPalTransferForm, self).__init__(*args, **kwargs)
 
     def clean_paypal_email(self):
         paypal_email = self.cleaned_data.get("paypal_email").strip()
@@ -400,20 +436,23 @@ class PayPalTransferForm(forms.ModelForm):
                 message="The paypal e-mail address format is invalid.",
             )
 
-        if PayPalTransfer.objects.filter(paypal_email=paypal_email).exists():
-            raise ValidationError(
-                message="This paypal email already exists; please provide a different one.",
-            )
+        if self.instance is None:
+            if User.objects.filter(email=paypal_email).exists():
+                raise ValidationError(
+                    message="This email address is already in use, please provide a different one.",
+                )
 
-        if User.objects.filter(email=paypal_email).exists():
-            raise ValidationError(
-                message="This email address is already in use, please provide a different one.",
-            )
+        else:
+            if self.instance.paypal_email != paypal_email:
+                if PayPalTransfer.objects.filter(paypal_email=paypal_email):
+                    raise ValidationError(
+                        message="This email address is already in use, please provide a different one.",
+                    )
 
         return paypal_email
 
 
-class CryptoTransferForm(forms.ModelForm):
+class CryptoTransferForm(forms.Form):
     cryptocurrency = forms.ModelChoiceField(
         error_messages={
             "required": "Cryptocurrency is required.",
@@ -426,11 +465,8 @@ class CryptoTransferForm(forms.ModelForm):
         },
     )
 
-    class Meta:
-        model = CryptoTransfer
-        exclude = ["name", "user"]
-
     def __init__(self, *args, **kwargs):
+        self.instance = kwargs.pop("instance", None)
         super(CryptoTransferForm, self).__init__(*args, **kwargs)
 
         self.fields["cryptocurrency"].queryset = CryptoCurrency.objects.all()
@@ -479,6 +515,19 @@ class CryptoTransferForm(forms.ModelForm):
                     message="Invalid wallet address. The wallet address should start with '1' for the 'P2PKH' network, '3' for the 'P2SH' network, and 'bc1' for the 'SegWit' network.",
                 )
 
+            if self.instance is None:
+                if CryptoTransfer.objects.filter(wallet_address=wallet_address).exists():
+                    raise ValidationError(
+                        message="This wallet address is already in use, please provide a different one.",
+                    )
+
+            else:
+                if self.instance.wallet_address != wallet_address:
+                    if CryptoTransfer.objects.filter(wallet_address=wallet_address):
+                        raise ValidationError(
+                            message="This wallet address is already in use, please provide a different one.",
+                        )
+
         elif cryptocurrency == "ETH":
             if len(wallet_address) == 42:
                 if not wallet_address.startswith("0x"):
@@ -490,5 +539,18 @@ class CryptoTransferForm(forms.ModelForm):
                 raise ValidationError(
                     message="The length of the wallet address for Ethereum must be 42 characters.",
                 )
+
+            if self.instance is None:
+                if CryptoTransfer.objects.filter(wallet_address=wallet_address).exists():
+                    raise ValidationError(
+                        message="This wallet address is already in use, please provide a different one.",
+                    )
+
+            else:
+                if self.instance.wallet_address != wallet_address:
+                    if CryptoTransfer.objects.filter(wallet_address=wallet_address):
+                        raise ValidationError(
+                            message="This wallet address is already in use, please provide a different one.",
+                        )
 
         return wallet_address

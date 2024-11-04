@@ -292,7 +292,7 @@ def send_registration_email(request):
 
 def register_employee(request, form):
     if form.is_valid():
-        request.session["registration_in_progress"] = True
+        request.session["employee_registration"] = True
 
         request.session["user"] = {
             "email": form.cleaned_data.get("email"),
@@ -408,16 +408,40 @@ def benefits_information(request, form, data):
                     "development_benefits": data.getlist("development_benefits"),
                 },
             )
+
         request.session.modified = True
 
         return redirect(to=reverse(
             viewname="employees") + f"?register-employee&tab=payment-information&method=bank-transfer")
 
 
+def update_benefits(cleaned_data, instance):
+    benefit_types = [
+        "sport_benefits",
+        "health_benefits",
+        "insurance_benefits",
+        "development_benefits",
+    ]
+
+    for benefit_type in benefit_types:
+        if benefit_type in cleaned_data:
+            for benefit in cleaned_data[benefit_type]:
+                if benefit not in getattr(instance, benefit_type).all():
+                    getattr(instance, benefit_type).add(benefit)
+
+            for benefit in getattr(instance, benefit_type).all():
+                if benefit not in cleaned_data[benefit_type]:
+                    getattr(instance, benefit_type).remove(benefit)
+
+
+def update_payment_method(request):
+    pass
+
+
 @login_required(login_url="index")
 def employees(request):
+    print(request.session.items())
     # Register Employee
-    print(request.session["benefit_information"])
     register_form = RegisterForm()
     basic_information_form = BasicInformationForm()
     contact_information_form = ContactInformationForm()
@@ -478,43 +502,9 @@ def employees(request):
                     return result
 
             if "benefits-information" in request.POST:
-                data = request.POST.copy()
+                benefits_form = BenefitsForm(data=request.POST)
 
-                if "sport_benefits" in request.POST:
-                    sport_benefits_ids = []
-
-                    for sport_benefit in data.getlist("sport_benefits"):
-                        sport_benefits_ids.append(SportBenefit.objects.get(slug=sport_benefit).pk)
-
-                    data.setlist("sport_benefits", sport_benefits_ids)
-
-                if "health_benefits" in request.POST:
-                    health_benefits_ids = []
-
-                    for health_benefit in data.getlist("health_benefits"):
-                        health_benefits_ids.append(HealthBenefit.objects.get(slug=health_benefit).pk)
-
-                    data.setlist("health_benefits", health_benefits_ids)
-
-                if "insurance_benefits" in request.POST:
-                    insurance_benefits_ids = []
-
-                    for insurance_benefit in data.getlist("insurance_benefits"):
-                        insurance_benefits_ids.append(InsuranceBenefit.objects.get(slug=insurance_benefit).pk)
-
-                    data.setlist("insurance_benefits", insurance_benefits_ids)
-
-                if "development_benefits" in request.POST:
-                    development_benefits_ids = []
-
-                    for development_benefit in data.getlist("development_benefits"):
-                        development_benefits_ids.append(DevelopmentBenefit.objects.get(slug=development_benefit).pk)
-
-                    data.setlist("development_benefits", development_benefits_ids)
-
-                benefits_form = BenefitsForm(data=data)
-
-                result = benefits_information(request=request, form=benefits_form, data=data)
+                result = benefits_information(request=request, form=benefits_form, data=request.POST)
 
                 if isinstance(result, BenefitsForm):
                     benefits_form = result
@@ -597,6 +587,10 @@ def employees(request):
     update_contact_information_form = ContactInformationForm()
     update_contract_information_form = ContractForm()
     update_benefits_form = BenefitsForm()
+    update_bank_transfer_form = BankTransferForm()
+    update_prepaid_transfer_form = PrepaidTransferForm()
+    update_paypal_transfer_form = PayPalTransferForm()
+    update_crypto_transfer_form = CryptoTransferForm()
 
     if "update-employee" in request.GET:
         try:
@@ -606,10 +600,16 @@ def employees(request):
                 update_email_form = RegisterForm(data=request.POST, instance=updated_employee)
 
                 if update_email_form.is_valid():
+                    fields_to_update = {}
+
                     if updated_employee.email != update_email_form.cleaned_data.get("email"):
+                        fields_to_update["email"] = update_email_form.cleaned_data.get("email")
                         updated_employee.email = update_email_form.cleaned_data.get("email")
 
-                        updated_employee.save()
+                    updated_employee.save()
+
+                    if fields_to_update:
+                        request.session["employee_update"] = True
 
                     return redirect(to=reverse(
                         viewname="employees") + f"?update-employee={updated_employee.pk}&tab=basic-information")
@@ -631,10 +631,13 @@ def employees(request):
                     if cleaned_data.get("date_of_birth") != instance.date_of_birth.strftime("%Y-%m-%d"):
                         fields_to_update["date_of_birth"] = cleaned_data.get("date_of_birth")
 
-                    for field, value in fields_to_update.items():
-                        setattr(instance, field, value)
+                    if fields_to_update:
+                        for field, value in fields_to_update.items():
+                            setattr(instance, field, value)
 
-                    instance.save()
+                        instance.save()
+
+                        request.session["employee_update"] = True
 
                     return redirect(to=reverse(
                         viewname="employees") + f"?update-employee={updated_employee.pk}&tab=contact-information")
@@ -671,10 +674,13 @@ def employees(request):
                     if cleaned_data.get("apartment_number") != instance.apartment_number:
                         fields_to_update["apartment_number"] = cleaned_data.get("apartment_number")
 
-                    for key, value in fields_to_update.items():
-                        setattr(instance, key, value)
+                    if fields_to_update:
+                        for key, value in fields_to_update.items():
+                            setattr(instance, key, value)
 
-                    instance.save()
+                        instance.save()
+
+                        request.session["employee_update"] = True
 
                     return redirect(to=reverse(
                         viewname="employees") + f"?update-employee={updated_employee.pk}&tab=contract-information")
@@ -682,24 +688,7 @@ def employees(request):
             if "update-contract-information" in request.POST:
                 instance = updated_employee.profile.contract
 
-                data = request.POST.copy()
-
-                if request.POST.get("contract_type"):
-                    data["contract_type"] = ContractType.objects.get(slug=request.POST["contract_type"]).pk
-
-                if request.POST.get("job_type"):
-                    data["job_type"] = JobType.objects.get(slug=request.POST["job_type"]).pk
-
-                if request.POST.get("job_position"):
-                    data["job_position"] = JobPosition.objects.get(slug=request.POST["job_position"]).pk
-
-                if request.POST.get("payment_frequency"):
-                    data["payment_frequency"] = PaymentFrequency.objects.get(slug=request.POST["payment_frequency"]).pk
-
-                if request.POST.get("currency"):
-                    data["currency"] = Currency.objects.get(slug=request.POST["currency"]).pk
-
-                update_contract_information_form = ContractForm(data=data, instance=instance)
+                update_contract_information_form = ContractForm(data=request.POST, instance=instance)
 
                 if update_contract_information_form.is_valid():
                     cleaned_data = update_contract_information_form.cleaned_data
@@ -736,23 +725,230 @@ def employees(request):
                     if cleaned_data.get("salary") != instance.salary:
                         fields_to_update["salary"] = cleaned_data.get("salary")
 
-                    for field, value in fields_to_update.items():
-                        setattr(instance, field, value)
+                    if fields_to_update:
+                        for field, value in fields_to_update.items():
+                            setattr(instance, field, value)
 
-                    instance.save()
+                        instance.save()
+
+                        request.session["employee_update"] = True
 
                     return redirect(to=reverse(
                         viewname="employees") + f"?update-employee={updated_employee.pk}&tab=benefits-information")
 
             if "update-benefits-information" in request.POST:
                 instance = updated_employee.profile.contract.benefits
+
                 update_benefits_form = BenefitsForm(data=request.POST)
 
                 if update_benefits_form.is_valid():
-                    pass
+                    cleaned_data = update_benefits_form.cleaned_data
 
-                else:
-                    pass
+                    if "sport_benefits" in cleaned_data:
+                        for sport_benefit in cleaned_data["sport_benefits"]:
+                            if sport_benefit not in instance.sport_benefits.all():
+                                instance.sport_benefits.add(sport_benefit)
+
+                        for sport_benefit in instance.sport_benefits.all():
+                            if sport_benefit not in cleaned_data["sport_benefits"]:
+                                instance.sport_benefits.remove(sport_benefit)
+
+                    if "health_benefits" in cleaned_data:
+                        for health_benefit in cleaned_data["health_benefits"]:
+                            if health_benefit not in instance.health_benefits.all():
+                                instance.health_benefits.add(health_benefit)
+
+                        for health_benefit in instance.health_benefits.all():
+                            if health_benefit not in cleaned_data["health_benefits"]:
+                                instance.health_benefits.remove(health_benefit)
+
+                    if "insurance_benefits" in cleaned_data:
+                        for insurance_benefit in cleaned_data["insurance_benefits"]:
+                            if insurance_benefit not in instance.insurance_benefits.all():
+                                instance.insurance_benefits.add(insurance_benefit)
+
+                        for insurance_benefit in instance.insurance_benefits.all():
+                            if insurance_benefit not in cleaned_data["insurance_benefits"]:
+                                instance.insurance_benefits.remove(insurance_benefit)
+
+                    if "development_benefits" in cleaned_data:
+                        for development_benefit in cleaned_data["development_benefits"]:
+                            if development_benefit not in instance.development_benefits.all():
+                                instance.development_benefits.add(development_benefit)
+
+                        for development_benefit in instance.development_benefits.all():
+                            if development_benefit not in cleaned_data["development_benefits"]:
+                                instance.development_benefits.remove(development_benefit)
+
+                    return redirect(to=reverse(
+                        viewname="employees") + f"?update-employee={updated_employee.pk}&tab=payment-information&method=bank-transfer")
+
+            if "update-payment-information" in request.POST:
+                contract = updated_employee.profile.contract
+
+                if request.POST["update-payment-information"] == "update-bank-transfer":
+                    instance = updated_employee.banktransfer
+
+                    update_bank_transfer_form = BankTransferForm(
+                        data=request.POST,
+                        instance=instance,
+                    )
+
+                    if update_bank_transfer_form.is_valid():
+                        cleaned_data = update_bank_transfer_form.cleaned_data
+                        fields_to_update = {}
+
+                        if cleaned_data.get("bank_name") != instance.bank_name:
+                            fields_to_update["bank_name"] = cleaned_data.get("bank_name")
+
+                        if cleaned_data.get("iban") != instance.iban:
+                            fields_to_update["iban"] = cleaned_data.get("iban")
+
+                        if cleaned_data.get("swift") != instance.swift:
+                            fields_to_update["swift"] = cleaned_data.get("swift")
+
+                        if cleaned_data.get("account_number") != instance.account_number:
+                            fields_to_update["account_number"] = cleaned_data.get("account_number")
+
+                        if fields_to_update:
+                            request.session["employee_update"] = True
+
+                        if "is_active" in request.POST:
+                            print("Active in request POST.")
+                            if "Bank Transfer" not in contract.payment_method.name:
+                                print("Bank Transfer not in contract payment method.")
+                                contract.payment_method = updated_employee.banktransfer
+                                contract.save()
+
+                                request.session["employee_update"] = True
+
+                                if request.session.get("employee_update"):
+                                    messages.success(
+                                        request=request,
+                                        message="The employee's data has been successfully changed.",
+                                    )
+
+                                else:
+                                    messages.info(
+                                        request=request,
+                                        message="No changes have been made.",
+                                    )
+
+                            else:
+                                print("Bank Transfer in contract payment method.")
+                                if request.session.get("employee_update"):
+                                    messages.success(
+                                        request=request,
+                                        message="The employee's data has been successfully changed.",
+                                    )
+
+                                else:
+                                    messages.info(
+                                        request=request,
+                                        message="No changes have been made.",
+                                    )
+
+                        else:
+                            print("Active not in request.POST.")
+                            if "Bank Transfer" in contract.payment_method.name:
+                                print("Bank Transfer in contract payment method.")
+                                if fields_to_update:
+                                    messages.success(
+                                        request=request,
+                                        message="The payment method has been successfully updated."
+                                    )
+
+                                messages.error(
+                                    request=request,
+                                    message="You cannot remove the payment method. You can only change it to another one.",
+                                )
+
+                                request.session["error"] = True
+
+                        if request.session.get("employee_update"):
+                            request.session.pop("employee_update")
+
+                        if not request.session.get("error"):
+                            print("Error not in request.session.")
+                            if fields_to_update:
+                                for field, value in fields_to_update.items():
+                                    setattr(instance, field, value)
+
+                                instance.save()
+
+                                # return redirect(to="employees")
+
+                        else:
+                            print("Error in request.session.")
+                            if fields_to_update:
+                                for field, value in fields_to_update.items():
+                                    setattr(instance, field, value)
+
+                                instance.save()
+
+                            request.session.pop("error")
+
+                if request.POST["update-payment-information"] == "update-prepaid-transfer":
+                    instance = updated_employee.prepaidtransfer
+                    update_prepaid_transfer_form = PrepaidTransferForm(
+                        data=request.POST,
+                        instance=instance
+                    )
+
+                    if update_prepaid_transfer_form.is_valid():
+                        cleaned_data = update_prepaid_transfer_form.cleaned_data
+                        fields_to_update = {}
+
+                        if cleaned_data.get("owner_name") != instance.owner_name:
+                            fields_to_update["owner_name"] = cleaned_data.get("owner_name")
+
+                        if cleaned_data.get("card_number") != instance.card_number:
+                            fields_to_update["card_number"] = cleaned_data.get("card_number")
+
+                        if cleaned_data.get("expiration_date") != instance.expiration_date.strftime("%Y-%m-%d"):
+                            fields_to_update["expiration_date"] = cleaned_data.get("expiration_date")
+
+                        for field, value in fields_to_update.items():
+                            setattr(instance, field, value)
+
+                        instance.save()
+
+                if request.POST["update-payment-information"] == "update-paypal-transfer":
+                    instance = updated_employee.paypaltransfer
+                    update_paypal_transfer_form = PayPalTransferForm(
+                        data=request.POST,
+                        instance=instance
+                    )
+
+                    if update_paypal_transfer_form.is_valid():
+                        cleaned_data = update_paypal_transfer_form.cleaned_data
+
+                        if cleaned_data.get("paypal_email") != instance.paypal_email:
+                            instance.paypal_email = cleaned_data.get("paypal_email")
+
+                        instance.save()
+
+                if request.POST["update-payment-information"] == "update-crypto-transfer":
+                    instance = updated_employee.cryptotransfer
+                    update_crypto_transfer_form = CryptoTransferForm(
+                        data=request.POST,
+                        instance=instance
+                    )
+
+                    if update_crypto_transfer_form.is_valid():
+                        cleaned_data = update_crypto_transfer_form.cleaned_data
+                        fields_to_update = {}
+
+                        if cleaned_data.get("cryptocurrency") != instance.cryptocurrency:
+                            fields_to_update["cryptocurrency"] = cleaned_data.get("cryptocurrency")
+
+                        if cleaned_data.get("wallet_address") != instance.wallet_address:
+                            fields_to_update["wallet_address"] = cleaned_data.get("wallet_address")
+
+                        for field, value in fields_to_update.items():
+                            setattr(instance, field, value)
+
+                        instance.save()
 
         except User.DoesNotExist:
             messages.error(
@@ -780,6 +976,10 @@ def employees(request):
             "update_contact_information_form": update_contact_information_form,
             "update_contract_information_form": update_contract_information_form,
             "update_benefits_form": update_benefits_form,
+            "update_bank_transfer_form": update_bank_transfer_form,
+            "update_prepaid_transfer_form": update_prepaid_transfer_form,
+            "update_paypal_transfer_form": update_paypal_transfer_form,
+            "update_crypto_transfer_form": update_crypto_transfer_form,
             "contract_types": ContractType.objects.all().order_by("name"),
             "job_types": JobType.objects.all().order_by("name"),
             "job_positions": JobPosition.objects.all().order_by("name"),

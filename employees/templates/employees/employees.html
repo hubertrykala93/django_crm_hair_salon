@@ -12,20 +12,25 @@
         <thead>
         <tr>
             <th>Name</th>
-            <th>Country</th>
-            <th>Province</th>
-            <th>City</th>
+            <th>Contract</th>
+            <th>Position</th>
+            <th>Time Remaining</th>
+            <th>Salary</th>
+            <th>Status</th>
+            <th>Invoices</th>
             <th>Actions</th>
         </tr>
         </thead>
         <tbody>
         {% for employee in employees %}
         <tr>
-            <td>{{ employee.profile.basic_information.firstname }} {{ employee.profile.basic_information.lastname }}
-            </td>
-            <td>{{ employee.profile.contact_information.country }}</td>
-            <td>{{ employee.profile.contact_information.province }}</td>
-            <td>{{ employee.profile.contact_information.city }}</td>
+            <td>{{ employee.profile.basic_information.firstname }} {{ employee.profile.basic_information.lastname }}</td>
+            <td>{% if employee.profile.contract.contract_type %}{{ employee.profile.contract.contract_type }}{% else %}-{% endif %}</td>
+            <td>{% if employee.profile.contract.job_position %}{{ employee.profile.contract.job_position }}{% else %}-{% endif %}</td>
+            <td>{% if employee.profile.contract.time_remaining %}{{ employee.profile.contract.time_remaining.days }} days{% else %}-{% endif %}</td>
+            <td>{% if employee.profile.contract.salary %}{{ employee.profile.contract.salary }} {{ employee.profile.contract.currency }}{% else %}-{% endif %}</td>
+            <td>{% if employee.profile.contract.status %}{{ employee.profile.contract.status }}{% else %}-{% endif %}</td>
+            <td>{{ employee.profile.contract.invoices.count }}</td>
             <td class="table-buttons">
                 <a href="?update-employee={{ employee.pk }}"><i class="fa-solid fa-user-pen"></i></a>
                 <a href="{% url 'delete-employee' employee.pk %}"><i class="fa-regular fa-trash-can"></i></a>
