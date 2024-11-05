@@ -2,6 +2,7 @@ from django.db import models
 from payments.models import PaymentMethod
 from datetime import timedelta
 from django.utils.text import slugify
+from datetime import datetime
 
 
 class Currency(models.Model):
@@ -229,6 +230,12 @@ class Contract(models.Model):
             self.status = EmploymentStatus.objects.get(name="Active")
 
         if self.end_date and self.start_date:
+            if isinstance(self.end_date, str):
+                self.end_date = datetime.strptime(self.end_date, "%Y-%m-%d").date()
+
+            if isinstance(self.start_date, str):
+                self.start_date = datetime.strptime(self.start_date, "%Y-%m-%d").date()
+
             self.time_remaining = self.end_date - self.start_date
 
             if self.time_remaining < timedelta(days=0):

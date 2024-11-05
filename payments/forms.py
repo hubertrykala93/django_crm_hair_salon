@@ -474,7 +474,10 @@ class CryptoTransferForm(forms.Form):
     def clean_wallet_address(self):
         cryptocurrency_id = self.data.get("cryptocurrency", None)
         wallet_address = self.cleaned_data.get("wallet_address").strip()
-        cryptocurrency = CryptoCurrency.objects.get(pk=cryptocurrency_id).code
+        cryptocurrency = None
+
+        if cryptocurrency_id != "":
+            cryptocurrency = CryptoCurrency.objects.get(pk=cryptocurrency_id).code
 
         if cryptocurrency == "BTC":
             if wallet_address.startswith("1"):
