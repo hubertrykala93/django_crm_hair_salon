@@ -226,11 +226,9 @@ class Contract(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.pk:
-            print("Not Self PK")
             self.status = EmploymentStatus.objects.get(name="Active")
 
         if self.end_date and self.start_date:
-            print("End Date and Start Date")
             self.time_remaining = self.end_date - self.start_date
 
             if self.time_remaining < timedelta(days=0):
@@ -240,7 +238,6 @@ class Contract(models.Model):
                 self.status = EmploymentStatus.objects.get(name="Active")
 
         else:
-            print("Not End Date and Start Date.")
             self.time_remaining = None
 
         super(Contract, self).save(*args, **kwargs)

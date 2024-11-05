@@ -5,6 +5,7 @@ class RegistrationCleanUpMiddleware:
     def __call__(self, request):
         employee_registration = request.session.get("employee_registration", False)
         employee_update = request.session.get("employee_update", False)
+        payment_method_changed = request.session.get("payment_method_changed", False)
 
         if employee_registration and not "register-employee" in request.GET:
             keys = [
@@ -28,6 +29,11 @@ class RegistrationCleanUpMiddleware:
 
         if employee_update and not "update-employee" in request.GET:
             request.session.pop("employee_update")
+
+            request.session.modified = True
+
+        if payment_method_changed and not "update-employee" in request.GET:
+            request.session.pop("payment_method_changed")
 
             request.session.modified = True
 

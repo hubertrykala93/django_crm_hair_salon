@@ -434,13 +434,110 @@ def update_benefits(cleaned_data, instance):
                     getattr(instance, benefit_type).remove(benefit)
 
 
-def update_payment_method(request):
-    pass
+def update_payment_method(
+        request,
+        contract,
+        updated_employee,
+        fields_to_update,
+        instance
+):
+    available_payment_methods = {
+        "Bank Transfer": updated_employee.banktransfer,
+        "Prepaid Transfer": updated_employee.prepaidtransfer,
+        "PayPal Transfer": updated_employee.paypaltransfer,
+        "Crypto Transfer": updated_employee.cryptotransfer,
+    }
+
+    current_payment_method = " ".join(contract.payment_method.name.split(" ")[:2])
+    slug = current_payment_method.lower().replace(" ", "-")
+
+    print(f"Current Payment Method -> {current_payment_method}")
+    print()
+    print(f"Slug -> {slug}")
+    print()
+    print(f"Request POST -> {request.POST}")
+    print()
+    print(f"Request GET -> {request.GET}")
+    print()
+
+    if "is_active" in request.POST:
+        print("Active in request POST.")
+        if current_payment_method not in available_payment_methods:
+            print(f"{current_payment_method} not in contract payment method.")
+            contract.payment_method = available_payment_methods[current_payment_method]
+            contract.save()
+
+            request.session["employee_update"] = True
+
+            if request.session.get("employee_update"):
+                messages.success(
+                    request=request,
+                    message="The employee's data has been successfully changed.",
+                )
+
+            else:
+                messages.info(
+                    request=request,
+                    message="No changes have been made.",
+                )
+
+        else:
+            print(f"{current_payment_method} in contract payment method.")
+            if request.session.get("employee_update"):
+                messages.success(
+                    request=request,
+                    message="The employee's data has been successfully changed.",
+                )
+
+            else:
+                messages.info(
+                    request=request,
+                    message="No changes have been made.",
+                )
+
+    else:
+        print("Active not in request.POST.")
+        if current_payment_method in available_payment_methods:
+            print(f"{current_payment_method} in contract payment method.")
+            if fields_to_update:
+                messages.success(
+                    request=request,
+                    message="The payment method has been successfully updated."
+                )
+
+            messages.error(
+                request=request,
+                message="You cannot remove the payment method. You can only change it to another one.",
+            )
+
+            request.session["error"] = True
+
+    if request.session.get("employee_update"):
+        request.session.pop("employee_update")
+
+    if not request.session.get("error"):
+        print("Error not in request.session.")
+        if fields_to_update:
+            for field, value in fields_to_update.items():
+                setattr(instance, field, value)
+
+            instance.save()
+
+            # return redirect(to="employees")
+
+    else:
+        print("Error in request.session.")
+        if fields_to_update:
+            for field, value in fields_to_update.items():
+                setattr(instance, field, value)
+
+            instance.save()
+
+        request.session.pop("error")
 
 
 @login_required(login_url="index")
 def employees(request):
-    print(request.session.items())
     # Register Employee
     register_form = RegisterForm()
     basic_information_form = BasicInformationForm()
@@ -811,82 +908,62 @@ def employees(request):
                             fields_to_update["account_number"] = cleaned_data.get("account_number")
 
                         if fields_to_update:
+                            for field, value in fields_to_update.items():
+                                setattr(instance, field, value)
+
+                            instance.save()
+
                             request.session["employee_update"] = True
 
                         if "is_active" in request.POST:
                             print("Active in request POST.")
                             if "Bank Transfer" not in contract.payment_method.name:
-                                print("Bank Transfer not in contract payment method.")
-                                contract.payment_method = updated_employee.banktransfer
-                                contract.save()
+                                print("Bank Transfer not in Payment Method Name.")
+                                request.session["payment_method_changed"] = True
 
-                                request.session["employee_update"] = True
-
-                                if request.session.get("employee_update"):
-                                    messages.success(
-                                        request=request,
-                                        message="The employee's data has been successfully changed.",
-                                    )
-
-                                else:
-                                    messages.info(
-                                        request=request,
-                                        message="No changes have been made.",
-                                    )
-
-                            else:
-                                print("Bank Transfer in contract payment method.")
-                                if request.session.get("employee_update"):
-                                    messages.success(
-                                        request=request,
-                                        message="The employee's data has been successfully changed.",
-                                    )
-
-                                else:
-                                    messages.info(
-                                        request=request,
-                                        message="No changes have been made.",
-                                    )
+                            contract.payment_method = None
+                            contract.payment_method = updated_employee.banktransfer
+                            contract.save()
 
                         else:
-                            print("Active not in request.POST.")
+                            print("Not Active in request POST.")
                             if "Bank Transfer" in contract.payment_method.name:
-                                print("Bank Transfer in contract payment method.")
-                                if fields_to_update:
-                                    messages.success(
-                                        request=request,
-                                        message="The payment method has been successfully updated."
-                                    )
-
+                                print("Bank Transfer in Payment Method Name.")
                                 messages.error(
                                     request=request,
                                     message="You cannot remove the payment method. You can only change it to another one.",
                                 )
 
-                                request.session["error"] = True
+                        if request.session.get("employee_update") and request.session.get("payment_method_changed"):
+                            print("Employee Update and Payment Method Changed.")
+                            messages.success(
+                                request=request,
+                                message="The employee's data has been successfully updated, and the payment method has been switched successfully.",
+                            )
 
-                        if request.session.get("employee_update"):
-                            request.session.pop("employee_update")
+                        elif request.session.get("employee_update") and not request.session.get(
+                                "payment_method_changed"):
+                            print("Employee Update and not Payment Method Changed.")
+                            messages.success(
+                                request=request,
+                                message="The employee's data has been successfully updated.",
+                            )
 
-                        if not request.session.get("error"):
-                            print("Error not in request.session.")
-                            if fields_to_update:
-                                for field, value in fields_to_update.items():
-                                    setattr(instance, field, value)
-
-                                instance.save()
-
-                                # return redirect(to="employees")
+                        elif not request.session.get("employee_update") and request.session.get(
+                                "payment_method_changed"):
+                            print("Not Employee Update and Payment Method Changed.")
+                            messages.success(
+                                request=request,
+                                message="The payment method has been successfully switched.",
+                            )
 
                         else:
-                            print("Error in request.session.")
-                            if fields_to_update:
-                                for field, value in fields_to_update.items():
-                                    setattr(instance, field, value)
+                            messages.info(
+                                request=request,
+                                message="No changes have been made.",
+                            )
 
-                                instance.save()
-
-                            request.session.pop("error")
+                        return redirect(to="employees")
 
                 if request.POST["update-payment-information"] == "update-prepaid-transfer":
                     instance = updated_employee.prepaidtransfer
@@ -908,10 +985,63 @@ def employees(request):
                         if cleaned_data.get("expiration_date") != instance.expiration_date.strftime("%Y-%m-%d"):
                             fields_to_update["expiration_date"] = cleaned_data.get("expiration_date")
 
-                        for field, value in fields_to_update.items():
-                            setattr(instance, field, value)
+                        if fields_to_update:
+                            for field, value in fields_to_update.items():
+                                setattr(instance, field, value)
 
-                        instance.save()
+                            instance.save()
+
+                            request.session["employee_update"] = True
+
+                        if "is_active" in request.POST:
+                            print("Active in request POST.")
+                            if "Prepaid Transfer" not in contract.payment_method.name:
+                                print("Prepaid Transfer not in Payment Method Name.")
+                                request.session["payment_method_changed"] = True
+
+                            contract.payment_method = None
+                            contract.payment_method = updated_employee.prepaidtransfer
+                            contract.save()
+
+                        else:
+                            print("Not Active in request POST.")
+                            if "Prepaid Transfer" in contract.payment_method.name:
+                                print("Prepaid Transfer in Payment Method Name.")
+                                messages.error(
+                                    request=request,
+                                    message="You cannot remove the payment method. You can only change it to another one.",
+                                )
+
+                        if request.session.get("employee_update") and request.session.get("payment_method_changed"):
+                            print("Employee Update and Payment Method Changed.")
+                            messages.success(
+                                request=request,
+                                message="The employee's data has been successfully updated, and the payment method has been switched successfully.",
+                            )
+
+                        elif request.session.get("employee_update") and not request.session.get(
+                                "payment_method_changed"):
+                            print("Employee Update and not Payment Method Changed.")
+                            messages.success(
+                                request=request,
+                                message="The employee's data has been successfully updated.",
+                            )
+
+                        elif not request.session.get("employee_update") and request.session.get(
+                                "payment_method_changed"):
+                            print("Not Employee Update and Payment Method Changed.")
+                            messages.success(
+                                request=request,
+                                message="The payment method has been successfully switched.",
+                            )
+
+                        else:
+                            messages.info(
+                                request=request,
+                                message="No changes have been made.",
+                            )
+
+                        return redirect(to="employees")
 
                 if request.POST["update-payment-information"] == "update-paypal-transfer":
                     instance = updated_employee.paypaltransfer
@@ -921,12 +1051,70 @@ def employees(request):
                     )
 
                     if update_paypal_transfer_form.is_valid():
+                        fields_to_update = {}
                         cleaned_data = update_paypal_transfer_form.cleaned_data
 
                         if cleaned_data.get("paypal_email") != instance.paypal_email:
                             instance.paypal_email = cleaned_data.get("paypal_email")
+                            fields_to_update["paypal_email"] = cleaned_data.get("paypal_email")
 
-                        instance.save()
+                        if fields_to_update:
+                            for field, value in fields_to_update.items():
+                                setattr(instance, field, value)
+
+                            instance.save()
+
+                            request.session["employee_update"] = True
+
+                        if "is_active" in request.POST:
+                            print("Active in request POST.")
+                            if "PayPal Transfer" not in contract.payment_method.name:
+                                print("PayPal Transfer not in Payment Method Name.")
+                                request.session["payment_method_changed"] = True
+
+                            contract.payment_method = None
+                            contract.payment_method = updated_employee.paypaltransfer
+                            contract.save()
+
+                        else:
+                            print("Not Active in request POST.")
+                            if "PayPal Transfer" in contract.payment_method.name:
+                                print("PayPal Transfer in Payment Method Name.")
+                                messages.error(
+                                    request=request,
+                                    message="You cannot remove the payment method. You can only change it to another one.",
+                                )
+
+                        if request.session.get("employee_update") and request.session.get("payment_method_changed"):
+                            print("Employee Update and Payment Method Changed.")
+                            messages.success(
+                                request=request,
+                                message="The employee's data has been successfully updated, and the payment method has been switched successfully.",
+                            )
+
+                        elif request.session.get("employee_update") and not request.session.get(
+                                "payment_method_changed"):
+                            print("Employee Update and not Payment Method Changed.")
+                            messages.success(
+                                request=request,
+                                message="The employee's data has been successfully updated.",
+                            )
+
+                        elif not request.session.get("employee_update") and request.session.get(
+                                "payment_method_changed"):
+                            print("Not Employee Update and Payment Method Changed.")
+                            messages.success(
+                                request=request,
+                                message="The payment method has been successfully switched.",
+                            )
+
+                        else:
+                            messages.info(
+                                request=request,
+                                message="No changes have been made.",
+                            )
+
+                        return redirect(to="employees")
 
                 if request.POST["update-payment-information"] == "update-crypto-transfer":
                     instance = updated_employee.cryptotransfer
@@ -945,10 +1133,63 @@ def employees(request):
                         if cleaned_data.get("wallet_address") != instance.wallet_address:
                             fields_to_update["wallet_address"] = cleaned_data.get("wallet_address")
 
-                        for field, value in fields_to_update.items():
-                            setattr(instance, field, value)
+                        if fields_to_update:
+                            for field, value in fields_to_update.items():
+                                setattr(instance, field, value)
 
-                        instance.save()
+                            instance.save()
+
+                            request.session["employee_update"] = True
+
+                        if "is_active" in request.POST:
+                            print("Active in request POST.")
+                            if "Crypto Transfer" not in contract.payment_method.name:
+                                print("Crypto Transfer not in Payment Method Name.")
+                                request.session["payment_method_changed"] = True
+
+                            contract.payment_method = None
+                            contract.payment_method = updated_employee.cryptotransfer
+                            contract.save()
+
+                        else:
+                            print("Not Active in request POST.")
+                            if "Crypto Transfer" in contract.payment_method.name:
+                                print("Crypto Transfer in Payment Method Name.")
+                                messages.error(
+                                    request=request,
+                                    message="You cannot remove the payment method. You can only change it to another one.",
+                                )
+
+                        if request.session.get("employee_update") and request.session.get("payment_method_changed"):
+                            print("Employee Update and Payment Method Changed.")
+                            messages.success(
+                                request=request,
+                                message="The employee's data has been successfully updated, and the payment method has been switched successfully.",
+                            )
+
+                        elif request.session.get("employee_update") and not request.session.get(
+                                "payment_method_changed"):
+                            print("Employee Update and not Payment Method Changed.")
+                            messages.success(
+                                request=request,
+                                message="The employee's data has been successfully updated.",
+                            )
+
+                        elif not request.session.get("employee_update") and request.session.get(
+                                "payment_method_changed"):
+                            print("Not Employee Update and Payment Method Changed.")
+                            messages.success(
+                                request=request,
+                                message="The payment method has been successfully switched.",
+                            )
+
+                        else:
+                            messages.info(
+                                request=request,
+                                message="No changes have been made.",
+                            )
+
+                        return redirect(to="employees")
 
         except User.DoesNotExist:
             messages.error(
