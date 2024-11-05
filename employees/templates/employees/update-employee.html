@@ -59,7 +59,7 @@
         </h1>
         <div class="form-row">
             <label for="email" class="info-label">Email</label>
-            <input type="text" id="email" name="email" placeholder="Email Address" value="{% if update_email_form.email.errors %}{{ updated_employee.email }}{% elif update_email_form.email.value %}{{ update_email_form.email.value }}{% else %}{{ updated_employee.email }}{% endif %}">
+            <input type="text" id="email" name="email" placeholder="Email Address" value="{% if updated_employee.email %}{{ updated_employee.email }}{% endif %}">
             {% if update_email_form.email.errors %}
             {% for error in update_email_form.email.errors %}
             <span class="form-error">{{ error }}</span>
@@ -84,7 +84,7 @@
         {% csrf_token %}
         <div class="form-row">
             <label for="firstname">Firstname</label>
-            <input type="text" id="firstname" name="firstname" placeholder="Firstname" value="{% if update_basic_information_form.firstname.errors %}{{ updated_employee.profile.basic_information.firstname }}{% elif update_basic_information_form.firstname.value %}{{ update_basic_information_form.firstname.value }}{% else %}{{ updated_employee.profile.basic_information.firstname }}{% endif %}">
+            <input type="text" id="firstname" name="firstname" placeholder="Firstname" value="{% if updated_employee.profile.basic_information.firstname %}{{ updated_employee.profile.basic_information.firstname }}{% endif %}">
             {% if update_basic_information_form.firstname.errors %}
             {% for error in update_basic_information_form.firstname.errors %}
             <span class="form-error">{{ error }}</span>
@@ -93,7 +93,7 @@
         </div>
         <div class="form-row">
             <label for="lastname">Lastname</label>
-            <input type="text" id="lastname" name="lastname" placeholder="Lastname" value="{% if update_basic_information_form.lastname.errors %}{{ updated_employee.profile.basic_information.lastname }}{% elif update_basic_information_form.lastname.value %}{{ update_basic_information_form.lastname.value }}{% else %}{{ updated_employee.profile.basic_information.lastname }}{% endif %}">
+            <input type="text" id="lastname" name="lastname" placeholder="Lastname" value="{% if updated_employee.profile.basic_information.lastname %}{{ updated_employee.profile.basic_information.lastname }}{% endif %}">
             {% if update_basic_information_form.lastname.errors %}
             {% for error in update_basic_information_form.lastname.errors %}
             <span class="form-error">{{ error }}</span>
@@ -102,7 +102,7 @@
         </div>
         <div class="form-row">
             <label for="date_of_birth">Date of Birth</label>
-            <input type="text" id="date_of_birth" name="date_of_birth" placeholder="Date of Birth" value="{% if update_basic_information_form.date_of_birth.errors %}{{ updated_employee.profile.basic_information.date_of_birth|date:'Y-m-d' }}{% elif update_basic_information_form.date_of_birth.value %}{{ update_basic_information_form.date_of_birth.value }}{% else %}{{ updated_employee.profile.basic_information.date_of_birth|date:'Y-m-d' }}{% endif %}">
+            <input type="text" id="date_of_birth" name="date_of_birth" placeholder="Date of Birth" value="{% if updated_employee.profile.basic_information.date_of_birth %}{{ updated_employee.profile.basic_information.date_of_birth|date:'Y-m-d' }}{% endif %}">
         </div>
         {% if update_basic_information_form.date_of_birth.errors %}
         {% for error in update_basic_information_form.date_of_birth.errors %}
@@ -127,7 +127,7 @@
         {% csrf_token %}
         <div class="form-row">
             <label for="phone_number">Phone Number</label>
-            <input type="text" id="phone_number" name="phone_number" placeholder="Phone Number" value="{% if update_contact_information_form.phone_number.errors %}{{ updated_employee.profile.contact_information.phone_number }}{% elif update_contact_information_form.phone_number.value %}{{ update_contact_information_form.phone_number.value }}{% else %}{{ updated_employee.profile.contact_information.phone_number }}{% endif %}">
+            <input type="text" id="phone_number" name="phone_number" placeholder="Phone Number" value="{% if updated_employee.profile.contact_information.phone_number %}{{ updated_employee.profile.contact_information.phone_number }}{% endif %}">
             {% if update_contact_information_form.phone_number.errors %}
             {% for error in update_contact_information_form.phone_number.errors %}
             <span class="form-error">{{ error }}</span>
@@ -136,7 +136,7 @@
         </div>
         <div class="form-row">
             <label for="country">Country</label>
-            <input type="text" id="country" name="country" placeholder="Country" value="{% if update_contact_information_form.country.errors %}{{ updated_employee.profile.contact_information.country }}{% elif update_contact_information_form.country.value %}{{ update_contact_information_form.country.value }}{% else %}{{ updated_employee.profile.contact_information.country }}{% endif %}">
+            <input type="text" id="country" name="country" placeholder="Country" value="{% if updated_employee.profile.contact_information.country %}{{ updated_employee.profile.contact_information.country }}{% endif %}">
             {% if update_contact_information_form.country.errors %}
             {% for error in update_contact_information_form.country.errors %}
             <span class="form-error">{{ error }}</span>
@@ -145,7 +145,7 @@
         </div>
         <div class="form-row">
             <label for="province">Province</label>
-            <input type="text" id="province" name="province" placeholder="Province" value="{% if update_contact_information_form.province.errors %}{{ updated_employee.profile.contact_information.province }}{% elif update_contact_information_form.province.value %}{{ update_contact_information_form.province.value }}{% else %}{{ updated_employee.profile.contact_information.province }}{% endif %}">
+            <input type="text" id="province" name="province" placeholder="Province" value="{% if updated_employee.profile.contact_information.province %}{{ updated_employee.profile.contact_information.province }}{% endif %}">
             {% if update_contact_information_form.province.errors %}
             {% for error in update_contact_information_form.province.errors %}
             <span class="form-error">{{ error }}</span>
@@ -154,7 +154,7 @@
         </div>
         <div class="form-row">
             <label for="city">City</label>
-            <input type="text" id="city" name="city" placeholder="City" value="{% if update_contact_information_form.city.errors %}{{ updated_employee.profile.contact_information.city }}{% elif update_contact_information_form.city.value %}{{ update_contact_information_form.city.value }}{% else %}{{ updated_employee.profile.contact_information.city }}{% endif %}">
+            <input type="text" id="city" name="city" placeholder="City" value="{% if updated_employee.profile.contact_information.city %}{{ updated_employee.profile.contact_information.city }}{% endif %}">
             {% if update_contact_information_form.city.errors %}
             {% for error in update_contact_information_form.city.errors %}
             <span class="form-error">{{ error }}</span>
@@ -163,7 +163,7 @@
         </div>
         <div class="form-row">
             <label for="postal_code">Postal Code</label>
-            <input type="text" id="postal_code" name="postal_code" placeholder="Postal Code" value="{% if update_contact_information_form.postal_code.errors %}{{ updated_employee.profile.contact_information.postal_code }}{% elif update_contact_information_form.postal_code.value %}{{ update_contact_information_form.postal_code.value }}{% else %}{{ updated_employee.profile.contact_information.postal_code }}{% endif %}">
+            <input type="text" id="postal_code" name="postal_code" placeholder="Postal Code" value="{% if updated_employee.profile.contact_information.postal_code %}{{ updated_employee.profile.contact_information.postal_code }}{% endif %}">
             {% if update_contact_information_form.postal_code.errors %}
             {% for error in update_contact_information_form.postal_code.errors %}
             <span class="form-error">{{ error }}</span>
@@ -172,7 +172,7 @@
         </div>
         <div class="form-row">
             <label for="street">Street</label>
-            <input type="text" id="street" name="street" placeholder="Street" value="{% if update_contact_information_form.street.errors %}{{ updated_employee.profile.contact_information.street }}{% elif update_contact_information_form.street.value %}{{ update_contact_information_form.street.value }}{% else %}{{ updated_employee.profile.contact_information.street }}{% endif %}">
+            <input type="text" id="street" name="street" placeholder="Street" value="{% if updated_employee.profile.contact_information.street %}{{ updated_employee.profile.contact_information.street }}{% endif %}">
             {% if update_contact_information_form.street.errors %}
             {% for error in update_contact_information_form.street.errors %}
             <span class="form-error">{{ error }}</span>
@@ -181,7 +181,7 @@
         </div>
         <div class="form-row">
             <label for="house_number">House Number</label>
-            <input type="text" id="house_number" name="house_number" placeholder="House Number" value="{% if update_contact_information_form.house_number.errors %}{{ updated_employee.profile.contact_information.house_number }}{% elif update_contact_information_form.house_number.value %}{{ update_contact_information_form.house_number.value }}{% else %}{{ updated_employee.profile.contact_information.house_number }}{% endif %}">
+            <input type="text" id="house_number" name="house_number" placeholder="House Number" value="{% if updated_employee.profile.contact_information.house_number %}{{ updated_employee.profile.contact_information.house_number }}{% endif %}">
             {% if update_contact_information_form.house_number.errors %}
             {% for error in update_contact_information_form.house_number.errors %}
             <span class="form-error">{{ error }}</span>
@@ -190,7 +190,7 @@
         </div>
         <div class="form-row">
             <label for="apartment_number">Apartment Number</label>
-            <input type="text" id="apartment_number" name="apartment_number" placeholder="Apartment Number" value="{% if update_contact_information_form.apartment_number.errors %}{{ updated_employee.profile.contact_information.apartment_number }}{% elif update_contact_information_form.apartment_number.value %}{{ update_contact_information_form.apartment_number.value }}{% else %}{{ updated_employee.profile.contact_information.apartment_number }}{% endif %}">
+            <input type="text" id="apartment_number" name="apartment_number" placeholder="Apartment Number" value="{% if updated_employee.profile.contact_information.apartment_number %}{{ updated_employee.profile.contact_information.apartment_number }}{% endif %}">
             {% if update_contact_information_form.apartment_number.errors %}
             {% for error in update_contact_information_form.apartment_number.errors %}
             <span class="form-error">{{ error }}</span>
@@ -279,7 +279,7 @@
         </div>
         <div class="form-row">
             <label for="work_hours_per_week">Work Hours per Week</label>
-            <input type="text" id="work_hours_per_week" name="work_hours_per_week" placeholder="Work Hours per Week" value="{% if update_contract_information_form.work_hours_per_week.errors %}{{ updated_employee.profile.contract.work_hours_per_week }}{% elif update_contract_information_form.work_hours_per_week.value %}{{ update_contract_information_form.work_hours_per_week.value }}{% else %}{% if updated_employee.profile.contract.work_hours_per_week is None %}{% else %}{{ updated_employee.profile.contract.work_hours_per_week }}{% endif %}{% endif %}">
+            <input type="text" id="work_hours_per_week" name="work_hours_per_week" placeholder="Work Hours per Week" value="{% if updated_employee.profile.contract.work_hours_per_week %}{{ updated_employee.profile.contract.work_hours_per_week }}{% endif %}">
             {% if update_contract_information_form.work_hours_per_week.errors %}
             {% for error in update_contract_information_form.work_hours_per_week.errors %}
             <span class="form-error">{{ error }}</span>
@@ -322,7 +322,7 @@
         </div>
         <div class="form-row">
             <label for="salary">Salary</label>
-            <input type="text" id="salary" name="salary" placeholder="Salary" value="{% if update_contract_information_form.salary.errors %}{{ updated_employee.profile.contract.salary }}{% elif update_contract_information_form.salary.value %}{{ update_contract_information_form.salary.value }}{% else %}{{ updated_employee.profile.contract.salary }}{% endif %}">
+            <input type="text" id="salary" name="salary" placeholder="Salary" value="{% if updated_employee.profile.contract.salary %}{{ updated_employee.profile.contract.salary }}{% endif %}">
             {% if update_contract_information_form.salary.errors %}
             {% for error in update_contract_information_form.salary.errors %}
             <span class="form-error">{{ error }}</span>
@@ -441,7 +441,7 @@
         </h1>
         <div class="form-row">
             <label for="bank_name">Bank Name *</label>
-            <input type="text" id="bank_name" name="bank_name" placeholder="Bank Name" value="{% if update_bank_transfer_form.bank_name.errors %}{{ updated_employee.banktransfer.bank_name }}{% elif update_bank_transfer_form.bank_name.value %}{{ update_bank_transfer_form.bank_name.value }}{% else %}{{ updated_employee.banktransfer.bank_name }}{% endif %}">
+            <input type="text" id="bank_name" name="bank_name" placeholder="Bank Name" value="{% if updated_employee.banktransfer.bank_name %}{{ updated_employee.banktransfer.bank_name }}{% endif %}">
             {% if update_bank_transfer_form.bank_name.errors %}
             {% for error in update_bank_transfer_form.bank_name.errors %}
             <span class="form-error">{{ error }}</span>
@@ -450,7 +450,7 @@
         </div>
         <div class="form-row">
             <label for="iban">IBAN *</label>
-            <input type="text" id="iban" name="iban" placeholder="IBAN" value="{% if update_bank_transfer_form.iban.errors %}{{ updated_employee.banktransfer.iban }}{% elif update_bank_transfer_form.iban.value %}{{ update_bank_transfer_form.iban.value }}{% else %}{{ updated_employee.banktransfer.iban }}{% endif %}">
+            <input type="text" id="iban" name="iban" placeholder="IBAN" value="{% if updated_employee.banktransfer.iban %}{{ updated_employee.banktransfer.iban }}{% endif %}">
             {% if update_bank_transfer_form.iban.errors %}
             {% for error in update_bank_transfer_form.iban.errors %}
             <span class="form-error">{{ error }}</span>
@@ -459,7 +459,7 @@
         </div>
         <div class="form-row">
             <label for="swift">SWIFT *</label>
-            <input type="text" id="swift" name="swift" placeholder="SWIFT" value="{% if update_bank_transfer_form.swift.errors %}{{ updated_employee.banktransfer.swift }}{% elif update_bank_transfer_form.swift.value %}{{ update_bank_transfer_form.swift.value }}{% else %}{{ updated_employee.banktransfer.swift }}{% endif %}">
+            <input type="text" id="swift" name="swift" placeholder="SWIFT" value="{% if updated_employee.banktransfer.swift %}{{ updated_employee.banktransfer.swift }}{% endif %}">
             {% if update_bank_transfer_form.swift.errors %}
             {% for error in update_bank_transfer_form.swift.errors %}
             <span class="form-error">{{ error }}</span>
@@ -468,7 +468,7 @@
         </div>
         <div class="form-row">
             <label for="account_number">Account Number *</label>
-            <input type="text" id="account_number" name="account_number" placeholder="Account Number" value="{% if update_bank_transfer_form.account_number.errors %}{{ updated_employee.banktransfer.account_number }}{% elif update_bank_transfer_form.account_number.value %}{{ update_bank_transfer_form.account_number.value }}{% else %}{{ updated_employee.banktransfer.account_number }}{% endif %}">
+            <input type="text" id="account_number" name="account_number" placeholder="Account Number" value="{% if updated_employee.banktransfer.bank_name %}{{ updated_employee.banktransfer.account_number }}{% endif %}">
             {% if update_bank_transfer_form.account_number.errors %}
             {% for error in update_bank_transfer_form.account_number.errors %}
             <span class="form-error">{{ error }}</span>
@@ -496,7 +496,7 @@
         </h1>
         <div class="form-row">
             <label for="owner_name">Owner Name *</label>
-            <input type="text" id="owner_name" name="owner_name" placeholder="Owner Name" value="{% if update_prepaid_transfer_form.owner_name.errors %}{% if updated_employee.prepaidtransfer.owner_name is not None %}{{ updated_employee.prepaidtransfer.owner_name }}{% endif %}{% elif update_prepaid_transfer_form.owner_name.value %}{{ update_prepaid_transfer_form.owner_name.value }}{% else %}{% if updated_employee.prepaidtransfer.owner_name is None %}{% else %}{{ updated_employee.prepaidtransfer.owner_name }}{% endif %}{% endif %}">
+            <input type="text" id="owner_name" name="owner_name" placeholder="Owner Name" value="{% if updated_employee.prepaidtransfer.owner_name %}{{ updated_employee.prepaidtransfer.owner_name }}{% endif %}">
             {% if update_prepaid_transfer_form.owner_name.errors %}
             {% for error in update_prepaid_transfer_form.owner_name.errors %}
             <span class="form-error">{{ error }}</span>
@@ -505,7 +505,7 @@
         </div>
         <div class="form-row">
             <label for="card_number">Card Number *</label>
-            <input type="text" id="card_number" name="card_number" placeholder="Card Number" value="{% if update_prepaid_transfer_form.card_number.errors %}{% if updated_employee.prepaidtransfer.card_number is not None %}{{ updated_employee.prepaidtransfer.card_number }}{% endif %}{% elif update_prepaid_transfer_form.card_number.value %}{{ update_prepaid_transfer_form.card_number.value }}{% else %}{% if updated_employee.prepaidtransfer.card_number is None %}{% else %}{{ updated_employee.prepaidtransfer.card_number }}{% endif %}{% endif %}">
+            <input type="text" id="card_number" name="card_number" placeholder="Card Number" value="{% if updated_employee.prepaidtransfer.card_number %}{{ updated_employee.prepaidtransfer.card_number }}{% endif %}">
             {% if update_prepaid_transfer_form.card_number.errors %}
             {% for error in update_prepaid_transfer_form.card_number.errors %}
             <span class="form-error">{{ error }}</span>
@@ -514,7 +514,7 @@
         </div>
         <div class="form-row">
             <label for="expiration_date">Expiration Date *</label>
-            <input type="text" id="expiration_date" name="expiration_date" placeholder="Expiration Date">
+            <input type="text" id="expiration_date" name="expiration_date" placeholder="Expiration Date" value="{% if updated_employee.prepaidtransfer.expiration_date %}{{ updated_employee.prepaidtransfer.expiration_date|date:'Y-m-d' }}{% endif %}">
             {% if update_prepaid_transfer_form.expiration_date.errors %}
             {% for error in update_prepaid_transfer_form.expiration_date.errors %}
             <span class="form-error">{{ error }}</span>
@@ -586,7 +586,7 @@
         </div>
         <div class="form-row">
             <label for="wallet_address">Wallet Address *</label>
-            <input type="text" id="wallet_address" name="wallet_address" placeholder="Wallet Address" value="{{ updated_employee.cryptotransfer.wallet_address }}">
+            <input type="text" id="wallet_address" name="wallet_address" placeholder="Wallet Address" value="{% if updated_employee.cryptotransfer.wallet_address %}{{ updated_employee.cryptotransfer.wallet_address }}{% endif %}">
             {% if update_crypto_transfer_form.wallet_address.errors %}
             {% for error in update_crypto_transfer_form.wallet_address.errors %}
             <span class="form-error">{{ error }}</span>

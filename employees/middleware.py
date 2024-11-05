@@ -6,6 +6,7 @@ class RegistrationCleanUpMiddleware:
         employee_registration = request.session.get("employee_registration", False)
         employee_update = request.session.get("employee_update", False)
         payment_method_changed = request.session.get("payment_method_changed", False)
+        payment_error = request.session.get("payment_error", False)
 
         if employee_registration and not "register-employee" in request.GET:
             keys = [
@@ -34,6 +35,11 @@ class RegistrationCleanUpMiddleware:
 
         if payment_method_changed and not "update-employee" in request.GET:
             request.session.pop("payment_method_changed")
+
+            request.session.modified = True
+
+        if payment_error and not "update-employee" in request.GET:
+            request.session.pop("payment_error")
 
             request.session.modified = True
 
