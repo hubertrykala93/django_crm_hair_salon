@@ -22,18 +22,18 @@
         </tr>
         </thead>
         <tbody>
-        {% for employee in employees %}
+        {% for obj in page_obj %}
         <tr>
-            <td>{{ employee.profile.basic_information.firstname }} {{ employee.profile.basic_information.lastname }}</td>
-            <td>{% if employee.profile.contract.contract_type %}{{ employee.profile.contract.contract_type }}{% else %}-{% endif %}</td>
-            <td>{% if employee.profile.contract.job_position %}{{ employee.profile.contract.job_position }}{% else %}-{% endif %}</td>
-            <td>{% if employee.profile.contract.time_remaining %}{{ employee.profile.contract.time_remaining.days }} days{% else %}-{% endif %}</td>
-            <td>{% if employee.profile.contract.salary %}{{ employee.profile.contract.salary }} {{ employee.profile.contract.currency }}{% else %}-{% endif %}</td>
-            <td>{% if employee.profile.contract.status %}{{ employee.profile.contract.status }}{% else %}-{% endif %}</td>
-            <td>{{ employee.profile.contract.invoices.count }}</td>
+            <td>{{ obj.profile.basic_information.firstname }} {{ obj.profile.basic_information.lastname }}</td>
+            <td>{% if obj.profile.contract.contract_type %}{{ obj.profile.contract.contract_type }}{% else %}-{% endif %}</td>
+            <td>{% if obj.profile.contract.job_position %}{{ obj.profile.contract.job_position }}{% else %}-{% endif %}</td>
+            <td>{% if obj.profile.contract.time_remaining %}{{ obj.profile.contract.time_remaining.days }} days{% else %}-{% endif %}</td>
+            <td>{% if obj.profile.contract.salary %}{{ obj.profile.contract.salary }} {{ employee.profile.contract.currency }}{% else %}-{% endif %}</td>
+            <td>{% if obj.profile.contract.status %}{{ obj.profile.contract.status }}{% else %}-{% endif %}</td>
+            <td>{{ obj.profile.contract.invoices.count }}</td>
             <td class="table-buttons">
-                <a href="?update-employee={{ employee.pk }}"><i class="fa-solid fa-user-pen"></i></a>
-                <a href="{% url 'delete-employee' employee.pk %}"><i class="fa-regular fa-trash-can"></i></a>
+                <a href="?update-employee={{ obj.pk }}"><i class="fa-solid fa-user-pen"></i></a>
+                <a href="{% url 'delete-employee' obj.pk %}"><i class="fa-regular fa-trash-can"></i></a>
             </td>
         </tr>
         {% endfor %}
@@ -46,5 +46,15 @@
     {% include 'employees/update-employee.html' %}
     {% endif %}
     {% endif %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+        <a href="?page=1">First</a>
+        <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        {% endif %}
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">Next</a>
+        <a href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+        {% endif %}
+    </div>
 </div>
 {% endblock %}

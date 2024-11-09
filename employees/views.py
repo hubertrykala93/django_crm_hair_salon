@@ -16,6 +16,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from weasyprint import HTML
 from django.conf import settings
+from django.core.paginator import Paginator
 
 
 def generate_contract(request):
@@ -514,7 +515,6 @@ def update_payment_method(
 
 @login_required(login_url="index")
 def employees(request):
-    print(f"Session -> {request.session.items()}")
     if request.session.get("payment_error"):
         request.session.pop("payment_error")
 
@@ -528,6 +528,7 @@ def employees(request):
     paypal_transfer_form = PayPalTransferForm()
     crypto_transfer_form = CryptoTransferForm()
 
+    # Forms
     if request.method == "POST":
         if "register-employee" in request.GET:
             if 'register-employee' in request.POST:
@@ -862,8 +863,6 @@ def employees(request):
                             if development_benefit not in cleaned_data["development_benefits"]:
                                 instance.development_benefits.remove(development_benefit)
 
-                    print(f"Payment Method -> {updated_employee.profile.contract.payment_method.name}")
-
                     return redirect(to=reverse(
                         viewname="employees") + f"?update-employee={updated_employee.pk}&tab=payment-information&method=bank-transfer")
 
@@ -1012,12 +1011,21 @@ def employees(request):
                 message="Something went wrong. This employee does not exist.",
             )
 
+    # Pagination
+    paginator = Paginator(
+        object_list=User.objects.exclude(email="admin@gmail.com").order_by("-date_joined"),
+        per_page=2
+    )
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(number=page_number)
+
     return render(
         request=request,
         template_name="employees/employees.html",
         context={
             "title": "Employees" if not request.GET else "Register Employee" if "register-employee" in request.GET else "Update Employee",
             "employees": User.objects.exclude(email="admin@gmail.com").order_by("-date_joined"),
+            "page_obj": page_obj,
             "register_form": register_form,
             "basic_information_form": basic_information_form,
             "contact_information_form": contact_information_form,
