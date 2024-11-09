@@ -4,9 +4,27 @@
 
 {% block page_content %}
 <div class="content">
-    {% if not request.GET %}
+    {% if not request.GET or request.GET.order %}
     <h1 class="content-header">
-        Employees
+        {{ page_obj.start_index }} - {{ page_obj.end_index }} of {{ employees.count }} {% if employees.count == 0 %}Employees{% elif employees.count == 1 %}Employee{% else %}Employees{% endif %}
+
+        <div class="employees-sort-form">
+            <form method="get" action="{% url 'employees' %}" id="sortForm">
+                <div class="employees-sort-form-select-option">
+                    <span>Sort by</span>
+                    <select name="order" id="sortSelect" onchange="this.form.submit()">
+                        <option value="default" {% if request.GET.order == 'default' %}selected{% endif %}>Default</option>
+                        <option value="hired-date" {% if request.GET.order == 'hired-date' %}selected{% endif %}>Hired Date</option>
+                        <option value="salary" {% if request.GET.order == 'salary' %}selected{% endif %}>Salary</option>
+                    </select>
+                </div>
+            </form>
+            {% if request.user.is_staff %}
+            <a href="{% url 'employees' %}?register-employee">
+                <button type="submit" class="btn btn-submit">+ Add Employee</button>
+            </a>
+            {% endif %}
+        </div>
     </h1>
     <table>
         <thead>
@@ -14,7 +32,6 @@
             <th>Name</th>
             <th>Contract</th>
             <th>Position</th>
-            <th>Time Remaining</th>
             <th>Salary</th>
             <th>Status</th>
             <th>Invoices</th>
@@ -22,12 +39,11 @@
         </tr>
         </thead>
         <tbody>
-        {% for obj in page_obj %}
+        {% for obj in employees %}
         <tr>
             <td>{{ obj.profile.basic_information.firstname }} {{ obj.profile.basic_information.lastname }}</td>
             <td>{% if obj.profile.contract.contract_type %}{{ obj.profile.contract.contract_type }}{% else %}-{% endif %}</td>
             <td>{% if obj.profile.contract.job_position %}{{ obj.profile.contract.job_position }}{% else %}-{% endif %}</td>
-            <td>{% if obj.profile.contract.time_remaining %}{{ obj.profile.contract.time_remaining.days }} days{% else %}-{% endif %}</td>
             <td>{% if obj.profile.contract.salary %}{{ obj.profile.contract.salary }} {{ employee.profile.contract.currency }}{% else %}-{% endif %}</td>
             <td>{% if obj.profile.contract.status %}{{ obj.profile.contract.status }}{% else %}-{% endif %}</td>
             <td>{{ obj.profile.contract.invoices.count }}</td>
@@ -46,15 +62,5 @@
     {% include 'employees/update-employee.html' %}
     {% endif %}
     {% endif %}
-    <div class="pagination">
-        {% if page_obj.has_previous %}
-        <a href="?page=1">First</a>
-        <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
-        {% endif %}
-        {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}">Next</a>
-        <a href="?page={{ page_obj.paginator.num_pages }}">Last</a>
-        {% endif %}
-    </div>
 </div>
 {% endblock %}

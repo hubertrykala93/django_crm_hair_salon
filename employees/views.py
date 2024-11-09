@@ -1011,21 +1011,33 @@ def employees(request):
                 message="Something went wrong. This employee does not exist.",
             )
 
-    # Pagination
-    paginator = Paginator(
-        object_list=User.objects.exclude(email="admin@gmail.com").order_by("-date_joined"),
-        per_page=2
+    # Sorting
+    employees = User.objects.exclude(
+        email="admin@gmail.com"
+    ).order_by(
+        "profile__basic_information__firstname",
+        "profile__basic_information__lastname",
     )
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(number=page_number)
+
+    order_options = {
+        "hired-date": "-date_joined",
+        "salary": "-profile__contract__salary",
+    }
+
+    order = request.GET.get("order", None)
+
+    if order is not None:
+        if order in order_options:
+            employees = employees.order_by(order_options[order])
+
+    # Pagination
 
     return render(
         request=request,
         template_name="employees/employees.html",
         context={
-            "title": "Employees" if not request.GET else "Register Employee" if "register-employee" in request.GET else "Update Employee",
-            "employees": User.objects.exclude(email="admin@gmail.com").order_by("-date_joined"),
-            "page_obj": page_obj,
+            "title": "Employees" if not request.GET or "order" in request.GET else "Register Employee" if "register-employee" in request.GET else "Update Employee",
+            "employees": employees,
             "register_form": register_form,
             "basic_information_form": basic_information_form,
             "contact_information_form": contact_information_form,

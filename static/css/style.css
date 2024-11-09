@@ -196,6 +196,14 @@ aside ul li a i {
     margin-left: 20px;
 }
 
+.header a img {
+    display: block;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
 /* Forms */
 form .form-row {
     display: flex;
@@ -253,6 +261,33 @@ form .form-error {
 .form-flex {
     display: flex;
     justify-content: space-around;
+}
+
+.employees-sort-form {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--gap-400);
+}
+
+.employees-sort-form select {
+    padding-left: 30px;
+    height: 30px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.employees-sort-form-select-option {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+}
+
+.employees-sort-form-select-option span {
+    width: 90px;
+    font-size: 15px;
+    margin-right: 10px;
 }
 
 /* Messages */
@@ -364,6 +399,9 @@ form .form-error {
 }
 
 .content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     color: #555555;
     font-weight: 400;
     font-size: 25px;

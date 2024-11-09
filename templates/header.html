@@ -9,9 +9,7 @@
         <li><a href="#"><i class="fa-sharp fa-solid fa-bell"></i></a></li>
     </ul>
 
-    {% if request.user.is_staff %}
-    <a href="{% url 'employees' %}?register-employee">
-        <button type="submit" class="btn btn-submit">+ Add Employee</button>
+    <a href="#">
+        <img src="{{ request.user.profile.basic_information.profile_image.image.url }}">
     </a>
-    {% endif %}
 </div>
