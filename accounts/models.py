@@ -291,15 +291,20 @@ def delete_instances(sender, instance, **kwargs):
 
                     instance.profile.basic_information.profile_image.delete()
 
-            instance.profile.basic_information.delete()
+            if getattr(instance.profile, "basic_information"):
+                instance.profile.basic_information.delete()
 
         if hasattr(instance.profile, "contact_information"):
-            instance.profile.contact_information.delete()
+            if getattr(instance.profile, "contact_information"):
+                instance.profile.contact_information.delete()
 
         if hasattr(instance.profile, "contract"):
             if hasattr(instance.profile.contract, "benefits"):
-                instance.profile.contract.benefits.delete()
+                if getattr(instance.profile.contract, "benefits"):
+                    instance.profile.contract.benefits.delete()
 
-            instance.profile.contract.delete()
+            if getattr(instance.profile, "contract"):
+                instance.profile.contract.delete()
 
-        instance.profile.delete()
+        if getattr(instance, "profile"):
+            instance.profile.delete()

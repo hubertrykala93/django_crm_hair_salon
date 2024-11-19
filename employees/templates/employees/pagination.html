@@ -1,0 +1,51 @@
+{% load pagination_filter %}
+
+<div class="pagination-content">
+    <ul class="pagination">
+        {% if objects.has_previous %}
+        <li>
+            <a href="?{% url_replace request 'page' 1 %}">
+                <span>First</span>
+            </a>
+        </li>
+        <li>
+            <a href="?{% url_replace request 'page' objects.previous_page_number %}">
+                <span>
+                    <i class="fa-solid fa-arrow-left"></i>
+                </span>
+            </a>
+        </li>
+        {% endif %}
+
+        {% for num in objects.paginator.page_range %}
+        {% if objects.number == num %}
+        <li>
+            <a class="active" href="?{% url_replace request 'page' num %}">
+                <span>{{ num }}</span>
+            </a>
+        </li>
+        {% elif num > objects.number|add:'-2' and num < objects.number|add:'2' %}
+        <li>
+            <a href="?{% url_replace request 'page' num %}">
+                <span>{{ num }}</span>
+            </a>
+        </li>
+        {% endif %}
+        {% endfor %}
+
+        {% if objects.has_next %}
+        <li>
+            <a href="?{% url_replace request 'page' objects.next_page_number %}">
+                <span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </span>
+            </a>
+        </li>
+        <li>
+            <a href="?{% url_replace request 'page' objects.paginator.num_pages %}">
+                <span>Last</span>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</div>

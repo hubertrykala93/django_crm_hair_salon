@@ -4,7 +4,7 @@ from accounts.models import User
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from contracts.models import ContractType, JobPosition, JobType, PaymentFrequency, Currency, SportBenefit, \
-    HealthBenefit, InsuranceBenefit, DevelopmentBenefit
+    HealthBenefit, InsuranceBenefit, DevelopmentBenefit, EmploymentStatus
 from payments.models import CryptoCurrency
 from accounts.forms import RegisterForm, BasicInformationForm, ContactInformationForm
 from contracts.forms import ContractForm, BenefitsForm
@@ -1022,6 +1022,7 @@ def employees(request):
     order_options = {
         "hired-date": "-date_joined",
         "salary": "-profile__contract__salary",
+        "working-hours": "-profile__contract__work_hours_per_week",
     }
 
     order = request.GET.get("order", None)
@@ -1030,7 +1031,85 @@ def employees(request):
         if order in order_options:
             employees = employees.order_by(order_options[order])
 
+    # Filters
+    selected_contract_types = []
+    selected_job_types = []
+    selected_job_positions = []
+    selected_currencies = []
+    selected_payment_frequencies = []
+    selected_employment_statuses = []
+
+    if "contract_type" in request.GET:
+        selected_contract_types = request.GET.getlist("contract_type")
+
+        try:
+            employees = employees.filter(
+                profile__contract__contract_type__slug__in=selected_contract_types,
+            )
+
+        except ContractType.DoesNotExist:
+            employees = employees.none()
+
+    if "job_type" in request.GET:
+        selected_job_types = request.GET.getlist("job_type")
+
+        try:
+            employees = employees.filter(
+                profile__contract__job_type__slug__in=selected_job_types,
+            )
+
+        except JobType.DoesNotExist:
+            employees = employees.none()
+
+    if "job_position" in request.GET:
+        selected_job_positions = request.GET.getlist("job_position")
+
+        try:
+            employees = employees.filter(
+                profile__contract__job_position__slug__in=selected_job_positions,
+            )
+
+        except JobPosition.DoesNotExist:
+            employees = employees.none()
+
+    if "currency" in request.GET:
+        selected_currencies = request.GET.getlist("currency")
+
+        try:
+            employees = employees.filter(
+                profile__contract__currency__slug__in=selected_currencies,
+            )
+
+        except Currency.DoesNotExist:
+            employees = employees.none()
+
+    if "payment_frequency" in request.GET:
+        selected_payment_frequencies = request.GET.getlist("payment_frequency")
+
+        try:
+            employees = employees.filter(profile__contract__payment_frequency__slug__in=selected_payment_frequencies)
+
+        except PaymentFrequency.DoesNotExist:
+            employees = employees.none()
+
+    if "employment_status" in request.GET:
+        selected_employment_statuses = request.GET.getlist("employment_status")
+
+        try:
+            employees = employees.filter(
+                profile__contract__status__slug__in=selected_employment_statuses,
+            )
+
+        except EmploymentStatus.DoesNotExist:
+            employees = employees.none()
+
     # Pagination
+    paginator = Paginator(
+        object_list=employees,
+        per_page=6,
+    )
+    page = request.GET.get("page")
+    objects = paginator.get_page(number=page)
 
     return render(
         request=request,
@@ -1066,6 +1145,14 @@ def employees(request):
             "insurance_benefits": InsuranceBenefit.objects.all().order_by("name"),
             "development_benefits": DevelopmentBenefit.objects.all().order_by("name"),
             "cryptocurrencies": CryptoCurrency.objects.all().order_by("name"),
+            "employment_statuses": EmploymentStatus.objects.all(),
+            "selected_contract_types": selected_contract_types,
+            "selected_job_types": selected_job_types,
+            "selected_job_positions": selected_job_positions,
+            "selected_currencies": selected_currencies,
+            "selected_payment_frequencies": selected_payment_frequencies,
+            "selected_employment_statuses": selected_employment_statuses,
+            "objects": objects,
         },
     )
 

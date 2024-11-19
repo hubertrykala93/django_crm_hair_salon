@@ -4,57 +4,127 @@
 
 {% block page_content %}
 <div class="content">
-    {% if not request.GET or request.GET.order %}
-    <h1 class="content-header">
-        {{ page_obj.start_index }} - {{ page_obj.end_index }} of {{ employees.count }} {% if employees.count == 0 %}Employees{% elif employees.count == 1 %}Employee{% else %}Employees{% endif %}
+    {% if not request.GET or request.GET.page or request.GET.order or request.GET.contract_type or request.GET.job_type or request.GET.job_position or request.GET.currency or request.GET.payment_frequency or request.GET.employment_status %}
+    <div class="content-header">
+        {% if request.user.is_staff %}
+        <a href="{% url 'employees' %}?register-employee">
+            <button type="submit" class="btn btn-submit">+ Add Employee</button>
+        </a>
+        {% endif %}
 
         <div class="employees-sort-form">
-            <form method="get" action="{% url 'employees' %}" id="sortForm">
+            <p class="employees-counter">Showing {{ objects.start_index }} - {{ objects.end_index }} of {{ objects.paginator.count }} employees</p>
+            <form method="get" id="sortForm">
+
+                {% if 'contract_type' in request.GET %}
+                {% for contract_type in selected_contract_types %}
+                <input type="hidden" name="contract_type" value="{{ contract_type }}">
+                {% endfor %}
+                {% endif %}
+
+                {% if 'job_type' in request.GET %}
+                {% for job_type in selected_job_types %}
+                <input type="hidden" name="job_type" value="{{ job_type }}">
+                {% endfor %}
+                {% endif %}
+
+                {% if 'job_position' in request.GET %}
+                {% for job_position in selected_job_positions %}
+                <input type="hidden" name="job_position" value="{{ job_position }}">
+                {% endfor %}
+                {% endif %}
+
+                {% if 'currency' in request.GET %}
+                {% for currency in selected_currencies %}
+                <input type="hidden" name="currency" value="{{ currency }}">
+                {% endfor %}
+                {% endif %}
+
+                {% if 'payment_frequency' in request.GET %}
+                {% for payment_frequency in selected_payment_frequencies %}
+                <input type="hidden" name="payment_frequency" value="{{ payment_frequency }}">
+                {% endfor %}
+                {% endif %}
+
+                {% if 'employment_status' in request.GET %}
+                {% for employment_status in selected_employment_statuses %}
+                <input type="hidden" name="employment_status" value="{{ employment_status }}">
+                {% endfor %}
+                {% endif %}
+
                 <div class="employees-sort-form-select-option">
                     <span>Sort by</span>
                     <select name="order" id="sortSelect" onchange="this.form.submit()">
                         <option value="default" {% if request.GET.order == 'default' %}selected{% endif %}>Default</option>
                         <option value="hired-date" {% if request.GET.order == 'hired-date' %}selected{% endif %}>Hired Date</option>
                         <option value="salary" {% if request.GET.order == 'salary' %}selected{% endif %}>Salary</option>
+                        <option value="working-hours" {% if request.GET.order == 'working-hours' %}selected{% endif %}>Working Hours</option>
                     </select>
                 </div>
             </form>
-            {% if request.user.is_staff %}
-            <a href="{% url 'employees' %}?register-employee">
-                <button type="submit" class="btn btn-submit">+ Add Employee</button>
-            </a>
-            {% endif %}
         </div>
-    </h1>
-    <table>
-        <thead>
-        <tr>
-            <th>Name</th>
-            <th>Contract</th>
-            <th>Position</th>
-            <th>Salary</th>
-            <th>Status</th>
-            <th>Invoices</th>
-            <th>Actions</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for obj in employees %}
-        <tr>
-            <td>{{ obj.profile.basic_information.firstname }} {{ obj.profile.basic_information.lastname }}</td>
-            <td>{% if obj.profile.contract.contract_type %}{{ obj.profile.contract.contract_type }}{% else %}-{% endif %}</td>
-            <td>{% if obj.profile.contract.job_position %}{{ obj.profile.contract.job_position }}{% else %}-{% endif %}</td>
-            <td>{% if obj.profile.contract.salary %}{{ obj.profile.contract.salary }} {{ employee.profile.contract.currency }}{% else %}-{% endif %}</td>
-            <td>{% if obj.profile.contract.status %}{{ obj.profile.contract.status }}{% else %}-{% endif %}</td>
-            <td>{{ obj.profile.contract.invoices.count }}</td>
-            <td class="table-buttons">
-                <a href="?update-employee={{ obj.pk }}"><i class="fa-solid fa-user-pen"></i></a>
-                <a href="{% url 'delete-employee' obj.pk %}"><i class="fa-regular fa-trash-can"></i></a>
-            </td>
-        </tr>
+    </div>
+
+    {% include 'employees/employee-filters.html' %}
+
+    {% if objects %}
+    <div class="employees-content">
+        {% for obj in objects %}
+        <div class="employee">
+            <div class="employee-header">
+                <div class="profile-photo-holder">
+                    <img class="profile-photo" src="{{ obj.profile.basic_information.profile_image.image.url }}" alt="{{ obj.profile.basic_information.profile_image.alt }}">
+                    <span class="employee-status {% if obj.profile.contract.status.name == 'Active' %}active{% elif obj.profile.contract.status.name == 'On Leave' %}on-leave{% else %}inactive{% endif %}"></span>
+                </div>
+                <div class="employee-menu">
+                    <span class="employee-menu-dots">
+                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                    </span>
+                    <ul class="employee-menu-nav">
+                        <li>
+                            <a href="?update-employee={{ obj.pk }}"><i class="fa-solid fa-user-pen"></i>Edit</a>
+                        </li>
+
+                        <li>
+                            <a href="{% url 'delete-employee' obj.pk %}"><i class="fa-regular fa-trash-can"></i>Delete</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="employee-body">
+                <h2>{{ obj.profile.basic_information.firstname }} {{ obj.profile.basic_information.lastname }}</h2>
+                <p>{{ obj.profile.contract.contract_type.name }}</p>
+            </div>
+            <div class="employee-info">
+                <div class="employee-info-row">
+                    <div>
+                        <p class="info-label">Position</p>
+                        <p class="info-value">{{ obj.profile.contract.job_position.name }}</p>
+                    </div>
+                    <div>
+                        <p class="info-label">Salary</p>
+                        <p class="info-value">{{ obj.profile.contract.salary }} {{ obj.profile.contract.currency.name }}</p>
+                    </div>
+                    <div>
+                        <p class="info-label">Hired Date</p>
+                        <p class="info-value">{{ obj.profile.contract.start_date|date:'Y-m-d' }}</p>
+                    </div>
+                </div>
+                <div class="employee-contact">
+                    <p class="contact-item"><i class="fa-solid fa-envelope"></i>{{ obj.email }}</p>
+                    <p class="contact-item"><i class="fa-solid fa-phone"></i>{{ obj.profile.contact_information.phone_number }}</p>
+                    <p class="contact-item"><i class="fa-solid fa-location-dot"></i>{{ obj.profile.contact_information.street }} {{ obj.profile.contact_information.postal_code }}, {{ obj.profile.contact_information.city }}</p>
+                </div>
+            </div>
+        </div>
         {% endfor %}
-        </tbody>
-    </table>
+    </div>
+
+    {% include 'employees/pagination.html' %}
+
+    {% else %}
+    <p>No employees found.</p>
+    {% endif %}
     {% else %}
     {% if 'register-employee' in request.GET %}
     {% include 'employees/register-employee.html' %}
