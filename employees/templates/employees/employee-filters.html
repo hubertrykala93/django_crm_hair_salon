@@ -5,6 +5,11 @@
 
 <div class="content-filters">
     <form method="get" class="filter-forms-content">
+
+        {% if request.GET.search %}
+        <input type="hidden" name="search" value="{{ request.GET.search }}">
+        {% endif %}
+
         {% if request.GET.order %}
         <input type="hidden" name="order" value="{{ request.GET.order }}">
         {% endif %}

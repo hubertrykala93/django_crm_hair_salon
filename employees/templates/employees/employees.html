@@ -4,7 +4,7 @@
 
 {% block page_content %}
 <div class="content">
-    {% if not request.GET or request.GET.page or request.GET.order or request.GET.contract_type or request.GET.job_type or request.GET.job_position or request.GET.currency or request.GET.payment_frequency or request.GET.employment_status %}
+    {% if not request.GET or 'search' in request.GET or request.GET.page or request.GET.order or request.GET.contract_type or request.GET.job_type or request.GET.job_position or request.GET.currency or request.GET.payment_frequency or request.GET.employment_status %}
     <div class="content-header">
         {% if request.user.is_staff %}
         <a href="{% url 'employees' %}?register-employee">
@@ -15,6 +15,10 @@
         <div class="employees-sort-form">
             <p class="employees-counter">Showing {{ objects.start_index }} - {{ objects.end_index }} of {{ objects.paginator.count }} employees</p>
             <form method="get" id="sortForm">
+
+                {% if 'search' in request.GET %}
+                <input type="hidden" name="search" value="{{ request.GET.search }}">
+                {% endif %}
 
                 {% if 'contract_type' in request.GET %}
                 {% for contract_type in selected_contract_types %}
@@ -65,7 +69,9 @@
         </div>
     </div>
 
+    {% if objects %}
     {% include 'employees/employee-filters.html' %}
+    {% endif %}
 
     {% if objects %}
     <div class="employees-content">

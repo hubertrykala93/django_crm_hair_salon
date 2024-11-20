@@ -16,7 +16,8 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from weasyprint import HTML
 from django.conf import settings
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.db.models import Q
 
 
 def generate_contract(request):
@@ -511,6 +512,19 @@ def update_payment_method(
 
     else:
         return False
+
+
+def pagination(request, object_list, per_page):
+    paginator = Paginator(
+        object_list=object_list,
+        per_page=per_page,
+    )
+
+    page = request.GET.get("page", 1)
+
+    objects = paginator.get_page(number=page)
+
+    return objects
 
 
 @login_required(login_url="index")
@@ -1103,20 +1117,21 @@ def employees(request):
         except EmploymentStatus.DoesNotExist:
             employees = employees.none()
 
-    # Pagination
-    paginator = Paginator(
-        object_list=employees,
-        per_page=6,
-    )
-    page = request.GET.get("page")
-    objects = paginator.get_page(number=page)
+    if "search" in request.GET:
+        search_query = request.GET.get("search", "").strip()
+
+        if search_query:
+            employees = employees.filter(
+                Q(profile__basic_information__firstname__icontains=search_query) | Q(
+                    email__icontains=search_query,
+                ),
+            )
 
     return render(
         request=request,
         template_name="employees/employees.html",
         context={
-            "title": "Employees" if not request.GET or "order" in request.GET else "Register Employee" if "register-employee" in request.GET else "Update Employee",
-            "employees": employees,
+            "title": "Employees" if not request.GET or "order" in request.GET or "search" in request.GET else "Register Employee" if "register-employee" in request.GET else "Update Employee",
             "register_form": register_form,
             "basic_information_form": basic_information_form,
             "contact_information_form": contact_information_form,
@@ -1152,7 +1167,11 @@ def employees(request):
             "selected_currencies": selected_currencies,
             "selected_payment_frequencies": selected_payment_frequencies,
             "selected_employment_statuses": selected_employment_statuses,
-            "objects": objects,
+            "objects": pagination(
+                request=request,
+                object_list=employees,
+                per_page=6
+            )
         },
     )
 

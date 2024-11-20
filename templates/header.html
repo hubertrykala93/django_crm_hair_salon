@@ -1,6 +1,42 @@
 <div class="header">
     <form method="get" class="header-form">
-        <input type="text" name="search" placeholder="Search here...">
+        {% if request.GET.contract_type %}
+        {% for contract_type in selected_contract_types %}
+        <input type="hidden" name="contract_type" value="{{ contract_type }}">
+        {% endfor %}
+        {% endif %}
+
+        {% if request.GET.job_type %}
+        {% for job_type in selected_job_types %}
+        <input type="hidden" name="job_type" value="{{ job_type }}">
+        {% endfor %}
+        {% endif %}
+
+        {% if request.GET.job_position %}
+        {% for job_position in selected_job_positions %}
+        <input type="hidden" name="job_position" value="{{ job_position }}">
+        {% endfor %}
+        {% endif %}
+
+        {% if request.GET.currency %}
+        {% for currency in selected_currencies %}
+        <input type="hidden" name="currency" value="{{ currency }}">
+        {% endfor %}
+        {% endif %}
+
+        {% if request.GET.payment_frequency %}
+        {% for payment_frequency in selected_payment_frequencies %}
+        <input type="hidden" name="payment_frequency" value="{{ payment_frequency }}">
+        {% endfor %}
+        {% endif %}
+
+        {% if request.GET.employment_status %}
+        {% for employment_status in selected_employment_statuses %}
+        <input type="hidden" name="employment_status" value="{{ employment_status }}">
+        {% endfor %}
+        {% endif %}
+
+        <input type="text" name="search" value="{% if request.GET.search %}{{ request.GET.search }}{% endif %}" placeholder="Search here...">
         <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
     </form>
 
