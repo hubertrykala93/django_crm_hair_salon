@@ -1,0 +1,422 @@
+{% load benefit_filters %}
+
+<div class="register-content">
+    <div class="form-group">
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            <div class="form-section">
+                <h2>User Details</h2>
+
+                <div class="form-row">
+                    <div class="form-info">
+                        <label for="email" class="info-label">Email *</label>
+                        <div class="form-input">
+                            <input type="text" id="email" name="email" placeholder="Email Address" {% if employee_register_form.email.value %}value="{{ employee_register_form.email.value }}"{% endif %}>
+                        </div>
+                    </div>
+
+                    {% if employee_register_form.email.errors %}
+                    {% for error in employee_register_form.email.errors %}
+                    <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-row">
+                    <div class="form-info">
+                        <label for="firstname" class="info-label">Firstname *</label>
+                        <input type="text" id="firstname" name="firstname" placeholder="Firstname" {% if employee_register_form.firstname.value %}value="{{ employee_register_form.firstname.value }}"{% endif %}>
+                    </div>
+
+                    {% if employee_register_form.firstname.errors %}
+                    {% for error in employee_register_form.firstname.errors %}
+                    <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-row">
+                    <div class="form-info">
+                        <label for="lastname" class="info-label">Lastname *</label>
+                        <input type="text" id="lastname" name="lastname" placeholder="Lastname" {% if employee_register_form.lastname.value %}value="{{ employee_register_form.lastname.value }}"{% endif %}>
+                    </div>
+
+                    {% if employee_register_form.lastname.errors %}
+                    {% for error in employee_register_form.lastname.errors %}
+                    <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-row">
+                    <div class="form-info">
+                        <label for="date_of_birth" class="info-label">Date of Birth *</label>
+                        <input type="text" id="date_of_birth" name="date_of_birth" placeholder="Date of Birth" {% if employee_register_form.date_of_birth.value %}value="{{ employee_register_form.date_of_birth.value }}"{% endif %}>
+                    </div>
+
+                    {% if employee_register_form.date_of_birth.errors %}
+                    {% for error in employee_register_form.date_of_birth.errors %}
+                    <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>Contact Details</h2>
+
+                <div class="form-row">
+                    <div class="form-info">
+                        <label for="phone_number" class="info-label">Phone Number *</label>
+                        <input type="text" id="phone_number" name="phone_number" placeholder="Phone Number" {% if employee_register_form.phone_number.value %}value="{{ employee_register_form.phone_number.value }}"{% endif %}>
+                    </div>
+
+                    {% if employee_register_form.phone_number.errors %}
+                    {% for error in employee_register_form.phone_number.errors %}
+                    <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-row">
+                    <div class="form-info">
+                        <label for="country" class="info-label">Country *</label>
+                        <input type="text" id="country" name="country" placeholder="Country" {% if employee_register_form.country.value %}value="{{ employee_register_form.country.value }}"{% endif %}>
+                    </div>
+
+                    {% if employee_register_form.country.errors %}
+                    {% for error in employee_register_form.country.errors %}
+                    <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-row">
+                    <div class="form-info">
+                        <label for="province" class="info-label">Province *</label>
+                        <input type="text" id="province" name="province" placeholder="Province" {% if employee_register_form.province.value %}value="{{ employee_register_form.province.value }}"{% endif %}>
+                    </div>
+
+                    {% if employee_register_form.province.errors %}
+                    {% for error in employee_register_form.province.errors %}
+                    <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-row">
+                    <div class="form-info">
+                        <label for="city" class="info-label">City *</label>
+                        <input type="text" id="city" name="city" placeholder="City" {% if employee_register_form.city.value %}value="{{ employee_register_form.city.value }}"{% endif %}>
+                    </div>
+
+                    {% if employee_register_form.city.errors %}
+                    {% for error in employee_register_form.city.errors %}
+                    <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-row">
+                    <div class="form-info">
+                        <label for="postal_code" class="info-label">Postal Code *</label>
+                        <input type="text" id="postal_code" name="postal_code" placeholder="Postal Code" {% if employee_register_form.postal_code.value %}value="{{ employee_register_form.postal_code.value }}"{% endif %}>
+                    </div>
+
+                    {% if employee_register_form.postal_code.errors %}
+                    {% for error in employee_register_form.postal_code.errors %}
+                    <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-row">
+                    <div class="form-info">
+                        <label for="street" class="info-label">Street *</label>
+                        <input type="text" id="street" name="street" placeholder="Street" {% if employee_register_form.street.value %}value="{{ employee_register_form.street.value }}"{% endif %}>
+                    </div>
+
+                    {% if employee_register_form.street.errors %}
+                    {% for error in employee_register_form.street.errors %}
+                    <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-row">
+                    <div class="form-info">
+                        <label for="house_number" class="info-label">House Number *</label>
+                        <input type="text" id="house_number" name="house_number" placeholder="House Number" {% if employee_register_form.house_number.value %}value="{{ employee_register_form.house_number.value }}"{% endif %}>
+                    </div>
+
+                    {% if employee_register_form.house_number.errors %}
+                    {% for error in employee_register_form.house_number.errors %}
+                    <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-row">
+                    <div class="form-info">
+                        <label for="apartment_number" class="info-label">Apartment Number</label>
+                        <input type="text" id="apartment_number" name="apartment_number" placeholder="Apartment Number" {% if employee_register_form.apartment_number.value %}value="{{ employee_register_form.apartment_number.value }}"{% endif %}>
+                    </div>
+
+                    {% if employee_register_form.apartment_number.errors %}
+                    {% for error in employee_register_form.apartment_number.errors %}
+                    <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>Contract Details</h2>
+
+                <div class="form-row">
+                    <div class="form-info">
+                        <label for="contract_type" class="info-label">Contract Type *</label>
+                        {% if contract_types %}
+                        <select id="contract_type" name="contract_type">
+                            <option value="">-----</option>
+                            {% for contract_type in contract_types %}
+                            <option value="{{ contract_type.pk }}" {% if request.POST.contract_type == contract_type.pk|stringformat:'s' %}selected{% endif %}>{{ contract_type }}</option>
+                            {% endfor %}
+                        </select>
+                        {% endif %}
+                    </div>
+
+                    {% if employee_register_form.contract_type.errors %}
+                    {% for error in employee_register_form.contract_type.errors %}
+                    <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-row">
+                    <div class="form-info">
+                        <label for="job_type" class="info-label">Job Type *</label>
+                        {% if job_types %}
+                        <select id="job_type" name="job_type">
+                            <option value="">-----</option>
+                            {% for job_type in job_types %}
+                            <option value="{{ job_type.pk }}" {% if request.POST.job_type == job_type.pk|stringformat:'s' %}selected{% endif %}>{{ job_type }}</option>
+                            {% endfor %}
+                        </select>
+                        {% endif %}
+                    </div>
+
+                    {% if employee_register_form.job_type.errors %}
+                    {% for error in employee_register_form.job_type.errors %}
+                    <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-row">
+                    <div class="form-info">
+                        <label for="job_position" class="info-label">Job Position *</label>
+                        {% if job_positions %}
+                        <select id="job_position" name="job_position">
+                            <option value="">-----</option>
+                            {% for job_position in job_positions %}
+                            <option value="{{ job_position.pk }}" {% if request.POST.job_position == job_position.pk|stringformat:'s' %}selected{% endif %}>{{ job_position }}</option>
+                            {% endfor %}
+                        </select>
+                        {% endif %}
+                    </div>
+
+                    {% if employee_register_form.job_position.errors %}
+                    {% for error in employee_register_form.job_position.errors %}
+                    <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-row">
+                    <div class="form-info">
+                        <label for="payment_frequency" class="info-label">Payment Frequency *</label>
+                        {% if payment_frequencies %}
+                        <select id="payment_frequency" name="payment_frequency">
+                            <option value="">-----</option>
+                            {% for payment_frequency in payment_frequencies %}
+                            <option value="{{ payment_frequency.pk }}" {% if request.POST.payment_frequency == payment_frequency.pk|stringformat:'s' %}selected{% endif %}>{{ payment_frequency }}</option>
+                            {% endfor %}
+                        </select>
+                        {% endif %}
+                    </div>
+
+                    {% if employee_register_form.payment_frequency.errors %}
+                    {% for error in employee_register_form.payment_frequency.errors %}
+                    <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-row">
+                    <div class="form-info">
+                        <label for="work_hours_per_week" class="info-label">Work Hours per Week</label>
+                        <input type="text" id="work_hours_per_week" name="work_hours_per_week" placeholder="Work Hours per Week" {% if employee_register_form.work_hours_per_week.value %}value="{{ employee_register_form.work_hours_per_week.value }}"{% endif %}>
+                    </div>
+
+                    {% if employee_register_form.work_hours_per_week.errors %}
+                    {% for error in employee_register_form.work_hours_per_week.errors %}
+                    <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-row">
+                    <div class="form-info">
+                        <label for="currency" class="info-label">Currency *</label>
+                        {% if currencies %}
+                        <select id="currency" name="currency">
+                            <option value="">-----</option>
+                            {% for currency in currencies %}
+                            <option value="{{ currency.pk }}" {% if request.POST.currency == currency.pk|stringformat:'s' %}selected{% endif %}>{{ currency }}</option>
+                            {% endfor %}
+                        </select>
+                        {% endif %}
+                    </div>
+
+                    {% if employee_register_form.currency.errors %}
+                    {% for error in employee_register_form.currency.errors %}
+                    <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-row">
+                    <div class="form-info">
+                        <label for="start_date" class="info-label">Start Date *</label>
+                        <input type="text" id="start_date" name="start_date" placeholder="Start Date" {% if employee_register_form.start_date.value %}value="{{ employee_register_form.start_date.value }}"{% endif %}>
+                    </div>
+
+                    {% if employee_register_form.start_date.errors %}
+                    {% for error in employee_register_form.start_date.errors %}
+                    <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-row">
+                    <div class="form-info">
+                        <label for="end_date" class="info-label">End Date</label>
+                        <input type="text" id="end_date" name="end_date" placeholder="End Date" {% if employee_register_form.end_date.value %}value="{{ employee_register_form.end_date.value }}"{% endif %}>
+                    </div>
+
+                    {% if employee_register_form.end_date.errors %}
+                    {% for error in employee_register_form.end_date.errors %}
+                    <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-row">
+                    <div class="form-info">
+                        <label for="salary" class="info-label">Salary *</label>
+                        <input type="text" id="salary" name="salary" placeholder="Salary" {% if employee_register_form.salary.value %}value="{{ employee_register_form.salary.value }}"{% endif %}>
+                    </div>
+
+                    {% if employee_register_form.salary.errors %}
+                    {% for error in employee_register_form.salary.errors %}
+                    <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>Sport Benefits</h2>
+
+                <div class="form-row">
+                    {% for sport_benefit in sport_benefits %}
+                    <div class="form-info benefits-form">
+                        <label for="sport_benefit" class="info-label benefit-label">{{ sport_benefit.name|capitalize_string }}</label>
+                        <input type="checkbox" id="sport_benefit" name="sport_benefits" value="{{ sport_benefit.pk }}" {% if request.POST.sport_benefits %}{% for pk in selected_sport_benefits %}{% if pk == sport_benefit.pk|stringformat:'s' %}checked{% endif %}{% endfor %}{% endif %}>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>Health Benefits</h2>
+
+                <div class="form-row">
+                    {% for health_benefit in health_benefits %}
+                    <div class="form-info benefits-form">
+                        <label for="health_benefit" class="info-label benefit-label">{{ health_benefit.name|capitalize_string }}</label>
+                        <input type="checkbox" id="health_benefit" name="health_benefits" value="{{ health_benefit.pk }}" {% if request.POST.health_benefits %}{% for pk in selected_health_benefits %}{% if pk == health_benefit.pk|stringformat:'s' %}checked{% endif %}{% endfor %}{% endif %}>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>Insurance Benefits</h2>
+
+                <div class="form-row">
+                    {% for insurance_benefit in insurance_benefits %}
+                    <div class="form-info benefits-form">
+                        <label for="insurance_benefit" class="info-label benefit-label">{{ insurance_benefit.name|capitalize_string }}</label>
+                        <input type="checkbox" id="insurance_benefit" name="insurance_benefits" value="{{ insurance_benefit.pk }}" {% if request.POST.insurance_benefits %}{% for pk in selected_insurance_benefits %}{% if pk == insurance_benefit.pk|stringformat:'s' %}checked{% endif %}{% endfor %}{% endif %}>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>Development Benefits</h2>
+
+                <div class="form-row">
+                    {% for development_benefit in development_benefits %}
+                    <div class="form-info benefits-form">
+                        <label for="development_benefit" class="info-label benefit-label">{{ development_benefit.name|capitalize_string }}</label>
+                        <input type="checkbox" id="development_benefit" name="development_benefits" value="{{ development_benefit.pk }}" {% if request.POST.development_benefits %}{% for pk in selected_development_benefits %}{% if pk == development_benefit.pk|stringformat:'s' %}checked{% endif %}{% endfor %}{% endif %}>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>Payment Details</h2>
+
+                <div class="form-row">
+                    <div class="form-info">
+                        <label for="bank_name" class="info-label">Bank Name *</label>
+                        <input type="text" id="bank_name" name="bank_name" placeholder="Bank Name">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-info">
+                        <label for="iban" class="info-label">IBAN *</label>
+                        <input type="text" id="iban" name="iban" placeholder="IBAN">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-info">
+                        <label for="swift" class="info-label">Swift *</label>
+                        <input type="text" id="swift" name="swift" placeholder="SWIFT">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-info">
+                        <label for="account_number" class="info-label">Account Number *</label>
+                        <input type="text" id="account_number" name="account_number" placeholder="Account Number">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-button">
+                <a href="{% url 'employees' %}">
+                    <button type="button" class="btn btn-submit-btn">Back</button>
+                </a>
+                <button type="submit" class="btn btn-submit-btn">Next</button>
+            </div>
+        </form>
+    </div>
+</div>

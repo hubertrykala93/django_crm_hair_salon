@@ -527,10 +527,103 @@ def pagination(request, object_list, per_page):
     return objects
 
 
+from employees.forms import EmployeeRegisterForm
+
+
 @login_required(login_url="index")
 def employees(request):
     if request.session.get("payment_error"):
         request.session.pop("payment_error")
+
+    employee_register_form = EmployeeRegisterForm()
+
+    if request.method == "POST":
+        print(request.POST)
+        employee_register_form = EmployeeRegisterForm(
+            data=request.POST,
+        )
+
+        if employee_register_form.is_valid():
+            # User Save
+            employee = User(
+                email=employee_register_form.cleaned_data.get("email"),
+            )
+            employee.is_active = False
+            employee.set_password(raw_password=employee.generate_password())
+            employee.save()
+
+            # Basic Information Save
+            employee.profile.basic_information.firstname = employee_register_form.cleaned_data.get("firstname")
+            employee.profile.basic_information.lastname = employee_register_form.cleaned_data.get("lastname")
+            employee.profile.basic_information.date_of_birth = employee_register_form.cleaned_data.get("date_of_birth")
+            employee.profile.basic_information.save()
+
+            # Contact Information Save
+            employee.profile.contact_information.phone_number = employee_register_form.cleaned_data.get("phone_number")
+            employee.profile.contact_information.country = employee_register_form.cleaned_data.get("country")
+            employee.profile.contact_information.province = employee_register_form.cleaned_data.get("province")
+            employee.profile.contact_information.city = employee_register_form.cleaned_data.get("city")
+            employee.profile.contact_information.postal_code = employee_register_form.cleaned_data.get("postal_code")
+            employee.profile.contact_information.street = employee_register_form.cleaned_data.get("street")
+            employee.profile.contact_information.house_number = employee_register_form.cleaned_data.get("house_number")
+
+            if employee_register_form.cleaned_data.get("apartment_number"):
+                employee.profile.contact_information.apartment_number = employee_register_form.cleaned_data.get(
+                    "apartment_number")
+
+            employee.profile.contact_information.save()
+
+            # Contract Details Save
+            employee.profile.contract.contract_type = employee_register_form.cleaned_data.get("contract_type")
+            employee.profile.contract.job_type = employee_register_form.cleaned_data.get("job_type")
+            employee.profile.contract.job_position = employee_register_form.cleaned_data.get("job_position")
+            employee.profile.contract.payment_frequency = employee_register_form.cleaned_data.get("payment_frequency")
+            employee.profile.contract.currency = employee_register_form.cleaned_data.get("currency")
+            employee.profile.contract.start_date = employee_register_form.cleaned_data.get("start_date")
+            employee.profile.contract.end_date = employee_register_form.cleaned_data.get("end_date")
+            employee.profile.contract.salary = employee_register_form.cleaned_data.get("salary")
+
+            if employee_register_form.cleaned_data.get("work_hours_per_week"):
+                employee.profile.contract.work_hours_per_week = employee_register_form.cleaned_data.get(
+                    "work_hours_per_week")
+
+            if employee_register_form.cleaned_data.get("end_date"):
+                employee.profile.contract.end_date = employee_register_form.cleaned_data.get("end_date")
+
+            employee.profile.contract.save()
+
+            # Benefit Details Save
+            if "sport_benefits" in request.POST:
+                for sport_benefit in request.POST.getlist("sport_benefits"):
+                    employee.profile.contract.benefits.sport_benefits.add(
+                        SportBenefit.objects.get(
+                            pk=int(sport_benefit),
+                        )
+                    )
+
+            if "health_benefits" in request.POST:
+                for health_benefit in request.POST.getlist("health_benefits"):
+                    employee.profile.contract.benefits.health_benefits.add(
+                        HealthBenefit.objects.get(
+                            pk=int(health_benefit),
+                        )
+                    )
+
+            if "insurance_benefits" in request.POST:
+                for insurance_benefit in request.POST.getlist("insurance_benefits"):
+                    employee.profile.contract.benefits.insurance_benefits.add(
+                        InsuranceBenefit.objects.get(
+                            pk=int(insurance_benefit),
+                        )
+                    )
+
+            if "development_benefits" in request.POST:
+                for development_benefit in request.POST.getlist("development_benefits"):
+                    employee.profile.contract.benefits.development_benefits.add(
+                        DevelopmentBenefit.objects.get(
+                            pk=int(development_benefit),
+                        )
+                    )
 
     # Register Employee
     register_form = RegisterForm()
@@ -543,134 +636,134 @@ def employees(request):
     crypto_transfer_form = CryptoTransferForm()
 
     # Forms
-    if request.method == "POST":
-        if "register-employee" in request.GET:
-            if 'register-employee' in request.POST:
-                register_form = RegisterForm(data=request.POST)
-
-                result = register_employee(request=request, form=register_form)
-
-                if isinstance(result, RegisterForm):
-                    register_form = result
-
-                else:
-                    return result
-
-            if "basic-information" in request.POST:
-                basic_information_form = BasicInformationForm(
-                    data=request.POST,
-                )
-
-                result = basic_information(request=request, form=basic_information_form)
-
-                if isinstance(result, BasicInformationForm):
-                    basic_information_form = result
-
-                else:
-                    return result
-
-            if "contact-information" in request.POST:
-                contact_information_form = ContactInformationForm(
-                    data=request.POST,
-                )
-
-                result = contact_information(request=request, form=contact_information_form)
-
-                if isinstance(result, ContactInformationForm):
-                    contact_information_form = result
-
-                else:
-                    return result
-
-            if "contract-information" in request.POST:
-                contract_information_form = ContractForm(data=request.POST)
-
-                result = contract_information(request=request, form=contract_information_form)
-
-                if isinstance(result, ContractForm):
-                    contract_information_form = result
-
-                else:
-                    return result
-
-            if "benefits-information" in request.POST:
-                benefits_form = BenefitsForm(data=request.POST)
-
-                result = benefits_information(request=request, form=benefits_form, data=request.POST)
-
-                if isinstance(result, BenefitsForm):
-                    benefits_form = result
-
-                else:
-                    return result
-
-            if "payment-information" in request.POST:
-                form_errors = False
-
-                if request.POST["payment-information"] == "bank-transfer":
-                    bank_transfer_form = BankTransferForm(data=request.POST)
-
-                    if bank_transfer_form.is_valid():
-                        request.session["banktransfer"] = {
-                            "bank_name": bank_transfer_form.cleaned_data.get("bank_name"),
-                            "iban": bank_transfer_form.cleaned_data.get("iban"),
-                            "swift": bank_transfer_form.cleaned_data.get("swift"),
-                            "account_number": bank_transfer_form.cleaned_data.get("account_number"),
-                        }
-
-                    else:
-                        form_errors = True
-
-                if request.POST["payment-information"] == "prepaid-transfer":
-                    prepaid_transfer_form = PrepaidTransferForm(data=request.POST)
-
-                    if prepaid_transfer_form.is_valid():
-                        request.session["prepaidtransfer"] = {
-                            "owner_name": prepaid_transfer_form.cleaned_data.get("owner_name"),
-                            "card_number": prepaid_transfer_form.cleaned_data.get("card_number"),
-                            "expiration_date": prepaid_transfer_form.cleaned_data.get("expiration_date"),
-                        }
-
-                    else:
-                        form_errors = True
-
-                if request.POST["payment-information"] == "paypal-transfer":
-                    paypal_transfer_form = PayPalTransferForm(data=request.POST)
-
-                    if paypal_transfer_form.is_valid():
-                        request.session["paypaltransfer"] = {
-                            "paypal_email": paypal_transfer_form.cleaned_data.get("paypal_email"),
-                        }
-
-                    else:
-                        form_errors = True
-
-                if request.POST["payment-information"] == "crypto-transfer":
-                    data = request.POST.copy()
-
-                    if request.POST.get("cryptocurrency"):
-                        cryptocurrency = CryptoCurrency.objects.get(code=data["cryptocurrency"]).pk
-                        data["cryptocurrency"] = cryptocurrency
-
-                    crypto_transfer_form = CryptoTransferForm(data=data)
-
-                    if crypto_transfer_form.is_valid():
-                        request.session["cryptotransfer"] = {
-                            "cryptocurrency": crypto_transfer_form.cleaned_data.get("cryptocurrency").code,
-                            "wallet_address": crypto_transfer_form.cleaned_data.get("wallet_address"),
-                        }
-
-                    else:
-                        form_errors = True
-
-                if not form_errors:
-                    request.session.modified = True
-
-                    send_registration_email(request=request)
-
-                    save_employee(request=request)
-
-                    return redirect(to=reverse(viewname="employees"))
+    # if request.method == "POST":
+    #     if "register-employee" in request.GET:
+    #         if 'register-employee' in request.POST:
+    #             register_form = RegisterForm(data=request.POST)
+    #
+    #             result = register_employee(request=request, form=register_form)
+    #
+    #             if isinstance(result, RegisterForm):
+    #                 register_form = result
+    #
+    #             else:
+    #                 return result
+    #
+    #         if "basic-information" in request.POST:
+    #             basic_information_form = BasicInformationForm(
+    #                 data=request.POST,
+    #             )
+    #
+    #             result = basic_information(request=request, form=basic_information_form)
+    #
+    #             if isinstance(result, BasicInformationForm):
+    #                 basic_information_form = result
+    #
+    #             else:
+    #                 return result
+    #
+    #         if "contact-information" in request.POST:
+    #             contact_information_form = ContactInformationForm(
+    #                 data=request.POST,
+    #             )
+    #
+    #             result = contact_information(request=request, form=contact_information_form)
+    #
+    #             if isinstance(result, ContactInformationForm):
+    #                 contact_information_form = result
+    #
+    #             else:
+    #                 return result
+    #
+    #         if "contract-information" in request.POST:
+    #             contract_information_form = ContractForm(data=request.POST)
+    #
+    #             result = contract_information(request=request, form=contract_information_form)
+    #
+    #             if isinstance(result, ContractForm):
+    #                 contract_information_form = result
+    #
+    #             else:
+    #                 return result
+    #
+    #         if "benefits-information" in request.POST:
+    #             benefits_form = BenefitsForm(data=request.POST)
+    #
+    #             result = benefits_information(request=request, form=benefits_form, data=request.POST)
+    #
+    #             if isinstance(result, BenefitsForm):
+    #                 benefits_form = result
+    #
+    #             else:
+    #                 return result
+    #
+    #         if "payment-information" in request.POST:
+    #             form_errors = False
+    #
+    #             if request.POST["payment-information"] == "bank-transfer":
+    #                 bank_transfer_form = BankTransferForm(data=request.POST)
+    #
+    #                 if bank_transfer_form.is_valid():
+    #                     request.session["banktransfer"] = {
+    #                         "bank_name": bank_transfer_form.cleaned_data.get("bank_name"),
+    #                         "iban": bank_transfer_form.cleaned_data.get("iban"),
+    #                         "swift": bank_transfer_form.cleaned_data.get("swift"),
+    #                         "account_number": bank_transfer_form.cleaned_data.get("account_number"),
+    #                     }
+    #
+    #                 else:
+    #                     form_errors = True
+    #
+    #             if request.POST["payment-information"] == "prepaid-transfer":
+    #                 prepaid_transfer_form = PrepaidTransferForm(data=request.POST)
+    #
+    #                 if prepaid_transfer_form.is_valid():
+    #                     request.session["prepaidtransfer"] = {
+    #                         "owner_name": prepaid_transfer_form.cleaned_data.get("owner_name"),
+    #                         "card_number": prepaid_transfer_form.cleaned_data.get("card_number"),
+    #                         "expiration_date": prepaid_transfer_form.cleaned_data.get("expiration_date"),
+    #                     }
+    #
+    #                 else:
+    #                     form_errors = True
+    #
+    #             if request.POST["payment-information"] == "paypal-transfer":
+    #                 paypal_transfer_form = PayPalTransferForm(data=request.POST)
+    #
+    #                 if paypal_transfer_form.is_valid():
+    #                     request.session["paypaltransfer"] = {
+    #                         "paypal_email": paypal_transfer_form.cleaned_data.get("paypal_email"),
+    #                     }
+    #
+    #                 else:
+    #                     form_errors = True
+    #
+    #             if request.POST["payment-information"] == "crypto-transfer":
+    #                 data = request.POST.copy()
+    #
+    #                 if request.POST.get("cryptocurrency"):
+    #                     cryptocurrency = CryptoCurrency.objects.get(code=data["cryptocurrency"]).pk
+    #                     data["cryptocurrency"] = cryptocurrency
+    #
+    #                 crypto_transfer_form = CryptoTransferForm(data=data)
+    #
+    #                 if crypto_transfer_form.is_valid():
+    #                     request.session["cryptotransfer"] = {
+    #                         "cryptocurrency": crypto_transfer_form.cleaned_data.get("cryptocurrency").code,
+    #                         "wallet_address": crypto_transfer_form.cleaned_data.get("wallet_address"),
+    #                     }
+    #
+    #                 else:
+    #                     form_errors = True
+    #
+    #             if not form_errors:
+    #                 request.session.modified = True
+    #
+    #                 send_registration_email(request=request)
+    #
+    #                 save_employee(request=request)
+    #
+    #                 return redirect(to=reverse(viewname="employees"))
 
     # Update Employee
     updated_employee = None
@@ -1132,6 +1225,15 @@ def employees(request):
         template_name="employees/employees.html",
         context={
             "title": "Employees" if not request.GET or "order" in request.GET or "search" in request.GET else "Register Employee" if "register-employee" in request.GET else "Update Employee",
+            "employee_register_form": employee_register_form,
+            "selected_sport_benefits": request.POST.getlist(
+                "sport_benefits") if "sport_benefits" in request.POST else None,
+            "selected_health_benefits": request.POST.getlist(
+                "health_benefits") if "health_benefits" in request.POST else None,
+            "selected_insurance_benefits": request.POST.getlist(
+                "insurance_benefits") if "insurance_benefits" in request.POST else None,
+            "selected_development_benefits": request.POST.getlist(
+                "development_benefits") if "development_benefits" in request.POST else None,
             "register_form": register_form,
             "basic_information_form": basic_information_form,
             "contact_information_form": contact_information_form,

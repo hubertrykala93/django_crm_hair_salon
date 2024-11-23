@@ -10,7 +10,7 @@
             <a href="{% url 'employees' %}" {% if request.resolver_match.url_name == 'employees' %}class="active"{% endif %}><i class="fa-solid fa-users"></i>Employees</a>
         </li>
         <li>
-            <a href="?services"><i class="fa-solid fa-scissors"></i>Services</a>
+            <a href="{% url 'services' %}" {% if request.resolver_match.url_name == 'services' %}class="active"{% endif %}><i class="fa-solid fa-scissors"></i>Services</a>
         </li>
         <li>
             <a href="?appointments"><i class="fa-solid fa-calendar-check"></i>Appointments</a>
