@@ -18,6 +18,7 @@ from django.db.models import Q
 from django.db import transaction, IntegrityError, DatabaseError
 from django.core.exceptions import ObjectDoesNotExist, FieldError
 import logging
+from smtplib import SMTPAuthenticationError, SMTPRecipientsRefused, SMTPException
 
 logger = logging.getLogger(__name__)
 
@@ -25,37 +26,43 @@ logger = logging.getLogger(__name__)
 def generate_contract(request, user):
     logo_url = request.build_absolute_uri(settings.MEDIA_URL + 'home/logo.png')
 
+    basic_information = user.profile.basic_information
+    contact_information = user.profile.contact_information
+    contract_information = user.profile.contract
+    benefits = user.profile.contract.benefits
+    banktransfer = user.banktransfer
+
     context = {
         "logo_url": logo_url,
-        "firstname": user.profile.basic_information.firstname,
-        "lastname": user.profile.basic_information.lastname,
-        "date_of_birth": user.profile.basic_information.date_of_birth,
-        "phone_number": user.profile.contact_information.phone_number,
-        "country": user.profile.contact_information.country,
-        "province": user.profile.contact_information.province,
-        "city": user.profile.contact_information.city,
-        "postal_code": user.profile.contact_information.postal_code,
-        "street": user.profile.contact_information.street,
-        "house_number": user.profile.contact_information.house_number,
-        "apartment_number": user.profile.contact_information.apartment_number if user.profile.contact_information.apartment_number is not None else None,
-        "contract_type": user.profile.contract.contract_type,
-        "job_type": user.profile.contract.job_type,
-        "job_position": user.profile.contract.job_position,
-        "payment_frequency": user.profile.contract.payment_frequency,
-        "currency": user.profile.contract.currency,
-        "start_date": user.profile.contract.start_date,
-        "end_date": user.profile.contract.end_date if user.profile.contract.end_date is not None else None,
-        "salary": user.profile.contract.salary,
-        "work_hours_per_week": user.profile.contract.work_hours_per_week if user.profile.contract.work_hours_per_week is not None else None,
+        "firstname": basic_information.firstname,
+        "lastname": basic_information.lastname,
+        "date_of_birth": basic_information.date_of_birth,
+        "phone_number": contact_information.phone_number,
+        "country": contact_information.country,
+        "province": contact_information.province,
+        "city": contact_information.city,
+        "postal_code": contact_information.postal_code,
+        "street": contact_information.street,
+        "house_number": contact_information.house_number,
+        "apartment_number": contact_information.apartment_number or None,
+        "contract_type": contract_information.contract_type,
+        "job_type": contract_information.job_type,
+        "job_position": contract_information.job_position,
+        "payment_frequency": contract_information.payment_frequency,
+        "currency": contract_information.currency,
+        "start_date": contract_information.start_date,
+        "end_date": contract_information.end_date or None,
+        "salary": contract_information.salary,
+        "work_hours_per_week": contract_information.work_hours_per_week or None,
         "payment_method": "Bank Transfer",
-        "bank_name": user.banktransfer.bank_name,
-        "iban": user.banktransfer.iban,
-        "swift": user.banktransfer.swift,
-        "account_number": user.banktransfer.account_number,
-        "sport_benefits": user.profile.contract.benefits.sport_benefits.all(),
-        "health_benefits": user.profile.contract.benefits.health_benefits.all(),
-        "insurance_benefits": user.profile.contract.benefits.insurance_benefits.all(),
-        "development_benefits": user.profile.contract.benefits.development_benefits.all(),
+        "bank_name": banktransfer.bank_name,
+        "iban": banktransfer.iban,
+        "swift": banktransfer.swift,
+        "account_number": banktransfer.account_number,
+        "sport_benefits": benefits.sport_benefits.all(),
+        "health_benefits": benefits.health_benefits.all(),
+        "insurance_benefits": benefits.insurance_benefits.all(),
+        "development_benefits": benefits.development_benefits.all(),
     }
 
     html_string = render_to_string(
@@ -98,11 +105,39 @@ def send_registration_email(request, user, pdf_file):
             message=f"The contract has been successfully sent to '{user.profile.basic_information.firstname} {user.profile.basic_information.lastname}'.",
         )
 
-    except Exception as e:
-        print(e)
+    except SMTPAuthenticationError as e:
+        logger.error(msg=f"SMTP Authentication Error: {e}")
         messages.error(
             request=request,
-            message="Failed to send the registration email, please try again.",
+            message="Authentication failed while sending the email. Please check email settings.",
+        )
+
+    except SMTPRecipientsRefused as e:
+        logger.error(msg=f"Recipient Address Refused: {e}")
+        messages.error(
+            request=request,
+            message="The recipient's email address is invalid. Please check and try again.",
+        )
+
+    except SMTPException as e:
+        logger.error(msg=f"SMTP Error: {e}")
+        messages.error(
+            request=request,
+            message="An error occurred while sending the email. Please try again later.",
+        )
+
+    except OSError as e:
+        logger.error(msg=f"File system error: {e}")
+        messages.error(
+            request=request,
+            message="Failed to send the email due to an issue with the file system."
+        )
+
+    except Exception as e:
+        logger.error(msg=f"Unexpected error: {e}")
+        messages.error(
+            request=request,
+            message="An unexpected error occurred. Please try again later.",
         )
 
 
@@ -271,21 +306,21 @@ def employees(request):
                             fields=["bank_name", "iban", "swift", "account_number"],
                         )
 
-                        user, pdf_file = generate_contract(
-                            request=request,
-                            user=employee,
-                        )
+                    user, pdf_file = generate_contract(
+                        request=request,
+                        user=employee,
+                    )
 
-                        send_registration_email(
-                            request=request,
-                            user=user,
-                            pdf_file=pdf_file,
-                        )
+                    send_registration_email(
+                        request=request,
+                        user=user,
+                        pdf_file=pdf_file,
+                    )
 
-                        messages.success(
-                            request=request,
-                            message="The employee has been successfully registered in the system.",
-                        )
+                    messages.success(
+                        request=request,
+                        message="The employee has been successfully registered in the system.",
+                    )
 
                 except IntegrityError as e:
                     logger.error(msg=f"IntegrityError during employee registration: {e}")
