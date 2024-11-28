@@ -538,7 +538,7 @@ def employees(request):
                 selected_job_types.extend(selected_values)
             elif key == "job_position":
                 selected_job_positions.extend(selected_values)
-            elif key == "curerncy":
+            elif key == "currency":
                 selected_currencies.extend(selected_values)
             elif key == "payment_frequency":
                 selected_payment_frequencies.extend(selected_values)
@@ -562,77 +562,6 @@ def employees(request):
                 except Exception as e:
                     logger.warning(msg=f"Unexpected error during filtering with filter '{key}': {str(e)}")
                     employees = employees.none()
-
-    print(f"Contract Types -> {selected_contract_types}")
-    print(f"Job Types -> {selected_job_types}")
-    print(f"Job Positions -> {selected_job_positions}")
-    print(f"Currencies -> {selected_currencies}")
-    print(f"Employment Statuses -> {selected_employment_statuses}")
-    print(f"Payment Frequencies -> {selected_payment_frequencies}")
-
-    # if "contract_type" in request.GET:
-    #     selected_contract_types = request.GET.getlist("contract_type")
-    #
-    #     try:
-    #         employees = employees.filter(
-    #             profile__contract__contract_type__slug__in=selected_contract_types,
-    #         )
-    #
-    #     except ContractType.DoesNotExist:
-    #         employees = employees.none()
-    #
-    # if "job_type" in request.GET:
-    #     selected_job_types = request.GET.getlist("job_type")
-    #
-    #     try:
-    #         employees = employees.filter(
-    #             profile__contract__job_type__slug__in=selected_job_types,
-    #         )
-    #
-    #     except JobType.DoesNotExist:
-    #         employees = employees.none()
-    #
-    # if "job_position" in request.GET:
-    #     selected_job_positions = request.GET.getlist("job_position")
-    #
-    #     try:
-    #         employees = employees.filter(
-    #             profile__contract__job_position__slug__in=selected_job_positions,
-    #         )
-    #
-    #     except JobPosition.DoesNotExist:
-    #         employees = employees.none()
-    #
-    # if "currency" in request.GET:
-    #     selected_currencies = request.GET.getlist("currency")
-    #
-    #     try:
-    #         employees = employees.filter(
-    #             profile__contract__currency__slug__in=selected_currencies,
-    #         )
-    #
-    #     except Currency.DoesNotExist:
-    #         employees = employees.none()
-    #
-    # if "payment_frequency" in request.GET:
-    #     selected_payment_frequencies = request.GET.getlist("payment_frequency")
-    #
-    #     try:
-    #         employees = employees.filter(profile__contract__payment_frequency__slug__in=selected_payment_frequencies)
-    #
-    #     except PaymentFrequency.DoesNotExist:
-    #         employees = employees.none()
-    #
-    # if "employment_status" in request.GET:
-    #     selected_employment_statuses = request.GET.getlist("employment_status")
-    #
-    #     try:
-    #         employees = employees.filter(
-    #             profile__contract__status__slug__in=selected_employment_statuses,
-    #         )
-    #
-    #     except EmploymentStatus.DoesNotExist:
-    #         employees = employees.none()
 
     if "search" in request.GET:
         search_query = request.GET.get("search", "").strip()
