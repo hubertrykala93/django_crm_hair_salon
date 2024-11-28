@@ -60,7 +60,6 @@
                     <span>Sort by</span>
                     <select name="order" id="sortSelect" onchange="this.form.submit()">
                         <option value="default" {% if request.GET.order == 'default' %}selected{% endif %}>Default</option>
-                        <option value="hired-date" {% if request.GET.order == 'hired-date' %}selected{% endif %}>Hired Date</option>
                         <option value="salary" {% if request.GET.order == 'salary' %}selected{% endif %}>Salary</option>
                         <option value="working-hours" {% if request.GET.order == 'working-hours' %}selected{% endif %}>Working Hours</option>
                     </select>
@@ -132,10 +131,8 @@
     <p>No employees found.</p>
     {% endif %}
     {% else %}
-    {% if 'register-employee' in request.GET %}
-    {% include 'employees/register-employee-copy.html' %}
-    {% elif 'update-employee' in request.GET %}
-    {% include 'employees/update-employee.html' %}
+    {% if 'register-employee' or 'update-employee' in request.GET %}
+    {% include 'employees/register-employee.html' %}
     {% endif %}
     {% endif %}
 </div>

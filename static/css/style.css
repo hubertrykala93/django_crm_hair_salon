@@ -258,6 +258,13 @@ form .form-error {
     color: var(--error-color);
 }
 
+form small {
+    font-size: 10px;
+    margin-bottom: 5px;
+    margin-top: 5px;
+    color: var(--text-color);
+}
+
 .form-flex {
     display: flex;
     justify-content: space-around;

@@ -4,7 +4,7 @@ from django.utils.text import slugify
 
 
 class ServiceCategory(models.Model):
-    name = models.CharField(unique=True)
+    name = models.CharField(max_length=50, unique=True)
     slug = models.SlugField(unique=True)
 
     class Meta:
@@ -30,10 +30,10 @@ class ServiceTaxRate(models.Model):
 
 
 class Service(models.Model):
-    name = models.CharField(unique=True)
+    name = models.CharField(max_length=50, unique=True)
     slug = models.SlugField(unique=True)
     employees = models.ManyToManyField(to=User)
-    description = models.CharField()
+    description = models.CharField(max_length=1000)
     category = models.ForeignKey(to=ServiceCategory, on_delete=models.SET_NULL, null=True)
     duration = models.PositiveIntegerField()
     tax_rate = models.ForeignKey(to=ServiceTaxRate, on_delete=models.SET_NULL, null=True)
