@@ -22,119 +22,41 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def generate_contract(request):
+def generate_contract(request, user):
     logo_url = request.build_absolute_uri(settings.MEDIA_URL + 'home/logo.png')
 
     context = {
         "logo_url": logo_url,
-        "firstname": request.session["basic_information"].get("firstname", None),
-        "lastname": request.session["basic_information"].get("lastname", None),
-        "date_of_birth": request.session["basic_information"].get("date_of_birth", None),
-        "phone_number": request.session["contact_information"].get("phone_number", None),
-        "country": request.session["contact_information"].get("country", None),
-        "province": request.session["contact_information"].get("province", None),
-        "city": request.session["contact_information"].get("city", None),
-        "postal_code": request.session["contact_information"].get("postal_code", None),
-        "street": request.session["contact_information"].get("street", None),
-        "house_number": request.session["contact_information"].get("house_number", None),
-        "apartment_number": request.session["contact_information"].get("apartment_number", None),
-        "contract_type": ContractType.objects.get(
-            pk=request.session["contract_information"].get("contract_type", None)),
-        "job_type": JobType.objects.get(pk=request.session["contract_information"].get("job_type", None)),
-        "job_position": JobPosition.objects.get(
-            pk=request.session["contract_information"].get("job_position", None)),
-        "payment_frequency": PaymentFrequency.objects.get(
-            pk=request.session["contract_information"].get("payment_frequency", None)),
-        "currency": Currency.objects.get(pk=request.session["contract_information"].get("currency", None)),
-        "start_date": request.session["contract_information"].get("start_date"),
-        "end_date": request.session["contract_information"].get("end_date"),
-        "salary": request.session["contract_information"].get("salary", None),
-        "work_hours_per_week": request.session["contract_information"].get("work_hours_per_week", None),
+        "firstname": user.profile.basic_information.firstname,
+        "lastname": user.profile.basic_information.lastname,
+        "date_of_birth": user.profile.basic_information.date_of_birth,
+        "phone_number": user.profile.contact_information.phone_number,
+        "country": user.profile.contact_information.country,
+        "province": user.profile.contact_information.province,
+        "city": user.profile.contact_information.city,
+        "postal_code": user.profile.contact_information.postal_code,
+        "street": user.profile.contact_information.street,
+        "house_number": user.profile.contact_information.house_number,
+        "apartment_number": user.profile.contact_information.apartment_number if user.profile.contact_information.apartment_number is not None else None,
+        "contract_type": user.profile.contract.contract_type,
+        "job_type": user.profile.contract.job_type,
+        "job_position": user.profile.contract.job_position,
+        "payment_frequency": user.profile.contract.payment_frequency,
+        "currency": user.profile.contract.currency,
+        "start_date": user.profile.contract.start_date,
+        "end_date": user.profile.contract.end_date if user.profile.contract.end_date is not None else None,
+        "salary": user.profile.contract.salary,
+        "work_hours_per_week": user.profile.contract.work_hours_per_week if user.profile.contract.work_hours_per_week is not None else None,
+        "payment_method": "Bank Transfer",
+        "bank_name": user.banktransfer.bank_name,
+        "iban": user.banktransfer.iban,
+        "swift": user.banktransfer.swift,
+        "account_number": user.banktransfer.account_number,
+        "sport_benefits": user.profile.contract.benefits.sport_benefits.all(),
+        "health_benefits": user.profile.contract.benefits.health_benefits.all(),
+        "insurance_benefits": user.profile.contract.benefits.insurance_benefits.all(),
+        "development_benefits": user.profile.contract.benefits.development_benefits.all(),
     }
-
-    if "banktransfer" in request.session:
-        context.update(
-            {
-                "payment_method": "Bank Transfer",
-                "bank_name": request.session["banktransfer"].get("bank_name", None),
-                "iban": request.session["banktransfer"].get("iban", None),
-                "swift": request.session["banktransfer"].get("swift", None),
-                "account_number": request.session["banktransfer"].get("account_number", None)
-            },
-        )
-
-    if "prepaidtransfer" in request.session:
-        context.update(
-            {
-                "payment_method": "Prepaid Transfer",
-                "owner_name": request.session["prepaidtransfer"].get("owner_name", None),
-                "card_number": request.session["prepaidtransfer"].get("card_number", None),
-                "expiration_date": request.session["prepaidtransfer"].get("expiration_date", None),
-            },
-        )
-
-    if "paypaltransfer" in request.session:
-        context.update(
-            {
-                "payment_method": "PayPal Transfer",
-                "paypal_email": request.session["paypaltransfer"].get("paypal_email", None),
-            },
-        )
-
-    if "cryptotransfer" in request.session:
-        context.update(
-            {
-                "payment_method": "Crypto Transfer",
-                "cryptocurrency": request.session["cryptotransfer"].get("cryptocurrency", None),
-                "wallet_address": request.session["cryptotransfer"].get("wallet_address", None),
-            },
-        )
-
-    if "benefit_information" in request.session:
-        sport_benefits = []
-        health_benefits = []
-        insurance_benefits = []
-        development_benefits = []
-
-        if request.session["benefit_information"].get("sport_benefits"):
-            for sport_benefit in request.session["benefit_information"]["sport_benefits"]:
-                sport_benefits.append(SportBenefit.objects.get(pk=sport_benefit))
-
-            context.update(
-                {
-                    "sport_benefits": sport_benefits,
-                },
-            )
-
-        if request.session["benefit_information"].get("health_benefits"):
-            for health_benefit in request.session["benefit_information"]["health_benefits"]:
-                health_benefits.append(HealthBenefit.objects.get(pk=health_benefit))
-
-            context.update(
-                {
-                    "health_benefits": health_benefits,
-                },
-            )
-
-        if request.session["benefit_information"].get("insurance_benefits"):
-            for insurance_benefit in request.session["benefit_information"]["insurance_benefits"]:
-                insurance_benefits.append(InsuranceBenefit.objects.get(pk=insurance_benefit))
-
-            context.update(
-                {
-                    "insurance_benefits": insurance_benefits,
-                },
-            )
-
-        if request.session["benefit_information"].get("development_benefits"):
-            for development_benefit in request.session["benefit_information"]["development_benefits"]:
-                development_benefits.append(DevelopmentBenefit.objects.get(pk=development_benefit))
-
-            context.update(
-                {
-                    "development_benefits": development_benefits,
-                },
-            )
 
     html_string = render_to_string(
         template_name="employees/contract-pdf.html",
@@ -143,15 +65,15 @@ def generate_contract(request):
     pdf_file = HTML(string=html_string).write_pdf(
         stylesheets=[os.path.join(settings.BASE_DIR, "static/css/style_pdf.css")])
 
-    return pdf_file
+    return user, pdf_file
 
 
-def send_registration_email(request):
+def send_registration_email(request, user, pdf_file):
     try:
         html_message = render_to_string(
             template_name="employees/account-registration-email.html",
             context={
-                "email": request.session["user"]["email"],
+                "email": user.email,
                 "domain": get_current_site(request=request),
             },
         )
@@ -162,23 +84,22 @@ def send_registration_email(request):
             subject="Account Registration Request",
             body=plain_message,
             from_email=os.environ.get("EMAIL_FROM"),
-            to=[request.session["user"]["email"]],
+            to=[user.email],
         )
-
-        pdf_file = generate_contract(request=request)
 
         message.attach_alternative(content=html_message, mimetype="text/html")
         message.attach(
-            filename=f"{request.session['basic_information']['firstname'].lower().capitalize()}_{request.session['basic_information']['lastname'].lower().capitalize()}_Contract.pdf",
+            filename=f"{user.profile.basic_information.firstname.lower().capitalize()}_{user.profile.basic_information.lastname.lower().capitalize()}_Contract.pdf",
             content=pdf_file, mimetype="application/pdf")
         message.send()
 
         messages.info(
             request=request,
-            message=f"The contract has been successfully sent to '{request.session['basic_information']['firstname']} {request.session['basic_information']['lastname']}'.",
+            message=f"The contract has been successfully sent to '{user.profile.basic_information.firstname} {user.profile.basic_information.lastname}'.",
         )
 
     except Exception as e:
+        print(e)
         messages.error(
             request=request,
             message="Failed to send the registration email, please try again.",
@@ -348,6 +269,17 @@ def employees(request):
                             instance=employee.banktransfer,
                             cleaned_data=register_form.cleaned_data,
                             fields=["bank_name", "iban", "swift", "account_number"],
+                        )
+
+                        user, pdf_file = generate_contract(
+                            request=request,
+                            user=employee,
+                        )
+
+                        send_registration_email(
+                            request=request,
+                            user=user,
+                            pdf_file=pdf_file,
                         )
 
                         messages.success(
