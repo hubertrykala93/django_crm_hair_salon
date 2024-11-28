@@ -13,7 +13,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from weasyprint import HTML
 from django.conf import settings
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage
 from django.db.models import Q
 from django.db import transaction, IntegrityError, DatabaseError
 from django.core.exceptions import ObjectDoesNotExist, FieldError
@@ -139,9 +139,20 @@ def pagination(request, object_list, per_page):
         per_page=per_page,
     )
 
-    page = request.GET.get("page", 1)
+    try:
+        page = int(request.GET.get("page", 1))
 
-    objects = paginator.get_page(number=page)
+        if page < 1:
+            page = 1
+
+    except (ValueError, TypeError):
+        page = 1
+
+    try:
+        objects = paginator.get_page(number=page)
+
+    except EmptyPage:
+        objects = paginator.page(number=paginator.num_pages)
 
     return objects
 

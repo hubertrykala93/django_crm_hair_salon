@@ -124,8 +124,10 @@
         </div>
         {% endfor %}
     </div>
-
+    
+    {% if objects.paginator.count > 6 %}
     {% include 'employees/pagination.html' %}
+    {% endif %}
 
     {% else %}
     <p>No employees found.</p>
