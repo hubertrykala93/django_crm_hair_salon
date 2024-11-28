@@ -3,8 +3,6 @@ from .models import ContractType, Contract, Benefit, SportBenefit, HealthBenefit
     JobType, EmploymentStatus, JobPosition, Currency, PaymentFrequency
 from payments.models import PaymentMethod
 from django.core.exceptions import ValidationError
-from datetime import datetime, date
-import re
 
 
 class AdminCurrencyForm(forms.ModelForm):
@@ -188,30 +186,3 @@ class AdminContractForm(forms.ModelForm):
                 )
 
         return end_date
-
-
-class BenefitsForm(forms.Form):
-    sport_benefits = forms.ModelMultipleChoiceField(
-        required=False,
-        queryset=SportBenefit.objects.none(),
-    )
-    health_benefits = forms.ModelMultipleChoiceField(
-        required=False,
-        queryset=HealthBenefit.objects.none(),
-    )
-    insurance_benefits = forms.ModelMultipleChoiceField(
-        required=False,
-        queryset=InsuranceBenefit.objects.none(),
-    )
-    development_benefits = forms.ModelMultipleChoiceField(
-        required=False,
-        queryset=DevelopmentBenefit.objects.none(),
-    )
-
-    def __init__(self, *args, **kwargs):
-        super(BenefitsForm, self).__init__(*args, **kwargs)
-
-        self.fields["sport_benefits"].queryset = SportBenefit.objects.all()
-        self.fields["health_benefits"].queryset = HealthBenefit.objects.all()
-        self.fields["insurance_benefits"].queryset = InsuranceBenefit.objects.all()
-        self.fields["development_benefits"].queryset = DevelopmentBenefit.objects.all()
