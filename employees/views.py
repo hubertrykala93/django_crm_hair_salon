@@ -17,10 +17,7 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.db import transaction, IntegrityError, DatabaseError
 from django.core.exceptions import ObjectDoesNotExist, FieldError
-import logging
 from smtplib import SMTPAuthenticationError, SMTPRecipientsRefused, SMTPException
-
-logger = logging.getLogger(__name__)
 
 
 def generate_contract(request, user):
@@ -105,36 +102,31 @@ def send_registration_email(request, user, pdf_file):
             message=f"The contract has been successfully sent to '{user.profile.basic_information.firstname} {user.profile.basic_information.lastname}'.",
         )
 
-    except SMTPAuthenticationError as e:
-        logger.error(msg=f"SMTP Authentication Error: {e}")
+    except SMTPAuthenticationError:
         messages.error(
             request=request,
             message="Authentication failed while sending the email. Please check email settings.",
         )
 
-    except SMTPRecipientsRefused as e:
-        logger.error(msg=f"Recipient Address Refused: {e}")
+    except SMTPRecipientsRefused:
         messages.error(
             request=request,
             message="The recipient's email address is invalid. Please check and try again.",
         )
 
-    except SMTPException as e:
-        logger.error(msg=f"SMTP Error: {e}")
+    except SMTPException:
         messages.error(
             request=request,
             message="An error occurred while sending the email. Please try again later.",
         )
 
-    except OSError as e:
-        logger.error(msg=f"File system error: {e}")
+    except OSError:
         messages.error(
             request=request,
             message="Failed to send the email due to an issue with the file system."
         )
 
     except Exception as e:
-        logger.error(msg=f"Unexpected error: {e}")
         messages.error(
             request=request,
             message="An unexpected error occurred. Please try again later.",
@@ -322,29 +314,25 @@ def employees(request):
                         message="The employee has been successfully registered in the system.",
                     )
 
-                except IntegrityError as e:
-                    logger.error(msg=f"IntegrityError during employee registration: {e}")
+                except IntegrityError:
                     messages.error(
                         request=request,
                         message="An error occurred during employee registration. Please try again later.",
                     )
 
-                except DatabaseError as e:
-                    logger.error(msg=f"DatabaseError during employee registration: {e}")
+                except DatabaseError:
                     messages.error(
                         request=request,
                         message="A system error occurred. Please try again later.",
                     )
 
-                except ObjectDoesNotExist as e:
-                    logger.error(msg=f"ObjectDoesNotExist during employee registration: {e}")
+                except ObjectDoesNotExist:
                     messages.error(
                         request=request,
                         message="An error occurred during employee registration. Please contact support.",
                     )
 
                 except Exception as e:
-                    logger.error(msg=f"Unexpected error during employee registration: {e}")
                     messages.error(
                         request=request,
                         message="An unexpected error occurred. Please contact support.",
@@ -430,29 +418,25 @@ def employees(request):
                             message="Employee details has been successfully updated.",
                         )
 
-                except IntegrityError as e:
-                    logger.error(msg=f"IntegrityError during employee update: {e}")
+                except IntegrityError:
                     messages.error(
                         request=request,
                         message="An error occurred during employee update. Please try again later.",
                     )
 
-                except DatabaseError as e:
-                    logger.error(msg=f"DatabaseError during employee update: {e}")
+                except DatabaseError:
                     messages.error(
                         request=request,
                         message="A system error occurred. Please try again later.",
                     )
 
-                except ObjectDoesNotExist as e:
-                    logger.error(msg=f"ObjectDoesNotExist during employee update: {e}")
+                except ObjectDoesNotExist:
                     messages.error(
                         request=request,
                         message="An error occurred during employee update. Please contact support.",
                     )
 
                 except Exception as e:
-                    logger.error(msg=f"Unexpected error during employee update: {e}")
                     messages.error(
                         request=request,
                         message="An unexpected error occurred. Please contact support.",
@@ -518,16 +502,13 @@ def employees(request):
                         f"{value}__in": selected_values,
                     })
 
-                except FieldError as e:
-                    logger.warning(msg=f"Invalid filter field '{value}' in filter '{key}'. {str(e)}")
+                except FieldError:
                     employees = employees.none()
 
-                except ValueError as e:
-                    logger.warning(msg=f"Invalid value for filter '{key}' with values {value}. {str(e)}")
+                except ValueError:
                     employees = employees.none()
 
                 except Exception as e:
-                    logger.warning(msg=f"Unexpected error during filtering with filter '{key}': {str(e)}")
                     employees = employees.none()
 
     if "search" in request.GET:
@@ -590,10 +571,35 @@ def delete_employee(request, pk):
             request=request,
             message=f"The employee '{employee.profile.basic_information.firstname} {employee.profile.basic_information.lastname}' has been successfully deleted.",
         )
-        return redirect(to="employees")
 
     except User.DoesNotExist:
         messages.info(
             request=request,
-            message="The selected employee does not exist in the database.",
+            message="The selected employee does not exist.",
         )
+
+    except IntegrityError:
+        messages.error(
+            request=request,
+            message="Failed to delete the employee due to a database integrity issue.",
+        )
+
+    except ValueError:
+        messages.error(
+            request=request,
+            message="Invalid employee identifier provided. Please try again.",
+        )
+
+    except DatabaseError:
+        messages.error(
+            request=request,
+            message="A database error occurred while trying to delete the employee. Please try again later."
+        )
+
+    except Exception as e:
+        messages.error(
+            request=request,
+            message="An unexpected error occurred. Please contact support.",
+        )
+
+    return redirect(to="employees")
