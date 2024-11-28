@@ -6,9 +6,7 @@ from django.contrib.auth.decorators import login_required
 from contracts.models import ContractType, JobPosition, JobType, PaymentFrequency, Currency, SportBenefit, \
     HealthBenefit, InsuranceBenefit, DevelopmentBenefit, EmploymentStatus
 from payments.models import CryptoCurrency
-from contracts.forms import BenefitsForm
 from employees.forms import EmployeeRegisterForm
-from payments.forms import BankTransferForm, PrepaidTransferForm, PayPalTransferForm, CryptoTransferForm
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.html import strip_tags
 from django.core.mail import EmailMultiAlternatives
@@ -17,6 +15,11 @@ from weasyprint import HTML
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.db import transaction, IntegrityError, DatabaseError
+from django.core.exceptions import ObjectDoesNotExist, FieldError
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def generate_contract(request):
@@ -195,6 +198,68 @@ def pagination(request, object_list, per_page):
     return objects
 
 
+def save_profile_data(instance, cleaned_data, fields):
+    for field in fields:
+        setattr(instance, field, cleaned_data.get(field))
+
+    instance.save()
+
+
+def save_benefits_data(request, benefit_type, instance):
+    mapping = {
+        "sport_benefits": SportBenefit,
+        "health_benefits": HealthBenefit,
+        "insurance_benefits": InsuranceBenefit,
+        "development_benefits": DevelopmentBenefit,
+    }
+    if request.POST.get(benefit_type):
+        benefits = mapping[benefit_type].objects.filter(pk__in=map(int, request.POST.getlist(benefit_type)))
+        getattr(instance, benefit_type).set(benefits)
+
+
+def update_fields(instance, cleaned_data, fields):
+    updated = False
+
+    for field in fields:
+        new_value = cleaned_data.get(field)
+
+        if getattr(instance, field) != new_value:
+            setattr(instance, field, new_value)
+
+            updated = True
+
+    if updated:
+        instance.save()
+
+    return updated
+
+
+def update_benefits(request, benefit_type, instance):
+    mapping = {
+        "sport_benefits": SportBenefit,
+        "health_benefits": HealthBenefit,
+        "insurance_benefits": InsuranceBenefit,
+        "development_benefits": DevelopmentBenefit,
+    }
+    if request.POST.get("sport_benefits"):
+        selected_benefits = set(request.POST.getlist(benefit_type))
+        current_benefits = set(str(benefit.pk) for benefit in getattr(instance, benefit_type).all())
+
+        to_add = selected_benefits - current_benefits
+        to_remove = current_benefits - selected_benefits
+
+        if to_add:
+            benefits_to_add = mapping[benefit_type].objects.filter(pk__in=to_add)
+            getattr(instance, benefit_type).add(*benefits_to_add)
+
+        if to_remove:
+            benefits_to_remove = mapping[benefit_type].objects.filter(pk__in=to_remove)
+            getattr(instance, benefit_type).remove(*benefits_to_remove)
+
+    else:
+        getattr(instance, benefit_type).clear()
+
+
 @login_required(login_url="index")
 def employees(request):
     register_form = EmployeeRegisterForm()
@@ -218,101 +283,105 @@ def employees(request):
             )
 
             if register_form.is_valid():
-                # User Save
-                employee = User(
-                    email=register_form.cleaned_data.get("email"),
-                )
-                employee.is_active = False
-                employee.set_password(raw_password=employee.generate_password())
-                employee.save()
+                try:
+                    with transaction.atomic():
+                        # User Save
+                        employee = User(
+                            email=register_form.cleaned_data.get("email"),
+                        )
+                        employee.is_active = False
+                        employee.set_password(raw_password=employee.generate_password())
+                        employee.save()
 
-                # Basic Information Save
-                employee.profile.basic_information.firstname = register_form.cleaned_data.get("firstname")
-                employee.profile.basic_information.lastname = register_form.cleaned_data.get("lastname")
-                employee.profile.basic_information.date_of_birth = register_form.cleaned_data.get("date_of_birth")
-                employee.profile.basic_information.save()
-
-                # Contact Information Save
-                employee.profile.contact_information.phone_number = register_form.cleaned_data.get("phone_number")
-                employee.profile.contact_information.country = register_form.cleaned_data.get("country")
-                employee.profile.contact_information.province = register_form.cleaned_data.get("province")
-                employee.profile.contact_information.city = register_form.cleaned_data.get("city")
-                employee.profile.contact_information.postal_code = register_form.cleaned_data.get("postal_code")
-                employee.profile.contact_information.street = register_form.cleaned_data.get("street")
-                employee.profile.contact_information.house_number = register_form.cleaned_data.get("house_number")
-
-                if register_form.cleaned_data.get("apartment_number"):
-                    employee.profile.contact_information.apartment_number = register_form.cleaned_data.get(
-                        "apartment_number")
-
-                employee.profile.contact_information.save()
-
-                # Contract Details Save
-                employee.profile.contract.contract_type = register_form.cleaned_data.get("contract_type")
-                employee.profile.contract.job_type = register_form.cleaned_data.get("job_type")
-                employee.profile.contract.job_position = register_form.cleaned_data.get("job_position")
-                employee.profile.contract.payment_frequency = register_form.cleaned_data.get("payment_frequency")
-                employee.profile.contract.currency = register_form.cleaned_data.get("currency")
-                employee.profile.contract.start_date = register_form.cleaned_data.get("start_date")
-                employee.profile.contract.end_date = register_form.cleaned_data.get("end_date")
-                employee.profile.contract.salary = register_form.cleaned_data.get("salary")
-
-                if register_form.cleaned_data.get("work_hours_per_week"):
-                    employee.profile.contract.work_hours_per_week = register_form.cleaned_data.get(
-                        "work_hours_per_week")
-
-                if register_form.cleaned_data.get("end_date"):
-                    employee.profile.contract.end_date = register_form.cleaned_data.get("end_date")
-
-                employee.profile.contract.save()
-
-                # Benefit Details Save
-                if "sport_benefits" in request.POST:
-                    for sport_benefit in request.POST.getlist("sport_benefits"):
-                        employee.profile.contract.benefits.sport_benefits.add(
-                            SportBenefit.objects.get(
-                                pk=int(sport_benefit),
-                            )
+                        # Basic Information Save
+                        save_profile_data(
+                            instance=employee.profile.basic_information,
+                            cleaned_data=register_form.cleaned_data,
+                            fields=["firstname", "lastname", "date_of_birth"],
                         )
 
-                if "health_benefits" in request.POST:
-                    for health_benefit in request.POST.getlist("health_benefits"):
-                        employee.profile.contract.benefits.health_benefits.add(
-                            HealthBenefit.objects.get(
-                                pk=int(health_benefit),
-                            )
+                        # Contact Information Save
+                        save_profile_data(
+                            instance=employee.profile.contact_information,
+                            cleaned_data=register_form.cleaned_data,
+                            fields=["phone_number", "country", "province", "city", "postal_code", "street",
+                                    "house_number",
+                                    "apartment_number"],
                         )
 
-                if "insurance_benefits" in request.POST:
-                    for insurance_benefit in request.POST.getlist("insurance_benefits"):
-                        employee.profile.contract.benefits.insurance_benefits.add(
-                            InsuranceBenefit.objects.get(
-                                pk=int(insurance_benefit),
-                            )
+                        # Contract Details Save
+                        save_profile_data(
+                            instance=employee.profile.contract,
+                            cleaned_data=register_form.cleaned_data,
+                            fields=["contract_type", "job_type", "job_position", "payment_frequency", "currency",
+                                    "start_date",
+                                    "end_date", "salary", "work_hours_per_week"],
                         )
 
-                if "development_benefits" in request.POST:
-                    for development_benefit in request.POST.getlist("development_benefits"):
-                        employee.profile.contract.benefits.development_benefits.add(
-                            DevelopmentBenefit.objects.get(
-                                pk=int(development_benefit),
-                            )
+                        # Benefit Details Save
+                        save_benefits_data(
+                            request=request,
+                            benefit_type="sport_benefits",
+                            instance=employee.profile.contract.benefits,
                         )
 
-                # Payment Details Save
-                employee.banktransfer.bank_name = register_form.cleaned_data.get("bank_name")
-                employee.banktransfer.iban = register_form.cleaned_data.get("iban")
-                employee.banktransfer.swift = register_form.cleaned_data.get("swift")
-                employee.banktransfer.account_number = register_form.cleaned_data.get("account_number")
-                employee.banktransfer.save()
+                        save_benefits_data(
+                            request=request,
+                            benefit_type="health_benefits",
+                            instance=employee.profile.contract.benefits,
+                        )
 
-                employee.profile.contract.payment_method = employee.banktransfer
-                employee.profile.contract.save()
+                        save_benefits_data(
+                            request=request,
+                            benefit_type="insurance_benefits",
+                            instance=employee.profile.contract.benefits,
+                        )
 
-                messages.success(
-                    request=request,
-                    message="The employee has been successfully registered in the system.",
-                )
+                        save_benefits_data(
+                            request=request,
+                            benefit_type="development_benefits",
+                            instance=employee.profile.contract.benefits,
+                        )
+
+                        # Payment Details Save
+                        save_profile_data(
+                            instance=employee.banktransfer,
+                            cleaned_data=register_form.cleaned_data,
+                            fields=["bank_name", "iban", "swift", "account_number"],
+                        )
+
+                        messages.success(
+                            request=request,
+                            message="The employee has been successfully registered in the system.",
+                        )
+
+                except IntegrityError as e:
+                    logger.error(msg=f"IntegrityError during employee registration: {e}")
+                    messages.error(
+                        request=request,
+                        message="An error occurred during employee registration. Please try again later.",
+                    )
+
+                except DatabaseError as e:
+                    logger.error(msg=f"DatabaseError during employee registration: {e}")
+                    messages.error(
+                        request=request,
+                        message="A system error occurred. Please try again later.",
+                    )
+
+                except ObjectDoesNotExist as e:
+                    logger.error(msg=f"ObjectDoesNotExist during employee registration: {e}")
+                    messages.error(
+                        request=request,
+                        message="An error occurred during employee registration. Please contact support.",
+                    )
+
+                except Exception as e:
+                    logger.error(msg=f"Unexpected error during employee registration: {e}")
+                    messages.error(
+                        request=request,
+                        message="An unexpected error occurred. Please contact support.",
+                    )
 
                 return redirect(to="employees")
 
@@ -323,155 +392,106 @@ def employees(request):
             )
 
             if register_form.is_valid():
-                # Update User Email
-                updated = False
+                try:
+                    with transaction.atomic():
+                        # Update User Email
+                        update_fields(
+                            instance=employee,
+                            cleaned_data=register_form.cleaned_data,
+                            fields=["email"],
+                        )
 
-                if employee.email != register_form.cleaned_data.get("email"):
-                    employee.email = register_form.cleaned_data.get("email")
-                    updated = True
+                        # Update User Details
+                        update_fields(
+                            instance=employee.profile.basic_information,
+                            cleaned_data=register_form.cleaned_data,
+                            fields=["firstname", "lastname", "date_of_birth"],
+                        )
 
-                if updated:
-                    print("User Email Updated")
-                    employee.save()
+                        # Update Contact Details
+                        update_fields(
+                            instance=employee.profile.contact_information,
+                            cleaned_data=register_form.cleaned_data,
+                            fields=["phone_number", "country", "province", "city", "postal_code", "street",
+                                    "house_number",
+                                    "apartment_number"],
+                        )
 
-                # Update User Details
-                updated = False
+                        # Update Contract Details
+                        update_fields(
+                            instance=employee.profile.contract,
+                            cleaned_data=register_form.cleaned_data,
+                            fields=["contract_type", "job_type", "job_position", "payment_frequency",
+                                    "work_hours_per_week",
+                                    "currency", "start_date", "end_date", "salary"],
+                        )
 
-                if employee.profile.basic_information.firstname != register_form.cleaned_data.get("firstname"):
-                    employee.profile.basic_information.firstname = register_form.cleaned_data.get("firstname")
-                    updated = True
+                        # Update Benefits
+                        update_benefits(
+                            request=request,
+                            benefit_type="sport_benefits",
+                            instance=employee.profile.contract.benefits,
+                        )
 
-                if employee.profile.basic_information.lastname != register_form.cleaned_data.get("lastname"):
-                    employee.profile.basic_information.lastname = register_form.cleaned_data.get("lastname")
-                    updated = True
+                        update_benefits(
+                            request=request,
+                            benefit_type="health_benefits",
+                            instance=employee.profile.contract.benefits,
+                        )
 
-                if employee.profile.basic_information.date_of_birth != register_form.cleaned_data.get("date_of_birth"):
-                    employee.profile.basic_information.date_of_birth = register_form.cleaned_data.get("date_of_birth")
-                    updated = True
+                        update_benefits(
+                            request=request,
+                            benefit_type="insurance_benefits",
+                            instance=employee.profile.contract.benefits,
+                        )
 
-                if updated:
-                    print("User Details Updated")
-                    employee.profile.basic_information.save()
+                        update_benefits(
+                            request=request,
+                            benefit_type="development_benefits",
+                            instance=employee.profile.contract.benefits,
+                        )
 
-                # Update Contact Details
-                updated = False
+                        # Update Payment Details
+                        update_fields(
+                            instance=employee.banktransfer,
+                            cleaned_data=register_form.cleaned_data,
+                            fields=["bank_name", "iban", "swift", "account_number"],
+                        )
 
-                if employee.profile.contact_information.phone_number != register_form.cleaned_data.get("phone_number"):
-                    employee.profile.contact_information.phone_number = register_form.cleaned_data.get("phone_number")
-                    updated = True
+                        messages.success(
+                            request=request,
+                            message="Employee details has been successfully updated.",
+                        )
 
-                if employee.profile.contact_information.country != register_form.cleaned_data.get("country"):
-                    employee.profile.contact_information.country = register_form.cleaned_data.get("country")
-                    updated = True
+                except IntegrityError as e:
+                    logger.error(msg=f"IntegrityError during employee update: {e}")
+                    messages.error(
+                        request=request,
+                        message="An error occurred during employee update. Please try again later.",
+                    )
 
-                if employee.profile.contact_information.province != register_form.cleaned_data.get("province"):
-                    employee.profile.contact_information.province = register_form.cleaned_data.get("province")
-                    updated = True
+                except DatabaseError as e:
+                    logger.error(msg=f"DatabaseError during employee update: {e}")
+                    messages.error(
+                        request=request,
+                        message="A system error occurred. Please try again later.",
+                    )
 
-                if employee.profile.contact_information.city != register_form.cleaned_data.get("city"):
-                    employee.profile.contact_information.city = register_form.cleaned_data.get("city")
-                    updated = True
+                except ObjectDoesNotExist as e:
+                    logger.error(msg=f"ObjectDoesNotExist during employee update: {e}")
+                    messages.error(
+                        request=request,
+                        message="An error occurred during employee update. Please contact support.",
+                    )
 
-                if employee.profile.contact_information.postal_code != register_form.cleaned_data.get("postal_code"):
-                    employee.profile.contact_information.postal_code = register_form.cleaned_data.get("postal_code")
-                    updated = True
-
-                if employee.profile.contact_information.street != register_form.cleaned_data.get("street"):
-                    employee.profile.contact_information.street = register_form.cleaned_data.get("street")
-                    updated = True
-
-                if employee.profile.contact_information.house_number != register_form.cleaned_data.get("house_number"):
-                    employee.profile.contact_information.house_number = register_form.cleaned_data.get("house_number")
-                    updated = True
-
-                if employee.profile.contact_information.apartment_number != register_form.cleaned_data.get(
-                        "apartment_number"):
-                    employee.profile.contact_information.apartment_number = register_form.cleaned_data.get(
-                        "apartment_number")
-                    updated = True
-
-                if updated:
-                    print("Contact Details Updated")
-                    employee.profile.contact_information.save()
-
-                # Update Contract Details
-                updated = False
-
-                if employee.profile.contract.contract_type != register_form.cleaned_data.get("contract_type"):
-                    employee.profile.contract.contract_type = register_form.cleaned_data.get("contract_type")
-                    updated = True
-
-                if employee.profile.contract.job_type != register_form.cleaned_data.get("job_type"):
-                    employee.profile.contract.job_type = register_form.cleaned_data.get("job_type")
-                    updated = True
-
-                if employee.profile.contract.job_position != register_form.cleaned_data.get("job_position"):
-                    employee.profile.contract.job_position = register_form.cleaned_data.get("job_position")
-                    updated = True
-
-                if employee.profile.contract.payment_frequency != register_form.cleaned_data.get("payment_frequency"):
-                    employee.profile.contract.payment_frequency = register_form.cleaned_data.get("payment_frequency")
-                    updated = True
-
-                if employee.profile.contract.work_hours_per_week != register_form.cleaned_data.get(
-                        "work_hours_per_week"):
-                    employee.profile.contract.work_hours_per_week = register_form.cleaned_data.get(
-                        "work_hours_per_week")
-                    updated = True
-
-                if employee.profile.contract.currency != register_form.cleaned_data.get("currency"):
-                    employee.profile.contract.currency = register_form.cleaned_data.get("currency")
-                    updated = True
-
-                if employee.profile.contract.start_date != register_form.cleaned_data.get("start_date"):
-                    employee.profile.contract.start_date = register_form.cleaned_data.get("start_date")
-                    updated = True
-
-                if employee.profile.contract.end_date != register_form.cleaned_data.get("end_date"):
-                    employee.profile.contract.end_date = register_form.cleaned_data.get("end_date")
-                    updated = True
-
-                if employee.profile.contract.salary != register_form.cleaned_data.get("salary"):
-                    employee.profile.contract.salary = register_form.cleaned_data.get("salary")
-                    updated = True
-
-                if updated:
-                    print("Contract Details Updated")
-                    employee.profile.contract.save()
-
-                # Update Payment Details
-                updated = False
-
-                if employee.banktransfer.bank_name != register_form.cleaned_data.get("bank_name"):
-                    employee.banktransfer.bank_name = register_form.cleaned_data.get("bank_name")
-                    updated = True
-
-                if employee.banktransfer.iban != register_form.cleaned_data.get("iban"):
-                    employee.banktransfer.iban = register_form.cleaned_data.get("iban")
-                    updated = True
-
-                if employee.banktransfer.swift != register_form.cleaned_data.get("swift"):
-                    employee.banktransfer.swift = register_form.cleaned_data.get("swift")
-                    updated = True
-
-                if employee.banktransfer.account_number != register_form.cleaned_data.get("account_number"):
-                    employee.banktransfer.account_number = register_form.cleaned_data.get("account_number")
-                    updated = True
-
-                if updated:
-                    print("Payment Details Updated")
-                    employee.banktransfer.save()
-
-                messages.success(
-                    request=request,
-                    message="Employee details has been successfully updated.",
-                )
+                except Exception as e:
+                    logger.error(msg=f"Unexpected error during employee update: {e}")
+                    messages.error(
+                        request=request,
+                        message="An unexpected error occurred. Please contact support.",
+                    )
 
                 return redirect(to="employees")
-
-
-            else:
-                print("Form is not Valid.")
 
     # Sorting
     employees = User.objects.exclude(
@@ -499,69 +519,120 @@ def employees(request):
     selected_payment_frequencies = []
     selected_employment_statuses = []
 
-    if "contract_type" in request.GET:
-        selected_contract_types = request.GET.getlist("contract_type")
+    filters = {
+        "contract_type": "profile__contract__contract_type__slug",
+        "job_type": "profile__contract__job_type__slug",
+        "job_position": "profile__contract__job_position__slug",
+        "currency": "profile__contract__currency__slug",
+        "payment_frequency": "profile__contract__payment_frequency__slug",
+        "employment_status": "profile__contract__status__slug",
+    }
 
-        try:
-            employees = employees.filter(
-                profile__contract__contract_type__slug__in=selected_contract_types,
-            )
+    if request.GET:
+        for key, value in filters.items():
+            selected_values = request.GET.getlist(key)
 
-        except ContractType.DoesNotExist:
-            employees = employees.none()
+            if key == "contract_type":
+                selected_contract_types.extend(selected_values)
+            elif key == "job_type":
+                selected_job_types.extend(selected_values)
+            elif key == "job_position":
+                selected_job_positions.extend(selected_values)
+            elif key == "curerncy":
+                selected_currencies.extend(selected_values)
+            elif key == "payment_frequency":
+                selected_payment_frequencies.extend(selected_values)
+            elif key == "employment_status":
+                selected_employment_statuses.extend(selected_values)
 
-    if "job_type" in request.GET:
-        selected_job_types = request.GET.getlist("job_type")
+            if selected_values:
+                try:
+                    employees = employees.filter(**{
+                        f"{value}__in": selected_values,
+                    })
 
-        try:
-            employees = employees.filter(
-                profile__contract__job_type__slug__in=selected_job_types,
-            )
+                except FieldError as e:
+                    logger.warning(msg=f"Invalid filter field '{value}' in filter '{key}'. {str(e)}")
+                    employees = employees.none()
 
-        except JobType.DoesNotExist:
-            employees = employees.none()
+                except ValueError as e:
+                    logger.warning(msg=f"Invalid value for filter '{key}' with values {value}. {str(e)}")
+                    employees = employees.none()
 
-    if "job_position" in request.GET:
-        selected_job_positions = request.GET.getlist("job_position")
+                except Exception as e:
+                    logger.warning(msg=f"Unexpected error during filtering with filter '{key}': {str(e)}")
+                    employees = employees.none()
 
-        try:
-            employees = employees.filter(
-                profile__contract__job_position__slug__in=selected_job_positions,
-            )
+    print(f"Contract Types -> {selected_contract_types}")
+    print(f"Job Types -> {selected_job_types}")
+    print(f"Job Positions -> {selected_job_positions}")
+    print(f"Currencies -> {selected_currencies}")
+    print(f"Employment Statuses -> {selected_employment_statuses}")
+    print(f"Payment Frequencies -> {selected_payment_frequencies}")
 
-        except JobPosition.DoesNotExist:
-            employees = employees.none()
-
-    if "currency" in request.GET:
-        selected_currencies = request.GET.getlist("currency")
-
-        try:
-            employees = employees.filter(
-                profile__contract__currency__slug__in=selected_currencies,
-            )
-
-        except Currency.DoesNotExist:
-            employees = employees.none()
-
-    if "payment_frequency" in request.GET:
-        selected_payment_frequencies = request.GET.getlist("payment_frequency")
-
-        try:
-            employees = employees.filter(profile__contract__payment_frequency__slug__in=selected_payment_frequencies)
-
-        except PaymentFrequency.DoesNotExist:
-            employees = employees.none()
-
-    if "employment_status" in request.GET:
-        selected_employment_statuses = request.GET.getlist("employment_status")
-
-        try:
-            employees = employees.filter(
-                profile__contract__status__slug__in=selected_employment_statuses,
-            )
-
-        except EmploymentStatus.DoesNotExist:
-            employees = employees.none()
+    # if "contract_type" in request.GET:
+    #     selected_contract_types = request.GET.getlist("contract_type")
+    #
+    #     try:
+    #         employees = employees.filter(
+    #             profile__contract__contract_type__slug__in=selected_contract_types,
+    #         )
+    #
+    #     except ContractType.DoesNotExist:
+    #         employees = employees.none()
+    #
+    # if "job_type" in request.GET:
+    #     selected_job_types = request.GET.getlist("job_type")
+    #
+    #     try:
+    #         employees = employees.filter(
+    #             profile__contract__job_type__slug__in=selected_job_types,
+    #         )
+    #
+    #     except JobType.DoesNotExist:
+    #         employees = employees.none()
+    #
+    # if "job_position" in request.GET:
+    #     selected_job_positions = request.GET.getlist("job_position")
+    #
+    #     try:
+    #         employees = employees.filter(
+    #             profile__contract__job_position__slug__in=selected_job_positions,
+    #         )
+    #
+    #     except JobPosition.DoesNotExist:
+    #         employees = employees.none()
+    #
+    # if "currency" in request.GET:
+    #     selected_currencies = request.GET.getlist("currency")
+    #
+    #     try:
+    #         employees = employees.filter(
+    #             profile__contract__currency__slug__in=selected_currencies,
+    #         )
+    #
+    #     except Currency.DoesNotExist:
+    #         employees = employees.none()
+    #
+    # if "payment_frequency" in request.GET:
+    #     selected_payment_frequencies = request.GET.getlist("payment_frequency")
+    #
+    #     try:
+    #         employees = employees.filter(profile__contract__payment_frequency__slug__in=selected_payment_frequencies)
+    #
+    #     except PaymentFrequency.DoesNotExist:
+    #         employees = employees.none()
+    #
+    # if "employment_status" in request.GET:
+    #     selected_employment_statuses = request.GET.getlist("employment_status")
+    #
+    #     try:
+    #         employees = employees.filter(
+    #             profile__contract__status__slug__in=selected_employment_statuses,
+    #         )
+    #
+    #     except EmploymentStatus.DoesNotExist:
+    #         employees = employees.none()
 
     if "search" in request.GET:
         search_query = request.GET.get("search", "").strip()
