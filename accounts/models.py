@@ -67,7 +67,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name_plural = "Accounts"
 
     def __str__(self):
-        return str(self.pk)
+        return str(self.email)
 
     def generate_password(self):
         alphabet = string.ascii_letters + string.digits + string.punctuation

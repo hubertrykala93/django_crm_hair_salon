@@ -28,12 +28,15 @@ class ServiceTaxRate(models.Model):
         verbose_name = "Service Tax Rate"
         verbose_name_plural = "Services Tax Rate"
 
+    def __str__(self):
+        return str(self.rate)
+
 
 class Service(models.Model):
     name = models.CharField(max_length=50, unique=True)
     slug = models.SlugField(unique=True)
     employees = models.ManyToManyField(to=User)
-    description = models.CharField(max_length=1000)
+    description = models.TextField()
     category = models.ForeignKey(to=ServiceCategory, on_delete=models.SET_NULL, null=True)
     duration = models.PositiveIntegerField()
     tax_rate = models.ForeignKey(to=ServiceTaxRate, on_delete=models.SET_NULL, null=True)
