@@ -1,6 +1,5 @@
 from django import forms
-from .models import Service, ServiceCategory, ServiceTaxRate
-from accounts.models import User
+from .models import Service, ServiceCategory, ServiceTaxRate, ServiceImage
 
 
 class AdminServiceCategoryForm(forms.ModelForm):
@@ -20,6 +19,24 @@ class AdminServiceTaxRateForm(forms.ModelForm):
         fields = "__all__"
 
 
+class AdminServiceImageForm(forms.ModelForm):
+    image = forms.ImageField(
+        help_text="Upload a service image.",
+        label="Service Image",
+        required=True,
+    )
+    size = forms.IntegerField(required=False)
+    width = forms.IntegerField(required=False)
+    height = forms.IntegerField(required=False)
+    format = forms.CharField(required=False)
+    alt = forms.CharField(
+        widget=forms.Textarea,
+        help_text="Enter the alternate text.",
+        label="Alternate Text",
+        required=True,
+    )
+
+
 class AdminServiceForm(forms.ModelForm):
     name = forms.CharField(help_text="Provide the name of this service", label="Name", required=True)
     slug = forms.SlugField(required=False)
@@ -27,10 +44,8 @@ class AdminServiceForm(forms.ModelForm):
                                   required=True, widget=forms.Textarea)
     duration = forms.IntegerField(help_text="Provide the duration of this service.", label="Duration", required=True)
     net_price = forms.DecimalField(help_text="Provide the net price of this service.", label="Net Price",
-                                   required=False, decimal_places=2, max_digits=5)
-    gross_price = forms.DecimalField(help_text="Provie the gross price of this service.", label="Gross Price",
-                                     required=False)
-    is_active = forms.BooleanField(help_text="Select whether this service is active.", label="Active", required=True)
+                                   required=True, decimal_places=2, max_digits=5)
+    is_active = forms.BooleanField(help_text="Select whether this service is active.", label="Active", required=False)
 
     class Meta:
         model = Service
@@ -42,6 +57,10 @@ class AdminServiceForm(forms.ModelForm):
         self.fields["employees"].help_text = "Select the employees providing this service."
         self.fields["employees"].label = "Employees"
         self.fields["employees"].required = True
+
+        self.fields["image"].help_text = "Upload the service image."
+        self.fields["image"].label = "Service Image"
+        self.fields["image"].required = True
 
         self.fields["category"].help_text = "Select a category for this service."
         self.fields["category"].label = "Category"

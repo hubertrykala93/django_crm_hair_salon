@@ -1,6 +1,6 @@
 from django.contrib import admin
-from .models import ServiceCategory, ServiceTaxRate, Service
-from .forms import AdminServiceCategoryForm, AdminServiceTaxRateForm, AdminServiceForm
+from .models import ServiceCategory, ServiceTaxRate, Service, ServiceImage
+from .forms import AdminServiceCategoryForm, AdminServiceTaxRateForm, AdminServiceForm, AdminServiceImageForm
 
 
 @admin.register(ServiceCategory)
@@ -39,12 +39,40 @@ class AdminServiceTaxRate(admin.ModelAdmin):
         ),
     )
 
-
+@admin.register(ServiceImage)
+class AdminServiceImage(admin.ModelAdmin):
+    list_display = [
+        "id",
+        "image",
+        "size",
+        "width",
+        "height",
+        "format",
+        "alt",
+    ]
+    form = AdminServiceImageForm
+    fieldsets = (
+        (
+            "Uploading", {
+                "fields": [
+                    "image",
+                ],
+            },
+        ),
+        (
+            "Alternate Text", {
+                "fields": [
+                    "alt",
+                ],
+            },
+        ),
+    )
 @admin.register(Service)
 class AdminService(admin.ModelAdmin):
     list_display = [
         "id",
         "name",
+        "image",
         "slug",
         "get_employees",
         "description",
@@ -68,6 +96,13 @@ class AdminService(admin.ModelAdmin):
             },
         ),
         (
+            "Uploading", {
+                "fields": [
+                    "image",
+                ],
+            },
+        ),
+        (
             "Service Providers", {
                 "fields": [
                     "employees",
@@ -78,7 +113,6 @@ class AdminService(admin.ModelAdmin):
             "Service Costs", {
                 "fields": [
                     "net_price",
-                    "gross_price",
                     "tax_rate",
                 ],
             },
@@ -94,6 +128,6 @@ class AdminService(admin.ModelAdmin):
 
     def get_employees(self, obj):
         if obj.employees:
-            return [employee for employee in obj.employees]
+            return [employee for employee in obj.employees.all()]
 
     get_employees.short_description = "Providers"
